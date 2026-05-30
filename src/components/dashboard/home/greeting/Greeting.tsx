@@ -16,7 +16,7 @@ function formatDate(date?: Date | string) {
       month: "long",
       year: "numeric",
     }).format(d);
-  } catch (e) {
+  } catch {
     return d.toDateString();
   }
 }

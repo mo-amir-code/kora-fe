@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 
 import React from "react";
@@ -54,19 +55,19 @@ export type DeadlineCardProps = {
 
 const STATUS_COLORS: Record<DeadlineStatus, { container: string; dot: string; label: string; avatar: string }> = {
   today: {
-    container: "bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800",
+    container: "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800",
     dot: "bg-error-500",
     label: "text-error-500",
     avatar: "bg-error-500/10 text-error-500",
   },
   tomorrow: {
-    container: "bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800",
+    container: "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800",
     dot: "bg-warning-500",
     label: "text-warning-500",
     avatar: "bg-warning-500/10 text-warning-500",
   },
   upcoming: {
-    container: "bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800",
+    container: "bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800",
     dot: "bg-brand-500",
     label: "text-brand-500",
     avatar: "bg-brand-500/10 text-brand-500",
@@ -97,9 +98,7 @@ const DeadlineCard = React.forwardRef<HTMLDivElement, DeadlineCardProps>(
         className={`
           group relative rounded-2xl p-5 min-w-[280px]
           transition-all duration-300 ease-out
-          border-gray-200
-          hover:shadow-theme-xl dark:hover:shadow-black/20
-          hover:border-gray-300 dark:hover:border-gray-700
+          border border-gray-200
           cursor-pointer
           ${colors.container}
           ${className}

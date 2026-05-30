@@ -55,30 +55,30 @@ export type PaymentStatusProps = {
     className?: string;
 };
 
-const VARIANT_STYLES: Record<PaymentStatusVariant, { container: string; icon: string; amount: string; iconBg: string }> = {
+const VARIANT_STYLES: Record<PaymentStatusVariant, { 
+    icon: string; 
+    iconBg: string;
+    amount: string;
+}> = {
     success: {
-        container: "bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800",
-        icon: "text-purple-500",
-        amount: "text-gray-900 dark:text-white",
-        iconBg: "bg-purple-500/10",
+        icon: "text-emerald-500",
+        iconBg: "bg-emerald-500/10",
+        amount: "text-emerald-500",
     },
     warning: {
-        container: "bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800",
-        icon: "text-warning-500",
+        icon: "text-amber-500",
+        iconBg: "bg-amber-500/10",
         amount: "text-gray-900 dark:text-white",
-        iconBg: "bg-warning-500/10",
     },
     danger: {
-        container: "bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800",
-        icon: "text-error-500",
-        amount: "text-error-500",
-        iconBg: "bg-error-500/10",
+        icon: "text-rose-500",
+        iconBg: "bg-rose-500/10",
+        amount: "text-rose-500",
     },
     neutral: {
-        container: "bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800",
-        icon: "text-gray-400",
+        icon: "text-zinc-400 dark:text-zinc-500",
+        iconBg: "bg-zinc-400/10 dark:bg-zinc-500/10",
         amount: "text-gray-900 dark:text-white",
-        iconBg: "bg-gray-400/10",
     },
 };
 
@@ -92,76 +92,68 @@ const PaymentStatus = React.forwardRef<HTMLDivElement, PaymentStatusProps>(
             subtitle,
             trendAmount,
             trendType = "none",
-            currency = "₹",
             className = "",
         },
         ref
     ) => {
         const styles = VARIANT_STYLES[variant];
-
         const showTrend = trendType !== "none" && trendAmount;
         const TrendIcon = trendType === "up" ? LuTrendingUp : LuTrendingDown;
-        const trendColor = trendType === "up" ? "text-emerald-400" : "text-red-400";
+        const trendColor = trendType === "up" ? "text-emerald-500" : "text-rose-500";
 
         return (
             <div
                 ref={ref}
                 className={`
-          group relative rounded-2xl p-6
-          transition-all duration-300 ease-out
-          border-gray-200
-          hover:shadow-theme-xl dark:hover:shadow-black/20
-          hover:border-gray-300 dark:hover:border-gray-700
-          ${styles.container}
-          ${className}
-        `}
+                    group relative rounded-2xl p-7
+                    transition-all duration-300 ease-out
+                    bg-white dark:bg-gray-900
+                    border border-gray-200 dark:border-gray-800
+                    hover:border-gray-300 dark:hover:border-gray-700
+                    ${className}
+                `}
                 role="region"
                 aria-label={title}
             >
-                {/* Header: Title + Icon */}
-                <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-medium text-gray-400">
+                <div className="flex items-start justify-between">
+                    <div className="space-y-1.5">
+                        <h3 className="text-[11px] font-bold text-gray-500 dark:text-gray-500 uppercase tracking-[0.1em]">
                             {title}
                         </h3>
+                        <div className={`text-3xl font-bold tracking-tight ${styles.amount}`}>
+                            {amount}
+                        </div>
                     </div>
 
                     {Icon && (
                         <div
                             className={`
-                flex items-center justify-center
-                w-10 h-10
-                rounded-full
-                shrink-0
-                transition-transform duration-300
-                group-hover:scale-110
-                ${styles.iconBg}
-                ${styles.icon}
-              `}
+                                flex items-center justify-center
+                                w-11 h-11
+                                rounded-xl
+                                transition-all duration-300
+                                group-hover:scale-105
+                                ${styles.iconBg}
+                                ${styles.icon}
+                            `}
                         >
-                            <Icon size={20} strokeWidth={2} />
+                            <Icon size={22} strokeWidth={2} />
                         </div>
                     )}
                 </div>
 
-                {/* Primary Value: Amount */}
-                <div className="mt-4">
-                    <div className={`text-4xl font-bold tracking-tight ${styles.amount}`}>
-                        {amount}
-                    </div>
-                </div>
-
-                {/* Supporting Info: Trend or Subtitle */}
-                <div className="mt-2">
+                <div className="mt-6 flex items-center gap-3">
                     {showTrend ? (
-                        <div className={`flex items-center gap-1.5 ${trendColor}`}>
-                            <TrendIcon size={14} className="shrink-0" />
-                            <span className="text-sm font-medium">
+                        <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 ${trendColor}`}>
+                            <TrendIcon size={12} strokeWidth={2.5} />
+                            <span className="text-[11px] font-bold">
                                 {trendAmount}
                             </span>
                         </div>
                     ) : subtitle ? (
-                        <p className="text-sm text-gray-500 font-medium">{subtitle}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium italic">
+                            {subtitle}
+                        </p>
                     ) : null}
                 </div>
             </div>
