@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import TemplatesFilter from "@/components/dashboard/templates/TemplatesFilter";
 import TemplateCard from "@/components/dashboard/templates/TemplateCard";
 import CreateTemplateCard from "@/components/dashboard/templates/CreateTemplateCard";
+import CreateTemplateForm from "@/components/dashboard/templates/CreateTemplateForm";
 
 const FILTER_OPTIONS = [
   { id: "reminder", label: "Payment Reminder" },
@@ -53,8 +54,23 @@ const TEMPLATESDATA: Template[] = [
 
 const Templates = () => {
   const [activeFilter, setActiveFilter] = useState("reminder");
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const filteredTemplates = TEMPLATESDATA.filter(t => t.category === activeFilter);
+
+  if (showCreateForm) {
+    return (
+      <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors p-4 sm:p-0">
+        <CreateTemplateForm 
+          onSave={(data) => {
+            console.log("Saving template:", data);
+            setShowCreateForm(false);
+          }} 
+          onCancel={() => setShowCreateForm(false)} 
+        />
+      </div>
+    );
+  }
 
   return (
     <div className="flex flex-col gap-6 sm:gap-10 min-h-screen bg-white dark:bg-gray-900 transition-colors p-4 sm:p-0">
@@ -66,6 +82,9 @@ const Templates = () => {
       />
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 pb-10">
+        {/* Aesthetic Create New Template Button/Card - Always first */}
+        <CreateTemplateCard onClick={() => setShowCreateForm(true)} />
+        
         {filteredTemplates.map((template) => (
           <TemplateCard
             key={template.id}
@@ -75,8 +94,6 @@ const Templates = () => {
             lastUsed={template.lastUsed}
           />
         ))}
-        {/* Aesthetic Create New Template Button/Card */}
-        <CreateTemplateCard />
       </div>
     </div>
   );

@@ -1,8 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { LuPlus } from "react-icons/lu";
 import DealsFilter from "@/components/dashboard/deals/deals-filter";
 import { DealCard, DealCardProps } from "@/components/dashboard/deals/kanban";
+import AddDealForm from "@/components/dashboard/deals/AddDealForm";
 
 const FILTER_OPTIONS = [
   { id: "all", label: "All" },
@@ -75,6 +77,7 @@ const ALL_DEALS: DealCardProps[] = [
 
 const DealsPage = () => {
   const [activeFilter, setActiveFilter] = useState("all");
+  const [showAddForm, setShowAddForm] = useState(false);
 
   const filteredDeals = ALL_DEALS.filter(deal => {
     if (activeFilter === "all") return true;
@@ -85,9 +88,31 @@ const DealsPage = () => {
     return true;
   });
 
+  if (showAddForm) {
+    return (
+      <div className="p-4 sm:p-8 min-h-screen bg-white dark:bg-gray-900 transition-colors">
+        <AddDealForm 
+          onSave={(data) => {
+            console.log("Saving deal:", data);
+            setShowAddForm(false);
+          }} 
+          onCancel={() => setShowAddForm(false)} 
+        />
+      </div>
+    );
+  }
+
   return (
     <div className="p-4 sm:p-8 space-y-10 min-h-screen bg-white dark:bg-gray-900 transition-colors">
-      <div className="flex justify-end">
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
+        <button 
+          onClick={() => setShowAddForm(true)}
+          className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-gray-900 dark:bg-white px-6 py-2.5 text-xs font-bold text-white dark:text-gray-900 shadow-xl transition-all hover:opacity-90 active:scale-95 uppercase tracking-widest"
+        >
+          <LuPlus className="h-4 w-4 stroke-[3]" />
+          Add New Deal
+        </button>
+
         <DealsFilter
           options={FILTER_OPTIONS}
           activeFilter={activeFilter}
@@ -95,7 +120,7 @@ const DealsPage = () => {
         />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
         {filteredDeals.map((deal) => (
           <DealCard key={deal.id} {...deal} />
         ))}
