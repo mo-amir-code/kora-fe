@@ -1,7 +1,5 @@
-"use client";
-
 import React from "react";
-import InvoiceForm from "@/components/dashboard/invoices/InvoiceForm";
+import { InvoiceForm } from "@/components/dashboard/invoices";
 
 const CreateInvoicePage = () => {
   return (

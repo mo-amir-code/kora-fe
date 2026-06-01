@@ -2,9 +2,7 @@
 
 import React, { useState } from "react";
 import { addMonths, subMonths } from "date-fns";
-import CalendarHeader from "@/components/dashboard/calendar/CalendarHeader";
-import CalendarGrid from "@/components/dashboard/calendar/CalendarGrid";
-import CalendarSidebar from "@/components/dashboard/calendar/CalendarSidebar";
+import { CalendarHeader, CalendarGrid, CalendarSidebar } from "@/components/dashboard/calendar";
 
 // Dummy Data relative to current date (May 31, 2026)
 const DUMMY_EVENTS = [

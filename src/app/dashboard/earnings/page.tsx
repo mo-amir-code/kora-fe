@@ -2,11 +2,7 @@
 
 import React, { useState } from "react";
 import { LuChevronLeft, LuChevronRight, LuDownload, LuShare2, LuFileText } from "react-icons/lu";
-import MetricsOverview from "@/components/dashboard/earnings/MetricsOverview";
-import RevenueBreakdown from "@/components/dashboard/earnings/RevenueBreakdown";
-import RevenueChart from "@/components/dashboard/earnings/RevenueChart";
-import RecentDealsTable from "@/components/dashboard/earnings/RecentDealsTable";
-import YearlySummary from "@/components/dashboard/earnings/YearlySummary";
+import { MetricsOverview, RevenueBreakdown, RevenueChart, RecentDealsTable, YearlySummary } from "@/components/dashboard/earnings";
 
 const EarningsPage = () => {
   const [currentDate, setCurrentDate] = useState("May 2025");

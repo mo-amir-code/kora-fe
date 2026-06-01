@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { LuPlus, LuCalendar } from "react-icons/lu";
-import InvoiceTable, { Invoice } from "@/components/dashboard/invoices/InvoiceTable";
+import { InvoiceTable } from "@/components/dashboard/invoices";
+import type { Invoice } from "@/components/dashboard/invoices";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import { isWithinInterval } from "date-fns";

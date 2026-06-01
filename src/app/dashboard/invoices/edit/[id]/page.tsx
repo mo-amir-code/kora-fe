@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import InvoiceForm from "@/components/dashboard/invoices/InvoiceForm";
+import { InvoiceForm } from "@/components/dashboard/invoices";
 import { useParams } from "next/navigation";
 
 const EditInvoicePage = () => {

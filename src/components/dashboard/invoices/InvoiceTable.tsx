@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { LuPencil } from "react-icons/lu";
 import InvoiceStatusBadge, { InvoiceStatus } from "./InvoiceStatusBadge";

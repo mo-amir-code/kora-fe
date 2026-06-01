@@ -3,15 +3,13 @@ import { Outfit } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { SidebarProvider } from "@/context/SidebarContext";
+import { allMetadata } from "@/utils/data/metadata"
 
 const outfit = Outfit({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  title: "Kora | Influencer Brand Deal Management Tool",
-  description: "Kora is an influencer brand deal management tool designed to streamline the process of managing and tracking influencer partnerships. With Kora, users can easily organize their influencer collaborations.",
-};
+export const metadata: Metadata = allMetadata.landing
 
 export default function RootLayout({
   children,

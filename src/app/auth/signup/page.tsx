@@ -1,9 +1,11 @@
+import { AuthLayout, SignUpForm } from "@/components/auth";
 
-
-const SignUp = () => {
+const SignUpPage = () => {
   return (
-    <div>SignUp</div>
-  )
-}
+    <AuthLayout pageTitle="Sign Up | Kora">
+      <SignUpForm />
+    </AuthLayout>
+  );
+};
 
-export default SignUp
+export default SignUpPage;

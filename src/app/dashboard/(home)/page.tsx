@@ -1,7 +1,7 @@
 "use client"
 import DeadlineCard from "@/components/dashboard/home/deadline"
 import Greeting from "@/components/dashboard/home/greeting"
-import PaymentStatus from "@/components/dashboard/home/paymentstatus/PaymentStatus"
+import PaymentStatus from "@/components/dashboard/home/paymentstatus"
 import RecentActivity from "@/components/dashboard/home/recent-activity"
 import ActiveDeals from "@/components/dashboard/home/active-deals"
 import { LuWallet, LuClock, LuCircleAlert, LuCircleCheck, LuFileText, LuBell, LuSparkles } from "react-icons/lu"

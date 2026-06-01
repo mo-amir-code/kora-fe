@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { 
   LuPlus, 
   LuTrash2, 
@@ -59,6 +59,15 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
   const subtotal = lineItems.reduce((acc, item) => acc + item.amount, 0);
   const gstAmount = applyGst ? subtotal * 0.18 : 0;
   const total = subtotal + gstAmount;
+  const invoiceRows = lineItems.filter((item) => item.description.trim() || item.amount > 0 || item.rate > 0);
+
+  const formatMoney = (value: number) => `₹${Math.round(value).toLocaleString("en-IN")}`;
+
+  const formatDate = (value: string) => {
+    const parsed = new Date(value);
+    if (Number.isNaN(parsed.getTime())) return value;
+    return parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
+  };
 
   const handleAddLineItem = () => {
     setLineItems([
@@ -89,7 +98,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
   const goBack = () => router.push('/dashboard/invoices');
 
   const downloadPDF = async () => {
-    const input = document.getElementById("invoice-form-printable");
+    const input = document.getElementById("invoice-pdf-preview");
     if (!input) return;
 
     try {
@@ -254,6 +263,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
                   <input 
                     type="text" 
                     value={formData.from.accountNo}
+                    onChange={(e) => setFormData({...formData, from: {...formData.from, accountNo: e.target.value}})}
                     className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
                   />
                 </div>
@@ -262,6 +272,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
                   <input 
                     type="text" 
                     value={formData.from.ifsc}
+                    onChange={(e) => setFormData({...formData, from: {...formData.from, ifsc: e.target.value}})}
                     className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
                   />
                 </div>
@@ -290,6 +301,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
                 <input 
                   type="text" 
                   value={formData.billTo.contact}
+                  onChange={(e) => setFormData({...formData, billTo: {...formData.billTo, contact: e.target.value}})}
                   className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
                 />
               </div>
@@ -298,6 +310,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
                 <input 
                   type="text" 
                   value={formData.billTo.gstin}
+                  onChange={(e) => setFormData({...formData, billTo: {...formData.billTo, gstin: e.target.value}})}
                   className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
                 />
               </div>
@@ -312,7 +325,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
           </div>
           
           <div className="space-y-6">
-            <div className="grid grid-cols-12 gap-6 px-4 hidden sm:grid opacity-60">
+            <div className="hidden grid-cols-12 gap-6 px-4 sm:grid opacity-60">
               <div className="col-span-6 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] italic">Description</div>
               <div className="col-span-1 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] italic text-center">Qty</div>
               <div className="col-span-2 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] italic text-center">Rate (₹)</div>
@@ -424,25 +437,137 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
         </div>
       </div>
 
+      <div
+        style={{
+          position: "fixed",
+          left: "-10000px",
+          top: 0,
+          width: "820px",
+          background: "linear-gradient(140deg, #eef2ff 0%, #f5f3ff 100%)",
+          padding: "14px",
+          zIndex: -1
+        }}
+      >
+        <div
+          id="invoice-pdf-preview"
+          style={{
+            width: "792px",
+            minHeight: "1120px",
+            background: "#ffffff",
+            border: "1px solid #dbe4ff",
+            borderRadius: "18px",
+            padding: "26px",
+            fontFamily: "Inter, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif",
+            color: "#102a43",
+            boxSizing: "border-box",
+            boxShadow: "0 22px 48px rgba(37, 99, 235, 0.12)"
+          }}
+        >
+          <div style={{ height: "6px", width: "100%", borderRadius: "999px", background: "linear-gradient(90deg, #4f46e5 0%, #7c3aed 55%, #2563eb 100%)", marginBottom: "18px" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", borderBottom: "1px solid #e6ecff", paddingBottom: "16px" }}>
+            <div>
+              <p style={{ margin: 0, fontSize: "34px", fontWeight: 900, letterSpacing: "0.08em", color: "#1d4ed8" }}>KORA</p>
+              <p style={{ margin: "4px 0 0", fontSize: "11px", fontWeight: 700, letterSpacing: "0.11em", textTransform: "uppercase", color: "#64748b" }}>
+                Digital Content Creator Invoice
+              </p>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <p style={{ margin: 0, fontSize: "34px", fontWeight: 900, color: "#0f172a", letterSpacing: "0.01em" }}>INVOICE</p>
+              <p style={{ margin: "2px 0 10px", fontSize: "22px", fontWeight: 900, color: "#4f46e5" }}>#{formData.invoiceNumber}</p>
+              <p style={{ margin: 0, fontSize: "12px", color: "#475569" }}>Date: {formatDate(formData.issueDate)}</p>
+              <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#475569" }}>Due: {formatDate(formData.dueDate)}</p>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8faff", border: "1px solid #e2e8ff", borderRadius: "12px", padding: "10px 12px" }}>
+            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b" }}>Billed For</p>
+            <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#1e293b" }}>{formData.deal}</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginTop: "18px" }}>
+            <div>
+              <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#64748b" }}>From</p>
+              <p style={{ margin: 0, fontSize: "29px", fontWeight: 800, color: "#0f172a" }}>{formData.from.legalName}</p>
+              <p style={{ margin: "6px 0 0", fontSize: "14px", color: "#334155" }}>{formData.from.upiId}</p>
+              <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#334155" }}>A/C: {formData.from.accountNo}</p>
+              <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#334155" }}>IFSC: {formData.from.ifsc}</p>
+            </div>
+            <div>
+              <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#64748b" }}>Bill To</p>
+              <p style={{ margin: 0, fontSize: "29px", fontWeight: 800, color: "#0f172a" }}>{formData.billTo.brandName}</p>
+              <p style={{ margin: "6px 0 0", fontSize: "14px", color: "#334155" }}>{formData.billTo.contact}</p>
+              <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#334155" }}>GSTIN: {formData.billTo.gstin || "NA"}</p>
+              <p style={{ margin: "6px 0 0", fontSize: "12px", color: "#64748b" }}>Payment Terms: Net Due by {formatDate(formData.dueDate)}</p>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "24px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "4.6fr 0.9fr 1.5fr 1.7fr", gap: "8px", borderBottom: "2px solid #e2e8f0", paddingBottom: "8px" }}>
+              <p style={{ margin: 0, fontSize: "12px", fontWeight: 900, textTransform: "uppercase", color: "#334155", letterSpacing: "0.07em" }}>Description</p>
+              <p style={{ margin: 0, textAlign: "center", fontSize: "12px", fontWeight: 900, textTransform: "uppercase", color: "#334155", letterSpacing: "0.07em" }}>Qty</p>
+              <p style={{ margin: 0, textAlign: "right", fontSize: "12px", fontWeight: 900, textTransform: "uppercase", color: "#334155", letterSpacing: "0.07em" }}>Rate</p>
+              <p style={{ margin: 0, textAlign: "right", fontSize: "12px", fontWeight: 900, textTransform: "uppercase", color: "#334155", letterSpacing: "0.07em" }}>Amount</p>
+            </div>
+
+            {(invoiceRows.length ? invoiceRows : [{ id: "preview", description: "Service Item", qty: 1, rate: 0, amount: 0 }]).map((item, index) => (
+              <div key={item.id} style={{ display: "grid", gridTemplateColumns: "4.6fr 0.9fr 1.5fr 1.7fr", gap: "8px", padding: "14px 8px", borderBottom: "1px solid #eef2f7", borderRadius: "10px", background: index % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
+                <div>
+                  <p style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#0f172a" }}>{item.description || "Service Item"}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#64748b" }}>{formData.deal}</p>
+                </div>
+                <p style={{ margin: 0, textAlign: "center", fontSize: "16px", color: "#1e293b" }}>{item.qty}</p>
+                <p style={{ margin: 0, textAlign: "right", fontSize: "16px", color: "#1e293b" }}>{formatMoney(Number(item.rate))}</p>
+                <p style={{ margin: 0, textAlign: "right", fontSize: "18px", fontWeight: 700, color: "#0f172a" }}>{formatMoney(item.amount)}</p>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "36px" }}>
+            <div style={{ width: "330px", border: "1px solid #dbe4ff", borderRadius: "16px", background: "#f8faff", padding: "14px 16px" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "9px" }}>
+                <span style={{ fontSize: "16px", color: "#334155" }}>Subtotal</span>
+                <span style={{ fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{formatMoney(subtotal)}</span>
+              </div>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "16px" }}>
+                <span style={{ fontSize: "16px", color: "#334155" }}>GST (18%)</span>
+                <span style={{ fontSize: "16px", color: "#0f172a", fontWeight: 700 }}>{applyGst ? formatMoney(gstAmount) : formatMoney(0)}</span>
+              </div>
+              <div style={{ borderTop: "2px solid #c7d2fe", paddingTop: "14px", display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                <span style={{ fontSize: "30px", fontWeight: 900, color: "#0f172a" }}>Total</span>
+                <span style={{ fontSize: "42px", fontWeight: 900, color: "#4338ca", lineHeight: 1 }}>{formatMoney(total)}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ marginTop: "52px", borderTop: "1px dashed #d5ddf0", paddingTop: "14px" }}>
+            <p style={{ margin: 0, fontSize: "12px", color: "#64748b", textAlign: "center" }}>Thank you for your partnership. Please clear this invoice by due date.</p>
+            <div style={{ marginTop: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <p style={{ margin: 0, fontSize: "11px", color: "#94a3b8" }}>Payment via bank transfer • Ref: {formData.invoiceNumber}</p>
+              <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: "#6366f1", letterSpacing: "0.06em" }}>KORA FINANCE</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       {/* Footer Actions */}
       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 pt-10">
-        <button className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-[2rem] border-2 border-slate-900 dark:border-white text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] bg-white dark:bg-transparent transition-all active:scale-95 italic">
+        <button className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-4xl border-2 border-slate-900 dark:border-white text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] bg-white dark:bg-transparent transition-all active:scale-95 italic">
           <LuSave size={20} />
           Save Draft
         </button>
         <button 
           onClick={downloadPDF}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-[2rem] border-2 border-slate-900 dark:border-white text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] bg-white dark:bg-transparent transition-all active:scale-95 italic"
+          className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-4xl border-2 border-slate-900 dark:border-white text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] bg-white dark:bg-transparent transition-all active:scale-95 italic"
         >
           <LuDownload size={20} />
           Download PDF
         </button>
         <div className="flex w-full sm:w-auto gap-4">
-          <button className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-[2rem] bg-emerald-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none">
+          <button className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-4xl bg-emerald-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none">
             <LuMessageCircle size={18} />
             WhatsApp
           </button>
-          <button className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-[2rem] bg-brand-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none">
+          <button className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-4xl bg-brand-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none">
             <LuMail size={18} />
             Email
           </button>

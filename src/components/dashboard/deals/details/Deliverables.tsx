@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import { LuCircleCheck } from "react-icons/lu";
 import DeliverableItem, { DeliverableItemProps } from "./DeliverableItem";

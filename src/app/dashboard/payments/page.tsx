@@ -1,11 +1,7 @@
-"use client";
-
 import React from "react";
 import { LuCircleAlert, LuClock, LuCircleCheck } from "react-icons/lu";
-import PaymentStats from "@/components/dashboard/payments/PaymentStats";
-import PaymentFilters from "@/components/dashboard/payments/PaymentFilters";
-import PaymentSection from "@/components/dashboard/payments/PaymentSection";
-import PaymentItem, { PaymentItemProps } from "@/components/dashboard/payments/PaymentItem";
+import { PaymentStats, PaymentFilters, PaymentSection, PaymentItem } from "@/components/dashboard/payments";
+import type { PaymentItemProps } from "@/components/dashboard/payments/PaymentItem";
 
 const OVERDUE_PAYMENTS: PaymentItemProps[] = [
   {

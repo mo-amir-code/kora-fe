@@ -1,10 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import TemplatesFilter from "@/components/dashboard/templates/TemplatesFilter";
-import TemplateCard from "@/components/dashboard/templates/TemplateCard";
-import CreateTemplateCard from "@/components/dashboard/templates/CreateTemplateCard";
-import CreateTemplateForm from "@/components/dashboard/templates/CreateTemplateForm";
+import { TemplatesFilter, TemplateCard, CreateTemplateCard, CreateTemplateForm } from "@/components/dashboard/templates";
 
 const FILTER_OPTIONS = [
   { id: "reminder", label: "Payment Reminder" },

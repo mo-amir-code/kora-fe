@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import { LuPlus } from "react-icons/lu";
+import { DealCard, AddDealForm } from "@/components/dashboard/deals";
+import type { DealCardProps } from "@/components/dashboard/deals/kanban";
 import DealsFilter from "@/components/dashboard/deals/deals-filter";
-import { DealCard, DealCardProps } from "@/components/dashboard/deals/kanban";
-import AddDealForm from "@/components/dashboard/deals/AddDealForm";
 
 const FILTER_OPTIONS = [
   { id: "all", label: "All" },
