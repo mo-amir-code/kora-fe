@@ -1,30 +1,43 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { HiOutlineKey, HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
+import { useResetPassword, getErrorMessage } from "@/hooks/useAuth";
 
-const ResetPasswordForm: React.FC = () => {
+const ResetPasswordFormInner: React.FC = () => {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const resetPassword = useResetPassword();
+
+  const email = searchParams.get("email");
+  const otp = searchParams.get("otp");
+
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  useEffect(() => {
+    if (!email || !otp) {
+      router.push("/auth/forgot-password");
+    }
+  }, [email, otp, router]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword || password.length < 6) return;
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setIsSuccess(true);
-      setTimeout(() => {
-        router.push("/auth/signin");
-      }, 2000);
-    }, 1000);
+    if (password !== confirmPassword || password.length < 8) return;
+
+    resetPassword.mutate(
+      { email: email!, otp: otp!, newPassword: password },
+      {
+        onSuccess: () => {
+          setIsSuccess(true);
+          setTimeout(() => router.push("/auth/signin"), 2000);
+        },
+      }
+    );
   };
 
   if (isSuccess) {
@@ -101,9 +114,9 @@ const ResetPasswordForm: React.FC = () => {
               )}
             </button>
           </div>
-          {password && password.length < 6 && (
+          {password && password.length < 8 && (
             <p className="text-red-400 text-xs mt-1.5">
-              Password must be at least 6 characters
+              Password must be at least 8 characters
             </p>
           )}
         </div>
@@ -141,6 +154,13 @@ const ResetPasswordForm: React.FC = () => {
           )}
         </div>
 
+        {/* API Error */}
+        {resetPassword.error && (
+          <p className="text-red-400 text-sm">
+            {getErrorMessage(resetPassword.error)}
+          </p>
+        )}
+
         {/* Submit */}
         <button
           type="submit"
@@ -148,12 +168,12 @@ const ResetPasswordForm: React.FC = () => {
             !password ||
             !confirmPassword ||
             password !== confirmPassword ||
-            password.length < 6 ||
-            isLoading
+            password.length < 8 ||
+            resetPassword.isPending
           }
           className="w-full py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? (
+          {resetPassword.isPending ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                 <circle
@@ -190,6 +210,14 @@ const ResetPasswordForm: React.FC = () => {
         </Link>
       </p>
     </div>
+  );
+};
+
+const ResetPasswordForm: React.FC = () => {
+  return (
+    <Suspense fallback={null}>
+      <ResetPasswordFormInner />
+    </Suspense>
   );
 };
 

@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
+import { GuestGuard } from "@/components/guards";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -15,7 +16,7 @@ const features = [
 
 const AuthLayout: React.FC<AuthLayoutProps> = ({ children, pageTitle }) => {
   return (
-    <>
+    <GuestGuard>
       {pageTitle && <title>{pageTitle}</title>}
       <div className="min-h-screen min-h-[100dvh] bg-[#0B0F19] flex items-start sm:items-center justify-center p-0 sm:p-4 md:p-6 lg:p-8">
         <div className="w-full min-h-[100dvh] sm:min-h-0 sm:max-w-[1100px] grid grid-cols-1 lg:grid-cols-2 gap-0 sm:rounded-2xl overflow-hidden sm:border sm:border-[#1e293b]/60 bg-[#0f1520]">
@@ -115,7 +116,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, pageTitle }) => {
           </div>
         </div>
       </div>
-    </>
+    </GuestGuard>
   );
 };
 

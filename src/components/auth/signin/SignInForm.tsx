@@ -1,17 +1,25 @@
 "use client";
 import React, { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
+import { useGoogleAuth, useSignin, getErrorMessage } from "@/hooks/useAuth";
 
 const SignInForm: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const { handleGoogleAuth } = useGoogleAuth();
+  const router = useRouter();
+  const signin = useSignin();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle sign in logic
+    signin.mutate(
+      { email, password },
+      { onSuccess: () => router.replace("/dashboard") }
+    );
   };
 
   return (
@@ -26,6 +34,7 @@ const SignInForm: React.FC = () => {
       {/* Google Auth */}
       <button
         type="button"
+        onClick={handleGoogleAuth}
         className="w-full flex items-center justify-center gap-2.5 sm:gap-3 px-4 py-2.5 sm:py-3 rounded-lg border border-[#1e293b] bg-[#151c2c] text-white text-xs sm:text-sm font-medium hover:bg-[#1a2338] active:bg-[#1a2338] transition-colors duration-200 min-h-[44px]"
       >
         <FcGoogle className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -96,11 +105,40 @@ const SignInForm: React.FC = () => {
         {/* Submit */}
         <button
           type="submit"
-          className="w-full py-2.5 sm:py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] min-h-[44px]"
+          disabled={signin.isPending}
+          className="w-full py-2.5 sm:py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Sign in
+          {signin.isPending ? (
+            <span className="flex items-center justify-center gap-2">
+              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                  fill="none"
+                />
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
+                />
+              </svg>
+              Signing in...
+            </span>
+          ) : (
+            "Sign in"
+          )}
         </button>
       </form>
+
+      {signin.error && (
+        <p className="text-red-400 text-xs text-center mt-3">
+          {getErrorMessage(signin.error)}
+        </p>
+      )}
 
       {/* Footer */}
       <p className="text-center text-gray-400 text-xs sm:text-sm mt-4 sm:mt-6">

@@ -3,6 +3,7 @@ import React, { useState, useRef, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { HiOutlineMail, HiOutlineShieldCheck } from "react-icons/hi";
+import { useForgotPassword, getErrorMessage } from "@/hooks/useAuth";
 
 type Step = "email" | "otp";
 
@@ -11,18 +12,13 @@ const ForgotPasswordForm: React.FC = () => {
   const [step, setStep] = useState<Step>("email");
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
-  const [isLoading, setIsLoading] = useState(false);
+  const forgotPassword = useForgotPassword();
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
     if (!email) return;
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      setIsLoading(false);
-      setStep("otp");
-    }, 1000);
+    forgotPassword.mutate(email, { onSuccess: () => setStep("otp") });
   };
 
   const handleOtpChange = useCallback(
@@ -66,17 +62,12 @@ const ForgotPasswordForm: React.FC = () => {
     e.preventDefault();
     const otpValue = otp.join("");
     if (otpValue.length !== 6) return;
-    setIsLoading(true);
-    // Simulate OTP verification
-    setTimeout(() => {
-      setIsLoading(false);
-      router.push("/auth/reset-password");
-    }, 1000);
+    router.push(`/auth/reset-password?email=${encodeURIComponent(email)}&otp=${otp.join('')}`);
   };
 
   const handleResendOtp = () => {
     setOtp(["", "", "", "", "", ""]);
-    // Simulate resend
+    forgotPassword.mutate(email);
   };
 
   if (step === "otp") {
@@ -118,10 +109,10 @@ const ForgotPasswordForm: React.FC = () => {
           {/* Verify Button */}
           <button
             type="submit"
-            disabled={otp.join("").length !== 6 || isLoading}
+            disabled={otp.join("").length !== 6 || forgotPassword.isPending}
             className="w-full py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {isLoading ? (
+            {forgotPassword.isPending ? (
               <span className="flex items-center justify-center gap-2">
                 <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                   <circle
@@ -203,10 +194,10 @@ const ForgotPasswordForm: React.FC = () => {
         {/* Submit */}
         <button
           type="submit"
-          disabled={!email || isLoading}
+          disabled={!email || forgotPassword.isPending}
           className="w-full py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isLoading ? (
+          {forgotPassword.isPending ? (
             <span className="flex items-center justify-center gap-2">
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                 <circle
@@ -230,6 +221,13 @@ const ForgotPasswordForm: React.FC = () => {
             "Send OTP"
           )}
         </button>
+
+        {/* Error Display */}
+        {forgotPassword.error && (
+          <p className="text-red-400 text-sm text-center mt-2">
+            {getErrorMessage(forgotPassword.error)}
+          </p>
+        )}
       </form>
 
       {/* Back to Sign In */}

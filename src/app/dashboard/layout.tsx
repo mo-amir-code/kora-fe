@@ -2,6 +2,7 @@
 
 import { useSidebar } from "@/context/SidebarContext";
 import { AppHeader, Backdrop, AppSidebar } from "@/components/dashboard/layout"
+import { AuthGuard } from "@/components/guards";
 import React from "react";
 
 export default function DashboardLayout({
@@ -19,19 +20,21 @@ export default function DashboardLayout({
             : "lg:ml-[90px]";
 
     return (
-        <div className="min-h-screen xl:flex">
-            {/* Sidebar and Backdrop */}
-            <AppSidebar />
-            <Backdrop />
-            {/* Main Content Area */}
-            <div
-                className={`flex-1 transition-all  duration-300 ease-in-out ${mainContentMargin}`}
-            >
-                {/* Header */}
-                <AppHeader />
-                {/* Page Content */}
-                <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
+        <AuthGuard>
+            <div className="min-h-screen xl:flex">
+                {/* Sidebar and Backdrop */}
+                <AppSidebar />
+                <Backdrop />
+                {/* Main Content Area */}
+                <div
+                    className={`flex-1 transition-all  duration-300 ease-in-out ${mainContentMargin}`}
+                >
+                    {/* Header */}
+                    <AppHeader />
+                    {/* Page Content */}
+                    <div className="p-4 mx-auto max-w-(--breakpoint-2xl) md:p-6">{children}</div>
+                </div>
             </div>
-        </div>
+        </AuthGuard>
     );
 }
