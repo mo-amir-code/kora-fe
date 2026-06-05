@@ -4,8 +4,8 @@ import { authService, MeResponse } from '@/services/auth.service';
 import { useAuthStore } from '@/stores/auth/auth';
 import { AuthUser } from '@/stores/auth/types';
 
-// Maps backend MeResponse to frontend AuthUser shape
-export function mapToAuthUser(me: MeResponse): AuthUser {
+// Maps backend user response to frontend AuthUser shape
+export function mapToAuthUser(me: MeResponse | { id: string; email: string; fullName: string; avatarUrl: string | null }): AuthUser {
   return {
     id: me.id,
     name: me.fullName,
@@ -40,7 +40,7 @@ export function useGoogleAuth() {
 // Extracts error message from Axios error responses
 export function getErrorMessage(error: unknown): string {
   if (axios.isAxiosError(error)) {
-    return error.response?.data?.message ?? 'Something went wrong. Please try again.';
+    return error.response?.data?.error ?? error.response?.data?.message ?? 'Something went wrong. Please try again.';
   }
   return 'Something went wrong. Please try again.';
 }
@@ -51,7 +51,7 @@ export function useSignin() {
   return useMutation({
     mutationFn: authService.signin,
     onSuccess: (data) => {
-      setAuth({ user: mapToAuthUser(data.user), token: data.token });
+      setAuth({ user: mapToAuthUser(data.user), token: data.accessToken });
     },
   });
 }
@@ -62,7 +62,7 @@ export function useSignup() {
   return useMutation({
     mutationFn: authService.signup,
     onSuccess: (data) => {
-      setAuth({ user: mapToAuthUser(data.user), token: data.token });
+      setAuth({ user: mapToAuthUser(data.user), token: data.accessToken });
     },
   });
 }
@@ -80,7 +80,7 @@ export function useSignupVerifyOtp() {
   return useMutation({
     mutationFn: authService.signupVerifyOtp,
     onSuccess: (data) => {
-      setAuth({ user: mapToAuthUser(data.user), token: data.token });
+      setAuth({ user: mapToAuthUser(data.user), token: data.accessToken });
     },
   });
 }

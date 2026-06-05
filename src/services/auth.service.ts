@@ -9,7 +9,7 @@ export interface MeResponse {
 
 export interface AuthResponse {
   user: { id: string; email: string; fullName: string; avatarUrl: string | null };
-  token: string;
+  accessToken: string;
 }
 
 export const authService = {
@@ -49,5 +49,14 @@ export const authService = {
 
   resetPassword: async (data: { email: string; otp: string; newPassword: string }): Promise<void> => {
     await api.post('/auth/reset-password', data);
+  },
+
+  refreshToken: async (): Promise<AuthResponse> => {
+    const response = await api.post('/auth/refresh');
+    return response.data.data;
+  },
+
+  logout: async (): Promise<void> => {
+    await api.post('/auth/logout');
   },
 };
