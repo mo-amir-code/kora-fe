@@ -14,6 +14,20 @@ interface BrandInvoicesTabProps {
 }
 
 const BrandInvoicesTab = ({ invoices }: BrandInvoicesTabProps) => {
+  if (invoices.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-16 text-center">
+        <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <LuDownload size={24} className="text-gray-400 dark:text-gray-500" />
+        </div>
+        <h3 className="text-sm font-bold text-gray-900 dark:text-white mb-1">No invoices yet</h3>
+        <p className="text-xs text-gray-400 dark:text-gray-500 max-w-xs">
+          Invoices for this brand will appear here once you create a deal and generate an invoice.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div>
       {/* Desktop: Table view */}

@@ -1,5 +1,5 @@
 import React from "react";
-import { LuMail, LuPhone, LuMessageSquare, LuCalendar, LuPencil } from "react-icons/lu";
+import { LuMail, LuPhone, LuMessageSquare, LuPencil } from "react-icons/lu";
 
 interface BrandSidebarProps {
   contact: {
@@ -10,16 +10,21 @@ interface BrandSidebarProps {
     avatarUrl?: string;
   };
   notes: string[];
+  onViewAllContacts?: () => void;
+  onEditNotes?: () => void;
 }
 
-const BrandSidebar = ({ contact, notes }: BrandSidebarProps) => {
+const BrandSidebar = ({ contact, notes, onViewAllContacts, onEditNotes }: BrandSidebarProps) => {
   return (
     <div className="space-y-5">
       {/* Brand Contact Card */}
       <div className="p-5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white">Brand Contact</h3>
-          <button className="text-[11px] font-bold text-gray-400 dark:text-gray-500 hover:text-brand-500 transition-colors uppercase tracking-wider">
+          <button 
+            onClick={onViewAllContacts}
+            className="text-[11px] font-bold text-gray-400 dark:text-gray-500 hover:text-brand-500 transition-colors uppercase tracking-wider"
+          >
             View All
           </button>
         </div>
@@ -52,14 +57,26 @@ const BrandSidebar = ({ contact, notes }: BrandSidebarProps) => {
         </div>
 
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-all">
-            <LuMessageSquare size={13} />
-            WhatsApp
-          </button>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all">
-            <LuCalendar size={13} />
-            Schedule
-          </button>
+          {contact.phone && (
+            <a
+              href={`https://wa.me/${contact.phone.replace(/[^0-9]/g, '')}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs font-bold text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20 transition-all"
+            >
+              <LuMessageSquare size={13} />
+              WhatsApp
+            </a>
+          )}
+          {contact.email && (
+            <a
+              href={`mailto:${contact.email}`}
+              className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-gray-200 dark:border-gray-700 text-xs font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+            >
+              <LuMail size={13} />
+              Email
+            </a>
+          )}
         </div>
       </div>
 
@@ -67,7 +84,10 @@ const BrandSidebar = ({ contact, notes }: BrandSidebarProps) => {
       <div className="p-5 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/50">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-sm font-bold text-gray-900 dark:text-white">Internal Notes</h3>
-          <button className="p-1.5 rounded-lg text-gray-400 hover:text-brand-500 hover:bg-brand-500/5 transition-all">
+          <button 
+            onClick={onEditNotes}
+            className="p-1.5 rounded-lg text-gray-400 hover:text-brand-500 hover:bg-brand-500/5 transition-all"
+          >
             <LuPencil size={14} />
           </button>
         </div>

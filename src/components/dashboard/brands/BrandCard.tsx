@@ -1,8 +1,10 @@
 import React from 'react';
 import Image from 'next/image';
-import { LuMoveVertical, LuUser, LuMail } from 'react-icons/lu';
+import Link from 'next/link';
+import { LuTrash2, LuUser, LuMail } from 'react-icons/lu';
 
 export interface BrandCardProps {
+  id: string;
   name: string;
   category: {
     label: string;
@@ -14,10 +16,12 @@ export interface BrandCardProps {
   contactRole?: string;
   contactEmail: string;
   lastDealDate: string;
-  logoUrl?: string; // Optional logo URL
+  logoUrl?: string;
+  onDelete?: (id: string) => void;
 }
 
 export const BrandCard: React.FC<BrandCardProps> = ({
+  id,
   name,
   category,
   dealsCount,
@@ -27,6 +31,7 @@ export const BrandCard: React.FC<BrandCardProps> = ({
   contactEmail,
   lastDealDate,
   logoUrl,
+  onDelete,
 }) => {
   return (
     <div className="flex flex-col gap-6 rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-6 transition-all hover:border-gray-300 dark:hover:border-gray-700 hover:shadow-lg dark:hover:shadow-none transition-all duration-300 relative group">
@@ -51,8 +56,12 @@ export const BrandCard: React.FC<BrandCardProps> = ({
             </span>
           </div>
         </div>
-        <button className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors p-1.5 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800">
-          <LuMoveVertical className="h-5 w-5" strokeWidth={2.5} />
+        <button 
+          onClick={(e) => { e.stopPropagation(); if (confirm(`Delete "${name}"? This cannot be undone.`)) onDelete?.(id); }}
+          className="text-gray-400 hover:text-rose-500 transition-colors p-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10 opacity-0 group-hover:opacity-100"
+          title="Delete brand"
+        >
+          <LuTrash2 className="h-4 w-4" strokeWidth={2.5} />
         </button>
       </div>
 
@@ -95,9 +104,12 @@ export const BrandCard: React.FC<BrandCardProps> = ({
           <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Last Interaction</span>
           <span className="text-xs font-bold text-gray-900 dark:text-gray-300">{lastDealDate}</span>
         </div>
-        <button className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-[11px] font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all uppercase tracking-widest active:scale-95">
+        <Link 
+          href={`/dashboard/brands/${id}`}
+          className="rounded-xl border border-gray-200 dark:border-gray-700 px-4 py-2 text-[11px] font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all uppercase tracking-widest active:scale-95"
+        >
           View Details
-        </button>
+        </Link>
       </div>
     </div>
   );

@@ -10,14 +10,15 @@ import {
   LuPlus, 
   LuChevronDown, 
   LuBadgeCheck, 
-  LuBriefcase,
   LuFileText,
   LuSave,
   LuTrash2,
-  LuInfo,
-  LuX,
-  LuImage
+  LuImage,
+  LuLoader
 } from "react-icons/lu";
+import { useCreateBrand, useUploadBrandLogo } from "@/hooks/useBrands";
+import { brandService } from "@/services/brand.service";
+import { getErrorMessage } from "@/hooks/useAuth";
 
 export interface Contact {
   id: string;
@@ -29,58 +30,82 @@ export interface Contact {
 }
 
 interface AddBrandFormProps {
-  onSave: (data: any) => void;
+  onSave: () => void;
   onCancel: () => void;
 }
 
 const CATEGORIES = [
-  "Tech", 
-  "Fashion", 
-  "Beauty", 
-  "Fitness", 
-  "Food & Beverage", 
-  "Travel", 
-  "Gaming", 
-  "Education",
-  "Finance",
-  "Health",
-  "Other"
+  { label: "Tech", value: "TECH" },
+  { label: "Fashion", value: "FASHION" },
+  { label: "Beauty", value: "BEAUTY" },
+  { label: "Fitness", value: "FITNESS" },
+  { label: "Food", value: "FOOD" },
+  { label: "Travel", value: "TRAVEL" },
+  { label: "Gaming", value: "GAMING" },
+  { label: "Education", value: "EDUCATION" },
+  { label: "Finance", value: "FINANCE" },
+  { label: "Health", value: "HEALTH" },
+  { label: "Entertainment", value: "ENTERTAINMENT" },
+  { label: "E-Commerce", value: "E_COMMERCE" },
+  { label: "SaaS", value: "SAAS" },
+  { label: "Automotive", value: "AUTOMOTIVE" },
+  { label: "Other", value: "OTHER" },
 ];
 
 const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [brandData, setBrandData] = useState({
     name: "",
-    category: "Tech",
+    category: "TECH",
     website: "",
     gstin: "",
     notes: ""
   });
-
   const [contacts, setContacts] = useState<Contact[]>([
     { id: "1", name: "", role: "", email: "", whatsapp: "", isPrimary: true },
   ]);
+  const [formError, setFormError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
+
+  const createBrand = useCreateBrand();
+  const uploadLogo = useUploadBrandLogo();
+
+  // ─── INPUT HANDLERS ─────────────────────────────────────────────────────────
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
     setBrandData(prev => ({ ...prev, [name]: value }));
+    setFormError("");
   };
 
-  const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // ─── LOGO UPLOAD ──────────────────────────────────────────────────────────────
+
+  const handleLogoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      processFile(file);
-    }
+    if (file) await processFile(file);
   };
 
-  const processFile = (file: File) => {
-    if (!file.type.startsWith('image/')) return;
+  const processFile = async (file: File) => {
+    if (!file.type.startsWith('image/')) {
+      setFormError("Please upload an image file");
+      return;
+    }
+
+    // Show local preview immediately
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setLogoPreview(reader.result as string);
-    };
+    reader.onloadend = () => setLogoPreview(reader.result as string);
     reader.readAsDataURL(file);
+
+    // Upload to GCP
+    try {
+      const result = await uploadLogo.mutateAsync(file);
+      setLogoUrl(result.url);
+    } catch (err) {
+      setFormError(getErrorMessage(err));
+      setLogoPreview(null);
+    }
   };
 
   const handleDragOver = (e: React.DragEvent) => {
@@ -88,20 +113,21 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
     e.stopPropagation();
   };
 
-  const handleDrop = (e: React.DragEvent) => {
+  const handleDrop = async (e: React.DragEvent) => {
     e.preventDefault();
     e.stopPropagation();
     const file = e.dataTransfer.files?.[0];
-    if (file) {
-      processFile(file);
-    }
+    if (file) await processFile(file);
   };
 
   const removeLogo = (e: React.MouseEvent) => {
     e.stopPropagation();
     setLogoPreview(null);
+    setLogoUrl(null);
     if (fileInputRef.current) fileInputRef.current.value = "";
   };
+
+  // ─── CONTACTS ─────────────────────────────────────────────────────────────────
 
   const addContact = () => {
     setContacts([
@@ -116,17 +142,54 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
     }
   };
 
-  const updateContact = (id: string, field: keyof Contact, value: any) => {
+  const updateContact = (id: string, field: keyof Contact, value: string | boolean) => {
     setContacts(prev => prev.map(c => c.id === id ? { ...c, [field]: value } : c));
   };
 
-  const handleSave = () => {
-    onSave({
-      ...brandData,
-      logoPreview,
-      contacts
-    });
+  // ─── SAVE ─────────────────────────────────────────────────────────────────────
+
+  const handleSave = async () => {
+    // Validate required fields
+    if (!brandData.name.trim()) {
+      setFormError("Brand name is required");
+      return;
+    }
+
+    setFormError("");
+    setIsSaving(true);
+
+    try {
+      // Step 1: Create brand
+      const brand = await createBrand.mutateAsync({
+        name: brandData.name.trim(),
+        category: brandData.category,
+        logoUrl: logoUrl || undefined,
+        website: brandData.website.trim() || undefined,
+        gstin: brandData.gstin.trim() || undefined,
+        notes: brandData.notes.trim() ? [brandData.notes.trim()] : [],
+      });
+
+      // Step 2: Create contacts (only those with a name filled in)
+      const validContacts = contacts.filter(c => c.name.trim());
+      for (const contact of validContacts) {
+        await brandService.createContact(brand.id, {
+          name: contact.name.trim(),
+          role: contact.role.trim() || undefined,
+          email: contact.email.trim() || undefined,
+          whatsapp: contact.whatsapp.trim() || undefined,
+          isPrimary: contact.isPrimary,
+        });
+      }
+
+      onSave();
+    } catch (err) {
+      setFormError(getErrorMessage(err));
+    } finally {
+      setIsSaving(false);
+    }
   };
+
+  // ─── RENDER ───────────────────────────────────────────────────────────────────
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -165,7 +228,9 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
                 />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest pl-1">Category</label>
+                <label className="text-[10px] sm:text-[11px] font-bold text-gray-500 dark:text-gray-500 uppercase tracking-widest pl-1">
+                  Category <span className="text-rose-500">*</span>
+                </label>
                 <div className="relative">
                   <select 
                     name="category"
@@ -174,7 +239,7 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
                     className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 sm:py-3 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                   >
                     {CATEGORIES.map(cat => (
-                        <option key={cat} value={cat}>{cat}</option>
+                      <option key={cat.value} value={cat.value}>{cat.label}</option>
                     ))}
                   </select>
                   <LuChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
@@ -199,6 +264,7 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
               </div>
             </div>
 
+            {/* Logo Upload */}
             <div className="space-y-2">
               <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Brand Logo</label>
               <input 
@@ -217,20 +283,32 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
                   className="border-2 border-dashed border-gray-200 dark:border-gray-800 rounded-2xl p-6 sm:p-10 flex flex-col items-center justify-center gap-3 sm:gap-4 hover:border-brand-500/50 hover:bg-brand-500/[0.02] transition-all cursor-pointer group"
                 >
                   <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-brand-500 transition-colors">
-                    <LuCloudUpload size={24} strokeWidth={1.5} className="sm:hidden" />
-                    <LuCloudUpload size={28} strokeWidth={1.5} className="hidden sm:block" />
+                    {uploadLogo.isPending ? (
+                      <LuLoader size={24} className="animate-spin" />
+                    ) : (
+                      <>
+                        <LuCloudUpload size={24} strokeWidth={1.5} className="sm:hidden" />
+                        <LuCloudUpload size={28} strokeWidth={1.5} className="hidden sm:block" />
+                      </>
+                    )}
                   </div>
                   <div className="text-center">
                     <p className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white">Click to upload or drag & drop</p>
-                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 mt-1 uppercase tracking-tight">SVG, PNG or JPG (max. 800×400px)</p>
+                    <p className="text-[10px] sm:text-xs text-gray-500 dark:text-gray-500 mt-1 uppercase tracking-tight">SVG, PNG or JPG (max. 5MB)</p>
                   </div>
                 </div>
               ) : (
                 <div className="relative group/logo w-full max-w-sm">
                   <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-gray-50 dark:bg-gray-800/20 overflow-hidden flex items-center justify-center p-8 aspect-[2/1] relative">
+                    {uploadLogo.isPending && (
+                      <div className="absolute inset-0 bg-black/30 flex items-center justify-center z-10">
+                        <LuLoader size={24} className="animate-spin text-white" />
+                      </div>
+                    )}
                     <img src={logoPreview} alt="Logo preview" className="max-h-full max-w-full object-contain" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover/logo:opacity-100 transition-opacity flex items-center justify-center gap-4">
                       <button 
+                        type="button"
                         onClick={() => fileInputRef.current?.click()}
                         className="p-3 rounded-xl bg-white text-gray-900 hover:scale-110 transition-transform shadow-lg"
                         title="Change Logo"
@@ -238,6 +316,7 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
                         <LuImage size={20} strokeWidth={2.5} />
                       </button>
                       <button 
+                        type="button"
                         onClick={removeLogo}
                         className="p-3 rounded-xl bg-rose-500 text-white hover:scale-110 transition-transform shadow-lg"
                         title="Remove Logo"
@@ -312,6 +391,7 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
                     </div>
                     {contacts.length > 1 && (
                       <button 
+                        type="button"
                         onClick={() => removeContact(contact.id)}
                         className="text-gray-400 hover:text-rose-500 transition-colors p-1"
                       >
@@ -372,6 +452,7 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
               ))}
 
               <button 
+                type="button"
                 onClick={addContact}
                 className="w-full py-3 sm:py-4 rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 text-gray-400 hover:text-brand-500 hover:border-brand-500 hover:bg-brand-500/[0.02] transition-all flex items-center justify-center gap-2 group"
               >
@@ -386,16 +467,34 @@ const AddBrandForm = ({ onSave, onCancel }: AddBrandFormProps) => {
 
           {/* Action Buttons */}
           <div className="space-y-3 sm:space-y-4 pt-4">
+            {/* Error Display */}
+            {formError && (
+              <p className="text-red-400 text-xs text-center font-medium">{formError}</p>
+            )}
+
             <button 
+              type="button"
               onClick={handleSave}
-              className="w-full flex items-center justify-center gap-3 py-3.5 sm:py-4 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-xl shadow-brand-500/20 transition-all active:scale-[0.98]"
+              disabled={isSaving || uploadLogo.isPending}
+              className="w-full flex items-center justify-center gap-3 py-3.5 sm:py-4 rounded-2xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-xl shadow-brand-500/20 transition-all active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <LuSave size={18} strokeWidth={2.5} />
-              Save Brand
+              {isSaving ? (
+                <>
+                  <LuLoader size={18} className="animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <LuSave size={18} strokeWidth={2.5} />
+                  Save Brand
+                </>
+              )}
             </button>
             <button 
+              type="button"
               onClick={onCancel}
-              className="w-full py-3.5 sm:py-4 rounded-2xl text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all"
+              disabled={isSaving}
+              className="w-full py-3.5 sm:py-4 rounded-2xl text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all disabled:opacity-50"
             >
               Cancel
             </button>
