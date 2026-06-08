@@ -5,3 +5,6 @@ export { default as DealStats } from "./DealStats";
 export { default as QuickActions } from "./QuickActions";
 export { default as DealActivity } from "./DealActivity";
 export { default as AutomatedReminders } from "./AutomatedReminders";
+export { default as AddDealActivity } from "./AddDealActivity";
+export { default as DealNotes } from "./DealNotes";
+export { default as DealContractUrl } from "./DealContractUrl";

@@ -11,8 +11,12 @@ import {
   LuSave,
   LuClock,
   LuLibrary,
-  LuFileText
+  LuFileText,
+  LuLoader
 } from "react-icons/lu";
+import { useCreateDeal, useUpdateDeal } from "@/hooks/useDeals";
+import { useBrandsList } from "@/hooks/useBrands";
+import { getErrorMessage } from "@/hooks/useAuth";
 
 interface Deliverable {
   id: string;
@@ -22,246 +26,278 @@ interface Deliverable {
 }
 
 interface AddDealFormProps {
-  onSave: (data: any) => void;
+  onSave: () => void;
   onCancel: () => void;
+  editDeal?: {
+    id: string;
+    title: string;
+    brandId: string;
+    contactId: string | null;
+    stage: string;
+    amount: string | null;
+    currency: string;
+    paymentTerms: string | null;
+    paymentDueDate: string | null;
+    platforms: string[];
+    contractUrl: string | null;
+    notes: string | null;
+    deliverables: { id: string; type: string; quantity: number; dueDate: string | null }[];
+  };
 }
 
-const STAGES = ["Pitched", "Active", "Delivered", "Paid"];
-const PLATFORMS = ["Instagram", "YouTube", "TikTok", "X (Twitter)"];
-const CURRENCIES = ["INR", "USD", "EUR", "GBP"];
+const DEAL_STAGES = [
+  { value: "LEAD", label: "Lead" },
+  { value: "OUTREACH", label: "Outreach" },
+  { value: "NEGOTIATION", label: "Negotiation" },
+  { value: "PROPOSAL_SENT", label: "Proposal Sent" },
+  { value: "CONTRACT_SENT", label: "Contract Sent" },
+  { value: "APPROVED", label: "Approved" },
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "LOST", label: "Lost" },
+  { value: "CANCELLED", label: "Cancelled" },
+];
 
-const AddDealForm = ({ onSave, onCancel }: AddDealFormProps) => {
+const PAYMENT_TERMS = [
+  { value: "", label: "Select..." },
+  { value: "ADVANCE_100", label: "100% Advance" },
+  { value: "ADVANCE_50", label: "50% Advance" },
+  { value: "ON_DELIVERY", label: "On Delivery" },
+  { value: "NET_15", label: "Net 15" },
+  { value: "NET_30", label: "Net 30" },
+  { value: "NET_45", label: "Net 45" },
+  { value: "NET_60", label: "Net 60" },
+  { value: "CUSTOM", label: "Custom" },
+];
+
+const DELIVERABLE_TYPES = [
+  { value: "INSTAGRAM_REEL", label: "Instagram Reel" },
+  { value: "INSTAGRAM_POST", label: "Instagram Post" },
+  { value: "INSTAGRAM_STORY", label: "Instagram Story" },
+  { value: "YOUTUBE_VIDEO", label: "YouTube Video" },
+  { value: "YOUTUBE_SHORT", label: "YouTube Short" },
+  { value: "TIKTOK_VIDEO", label: "TikTok Video" },
+  { value: "LINKEDIN_POST", label: "LinkedIn Post" },
+  { value: "X_POST", label: "X Post" },
+  { value: "BLOG_POST", label: "Blog Post" },
+  { value: "NEWSLETTER", label: "Newsletter" },
+  { value: "LIVE_STREAM", label: "Live Stream" },
+  { value: "UGC_VIDEO", label: "UGC Video" },
+  { value: "OTHER", label: "Other" },
+];
+
+const PLATFORMS = ["Instagram", "YouTube", "TikTok", "LinkedIn", "X"];
+const CURRENCIES = ["INR", "USD"];
+
+const AddDealForm = ({ onSave, onCancel, editDeal }: AddDealFormProps) => {
+  const createDeal = useCreateDeal();
+  const updateDeal = useUpdateDeal(editDeal?.id ?? "");
+  const { data: brands, isLoading: brandsLoading } = useBrandsList();
+  const isEditMode = !!editDeal;
+
   const [formData, setFormData] = useState({
-    title: "",
-    amount: "",
-    currency: "INR",
-    brand: "",
-    contact: "",
-    paymentTerms: "Net 15",
-    paymentDueDate: "",
-    contractUrl: "",
-    notes: ""
+    title: editDeal?.title ?? "",
+    amount: editDeal?.amount ?? "",
+    currency: editDeal?.currency ?? "INR",
+    brandId: editDeal?.brandId ?? "",
+    contactId: editDeal?.contactId ?? "",
+    paymentTerms: editDeal?.paymentTerms ?? "",
+    paymentDueDate: editDeal?.paymentDueDate?.split("T")[0] ?? "",
+    contractUrl: editDeal?.contractUrl ?? "",
+    notes: editDeal?.notes ?? "",
   });
+  const [stage, setStage] = useState(editDeal?.stage ?? "LEAD");
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(editDeal?.platforms ?? []);
+  const [deliverables, setDeliverables] = useState<Deliverable[]>(
+    editDeal?.deliverables?.map((d) => ({ id: d.id, type: d.type, quantity: d.quantity, dueDate: d.dueDate?.split("T")[0] ?? "" })) ??
+    [{ id: "1", type: "INSTAGRAM_REEL", quantity: 1, dueDate: "" }]
+  );
+  const [formError, setFormError] = useState("");
 
-  const [stage, setStage] = useState("Pitched");
-  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(["Instagram"]);
-  const [deliverables, setDeliverables] = useState<Deliverable[]>([
-    { id: "1", type: "Instagram Reel", quantity: 1, dueDate: "" }
-  ]);
+  // Get contacts for selected brand
+  const selectedBrand = brands?.find((b) => b.id === formData.brandId);
+  const brandContacts = selectedBrand?.contacts ?? [];
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
-  };
-
-  const addDeliverable = () => {
-    setDeliverables([
-      ...deliverables,
-      { id: Date.now().toString(), type: "Instagram Reel", quantity: 1, dueDate: "" }
-    ]);
-  };
-
-  const removeDeliverable = (id: string) => {
-    if (deliverables.length > 1) {
-      setDeliverables(deliverables.filter(d => d.id !== id));
-    }
-  };
-
-  const updateDeliverable = (id: string, field: keyof Deliverable, value: any) => {
-    setDeliverables(prev => prev.map(d => d.id === id ? { ...d, [field]: value } : d));
+    setFormData((prev) => {
+      const updated = { ...prev, [name]: value };
+      // Reset contact when brand changes
+      if (name === "brandId") {
+        updated.contactId = "";
+      }
+      return updated;
+    });
+    setFormError("");
   };
 
   const togglePlatform = (platform: string) => {
-    setSelectedPlatforms(prev => 
-      prev.includes(platform) 
-        ? prev.filter(p => p !== platform) 
-        : [...prev, platform]
+    setSelectedPlatforms((prev) =>
+      prev.includes(platform) ? prev.filter((p) => p !== platform) : [...prev, platform]
     );
   };
 
-  const handleSave = () => {
-    onSave({
-      ...formData,
+  const addDeliverable = () => {
+    setDeliverables([...deliverables, { id: Date.now().toString(), type: "INSTAGRAM_REEL", quantity: 1, dueDate: "" }]);
+  };
+
+  const removeDeliverable = (id: string) => {
+    if (deliverables.length > 1) setDeliverables(deliverables.filter((d) => d.id !== id));
+  };
+
+  const updateDeliverable = (id: string, field: keyof Deliverable, value: string | number) => {
+    setDeliverables((prev) => prev.map((d) => (d.id === id ? { ...d, [field]: value } : d)));
+  };
+
+  const handleSave = async () => {
+    if (!formData.title.trim()) { setFormError("Deal title is required"); return; }
+    if (!isEditMode && !formData.brandId) { setFormError("Please select a brand"); return; }
+
+    setFormError("");
+
+    const dealData = {
+      title: formData.title.trim(),
       stage,
-      selectedPlatforms,
-      deliverables
-    });
+      amount: formData.amount ? parseFloat(formData.amount) : undefined,
+      currency: formData.currency,
+      paymentTerms: formData.paymentTerms || undefined,
+      paymentDueDate: formData.paymentDueDate || undefined,
+      platforms: selectedPlatforms,
+      contractUrl: formData.contractUrl.trim() || undefined,
+      notes: formData.notes.trim() || undefined,
+    };
+
+    if (isEditMode) {
+      updateDeal.mutate(
+        { ...dealData, contactId: formData.contactId || undefined },
+        {
+          onSuccess: () => onSave(),
+          onError: (err) => setFormError(getErrorMessage(err)),
+        }
+      );
+    } else {
+      createDeal.mutate(
+        {
+          ...dealData,
+          brandId: formData.brandId,
+          contactId: formData.contactId || undefined,
+          deliverables: deliverables
+            .filter((d) => d.type)
+            .map((d) => ({
+              type: d.type,
+              quantity: d.quantity || 1,
+              dueDate: d.dueDate || undefined,
+            })),
+        },
+        {
+          onSuccess: () => onSave(),
+          onError: (err) => setFormError(getErrorMessage(err)),
+        }
+      );
+    }
   };
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8 pb-20 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-5xl mx-auto w-full px-1 sm:px-0">
-      {/* Page Header */}
       <div className="space-y-1 px-1">
-        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Add New Deal</h1>
-        <p className="text-[11px] sm:text-sm text-gray-500 dark:text-gray-400 font-medium leading-relaxed">
-          Fill in the details below to track a new brand partnership.
-        </p>
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{isEditMode ? "Edit Deal" : "Add New Deal"}</h1>
+        <p className="text-[11px] sm:text-sm text-gray-500 dark:text-gray-400 font-medium">{isEditMode ? "Update the deal details below." : "Fill in the details below to track a new brand partnership."}</p>
       </div>
 
       <div className="space-y-6 sm:space-y-8">
-        {/* Deal Information Section */}
-        <div className="p-5 sm:p-10 rounded-2xl sm:rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6 sm:space-y-8 transition-all">
+        {/* Deal Information */}
+        <div className="p-5 sm:p-10 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6 sm:space-y-8">
           <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-gray-800">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-brand-500/10 text-brand-500">
-              <LuInfo size={18} className="sm:w-5 sm:h-5" strokeWidth={2.5} />
-            </div>
+            <div className="p-2 rounded-lg bg-brand-500/10 text-brand-500"><LuInfo size={18} strokeWidth={2.5} /></div>
             <h2 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Deal Information</h2>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
             <div className="md:col-span-2 lg:col-span-1 space-y-2">
-              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Deal Title</label>
-              <input 
-                type="text" 
-                name="title"
-                value={formData.title}
-                onChange={handleInputChange}
-                placeholder="e.g., Q4 Tech Review"
-                className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-              />
+              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Deal Title <span className="text-rose-500">*</span></label>
+              <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="e.g., Q4 Tech Review" className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" />
             </div>
             <div className="grid grid-cols-2 gap-4 lg:col-span-2">
               <div className="space-y-2">
-                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Amount</label>
-                <input 
-                  type="number" 
-                  name="amount"
-                  value={formData.amount}
-                  onChange={handleInputChange}
-                  placeholder="0.00"
-                  className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-                />
+                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Amount</label>
+                <input type="number" name="amount" value={formData.amount} onChange={handleInputChange} placeholder="0.00" className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Currency</label>
+                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Currency</label>
                 <div className="relative">
-                  <select 
-                    name="currency"
-                    value={formData.currency}
-                    onChange={handleInputChange}
-                    className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-                  >
-                    {CURRENCIES.map(c => <option key={c} value={c}>{c}</option>)}
+                  <select name="currency" value={formData.currency} onChange={handleInputChange} className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                    {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
                   </select>
-                  <LuChevronDown className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                  <LuChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                 </div>
               </div>
             </div>
-            <div className="md:col-span-1 lg:col-span-1 space-y-2">
-              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Brand</label>
+            <div className="space-y-2">
+              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Brand <span className="text-rose-500">*</span></label>
               <div className="relative">
-                <select 
-                  name="brand"
-                  value={formData.brand}
-                  onChange={handleInputChange}
-                  className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-                >
-                  <option value="">Select a brand...</option>
-                  <option value="TechNova">TechNova</option>
-                  <option value="FitLife">FitLife</option>
+                <select name="brandId" value={formData.brandId} onChange={handleInputChange} disabled={brandsLoading} className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all disabled:opacity-50">
+                  <option value="">{brandsLoading ? "Loading brands..." : brands?.length ? "Select a brand..." : "No brands — create one first"}</option>
+                  {brands?.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
                 </select>
-                <LuChevronDown className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                <LuChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
               </div>
             </div>
-            <div className="md:col-span-1 lg:col-span-2 space-y-2">
-              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Primary Contact</label>
+            <div className="lg:col-span-2 space-y-2">
+              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Contact</label>
               <div className="relative">
-                <select 
-                  name="contact"
-                  value={formData.contact}
-                  onChange={handleInputChange}
-                  className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-                >
+                <select name="contactId" value={formData.contactId} onChange={handleInputChange} className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
                   <option value="">Select a contact...</option>
-                  <option value="John Doe">John Doe</option>
-                  <option value="Sarah Smith">Sarah Smith</option>
+                  {brandContacts.map((c) => <option key={c.id} value={c.id}>{c.name}{c.role ? ` (${c.role})` : ""}</option>)}
                 </select>
-                <LuChevronDown className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                <LuChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
               </div>
             </div>
           </div>
         </div>
 
-        {/* Timeline & Terms Section */}
-        <div className="p-5 sm:p-10 rounded-2xl sm:rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6 sm:space-y-8 transition-all">
+        {/* Timeline & Terms */}
+        <div className="p-5 sm:p-10 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6 sm:space-y-8">
           <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-gray-800">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-indigo-500/10 text-indigo-500">
-              <LuClock size={18} className="sm:w-5 sm:h-5" strokeWidth={2.5} />
-            </div>
+            <div className="p-2 rounded-lg bg-indigo-500/10 text-indigo-500"><LuClock size={18} strokeWidth={2.5} /></div>
             <h2 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Timeline & Terms</h2>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-10">
-            {/* Stage Selector */}
             <div className="space-y-4">
-              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Current Stage</label>
-              <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-2 gap-2">
-                {STAGES.map(s => (
-                  <button 
-                    key={s}
-                    onClick={() => setStage(s)}
-                    className={`px-3 sm:px-4 py-3 sm:py-3.5 rounded-xl text-xs font-bold transition-all border ${
-                      stage === s 
-                      ? "bg-brand-500/10 border-brand-500 text-brand-600 dark:text-brand-400 shadow-[0_0_15px_rgba(139,92,246,0.15)]" 
-                      : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:border-gray-300 dark:hover:border-gray-700"
-                    }`}
-                  >
-                    {s}
+              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Current Stage</label>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                {DEAL_STAGES.map((s) => (
+                  <button key={s.value} type="button" onClick={() => setStage(s.value)} className={`px-3 py-3 rounded-xl text-xs font-bold transition-all border ${stage === s.value ? "bg-brand-500/10 border-brand-500 text-brand-600 dark:text-brand-400" : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:border-gray-300"}`}>
+                    {s.label}
                   </button>
                 ))}
               </div>
             </div>
 
-            {/* Payment & Date */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6 lg:gap-4">
+            <div className="space-y-6">
               <div className="space-y-2">
-                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Payment Terms</label>
+                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Payment Terms</label>
                 <div className="relative">
-                  <select 
-                    name="paymentTerms"
-                    value={formData.paymentTerms}
-                    onChange={handleInputChange}
-                    className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3.5 sm:py-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
-                  >
-                    <option>Net 15</option>
-                    <option>Net 30</option>
-                    <option>Advanced (100%)</option>
-                    <option>50% Advance, 50% Post</option>
+                  <select name="paymentTerms" value={formData.paymentTerms} onChange={handleInputChange} className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
+                    {PAYMENT_TERMS.map((pt) => <option key={pt.value} value={pt.value}>{pt.label}</option>)}
                   </select>
-                  <LuChevronDown className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
+                  <LuChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                 </div>
               </div>
-
-              <div className="space-y-2 pt-2">
-                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Payment Due Date</label>
-                <div className="relative group/input">
-                  <LuCalendar size={18} className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/input:text-brand-500 transition-colors pointer-events-none" strokeWidth={2.5} />
-                  <input 
-                    type="date" 
-                    name="paymentDueDate"
-                    value={formData.paymentDueDate}
-                    onChange={handleInputChange}
-                    onClick={(e) => (e.currentTarget as any).showPicker?.()}
-                    className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl pl-11 sm:pl-12 pr-4 sm:pr-5 py-3.5 sm:py-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer"
-                  />
+              <div className="space-y-2">
+                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Payment Due Date</label>
+                <div className="relative">
+                  <LuCalendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
+                  <input type="date" name="paymentDueDate" value={formData.paymentDueDate} onChange={handleInputChange} onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()} className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer" />
                 </div>
               </div>
             </div>
-            
-            {/* Platforms */}
-            <div className="lg:col-span-2 space-y-4 pt-2">
-              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Platforms</label>
-              <div className="flex flex-wrap gap-2 sm:gap-3">
-                {PLATFORMS.map(p => (
-                  <button 
-                    key={p}
-                    onClick={() => togglePlatform(p)}
-                    className={`px-4 sm:px-5 py-2 sm:py-2.5 rounded-full text-[10px] sm:text-xs font-bold border transition-all ${
-                      selectedPlatforms.includes(p)
-                      ? "bg-brand-500/10 border-brand-500/50 text-brand-600 dark:text-brand-400"
-                      : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-800 text-gray-500"
-                    }`}
-                  >
+
+            <div className="lg:col-span-2 space-y-4">
+              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Platforms</label>
+              <div className="flex flex-wrap gap-2">
+                {PLATFORMS.map((p) => (
+                  <button key={p} type="button" onClick={() => togglePlatform(p)} className={`px-4 py-2 rounded-full text-xs font-bold border transition-all ${selectedPlatforms.includes(p) ? "bg-brand-500/10 border-brand-500/50 text-brand-600 dark:text-brand-400" : "bg-gray-50 dark:bg-gray-800/30 border-gray-200 dark:border-gray-800 text-gray-500"}`}>
                     {p}
                   </button>
                 ))}
@@ -270,138 +306,81 @@ const AddDealForm = ({ onSave, onCancel }: AddDealFormProps) => {
           </div>
         </div>
 
-        {/* Deliverables Section */}
-        <div className="p-5 sm:p-10 rounded-2xl sm:rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6 sm:space-y-8 transition-all">
-          <div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-gray-800 gap-4">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <div className="p-1.5 sm:p-2 rounded-lg bg-emerald-500/10 text-emerald-500">
-                <LuLibrary size={18} className="sm:w-5 sm:h-5" strokeWidth={2.5} />
-              </div>
+        {/* Deliverables */}
+        <div className="p-5 sm:p-10 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6 sm:space-y-8">
+          <div className="flex items-center justify-between pb-4 border-b border-gray-50 dark:border-gray-800">
+            <div className="flex items-center gap-3">
+              <div className="p-2 rounded-lg bg-emerald-500/10 text-emerald-500"><LuLibrary size={18} strokeWidth={2.5} /></div>
               <h2 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Deliverables</h2>
             </div>
-            <button 
-              onClick={addDeliverable}
-              className="flex items-center gap-1.5 sm:gap-2 text-[9px] sm:text-xs font-bold text-brand-500 hover:text-brand-600 transition-colors uppercase tracking-widest whitespace-nowrap"
-            >
-              <div className="p-1 rounded-md bg-brand-500/10">
-                <LuPlus size={12} className="sm:hidden" strokeWidth={3} />
-                <LuPlus size={14} className="hidden sm:block" strokeWidth={3} />
-              </div>
-              Add More
+            <button type="button" onClick={addDeliverable} className="flex items-center gap-2 text-xs font-bold text-brand-500 hover:text-brand-600 uppercase tracking-widest">
+              <LuPlus size={14} strokeWidth={3} /> Add More
             </button>
           </div>
 
           <div className="space-y-4">
             {deliverables.map((d) => (
-              <div key={d.id} className="flex flex-col md:grid md:grid-cols-12 gap-4 items-stretch md:items-end p-4 sm:p-5 rounded-xl sm:rounded-2xl bg-gray-50 dark:bg-gray-800/20 border border-gray-100 dark:border-gray-800/50 transition-all">
-                <div className="md:col-span-5 space-y-1.5 sm:space-y-2">
-                  <label className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tight ml-1">Type</label>
+              <div key={d.id} className="flex flex-col md:grid md:grid-cols-12 gap-4 items-stretch md:items-end p-4 rounded-xl bg-gray-50 dark:bg-gray-800/20 border border-gray-100 dark:border-gray-800/50">
+                <div className="md:col-span-5 space-y-2">
+                  <label className="text-[9px] font-bold text-gray-400 uppercase tracking-tight ml-1">Type</label>
                   <div className="relative">
-                    <select 
-                      value={d.type}
-                      onChange={(e) => updateDeliverable(d.id, 'type', e.target.value)}
-                      className="w-full appearance-none bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all"
-                    >
-                      <option>Instagram Reel</option>
-                      <option>YouTube Video</option>
-                      <option>TikTok Video</option>
-                      <option>X Post</option>
-                      <option>Other</option>
+                    <select value={d.type} onChange={(e) => updateDeliverable(d.id, "type", e.target.value)} className="w-full appearance-none bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all">
+                      {DELIVERABLE_TYPES.map((dt) => <option key={dt.value} value={dt.value}>{dt.label}</option>)}
                     </select>
-                    <LuChevronDown className="absolute right-3 sm:right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                    <LuChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
                   </div>
                 </div>
                 <div className="flex gap-4 md:col-span-6">
-                  <div className="flex-1 space-y-1.5 sm:space-y-2">
-                    <label className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tight ml-1">Quantity</label>
-                    <input 
-                      type="number" 
-                      value={d.quantity}
-                      onChange={(e) => updateDeliverable(d.id, 'quantity', parseInt(e.target.value) || 0)}
-                      className="w-full bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg sm:rounded-xl px-3 sm:px-4 py-2.5 sm:py-3 text-sm font-bold text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all text-center"
-                    />
+                  <div className="flex-1 space-y-2">
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-tight ml-1">Qty</label>
+                    <input type="number" value={d.quantity} onChange={(e) => updateDeliverable(d.id, "quantity", parseInt(e.target.value) || 1)} className="w-full bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm font-bold text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all text-center" />
                   </div>
-                  <div className="flex-[2] space-y-1.5 sm:space-y-2">
-                    <label className="text-[9px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-tight ml-1">Due Date</label>
-                    <div className="relative">
-                      <LuCalendar size={14} className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                      <input 
-                        type="date" 
-                        value={d.dueDate}
-                        onChange={(e) => updateDeliverable(d.id, 'dueDate', e.target.value)}
-                        onClick={(e) => (e.currentTarget as any).showPicker?.()}
-                        className="w-full bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-lg sm:rounded-xl pl-9 sm:pl-10 pr-3 sm:pr-4 py-2.5 sm:py-3 text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all cursor-pointer"
-                      />
-                    </div>
+                  <div className="flex-[2] space-y-2">
+                    <label className="text-[9px] font-bold text-gray-400 uppercase tracking-tight ml-1">Due Date</label>
+                    <input type="date" value={d.dueDate} onChange={(e) => updateDeliverable(d.id, "dueDate", e.target.value)} onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()} className="w-full bg-white dark:bg-gray-900/50 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all cursor-pointer" />
                   </div>
                 </div>
-                <div className="md:col-span-1 flex justify-end items-center pt-2 md:pb-1">
-                  <button 
-                    onClick={() => removeDeliverable(d.id)}
-                    className={`flex items-center justify-center gap-2 w-full md:w-auto p-2.5 sm:p-3 rounded-lg sm:rounded-xl border border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all ${deliverables.length === 1 ? "hidden" : ""}`}
-                  >
-                    <LuTrash2 size={16} strokeWidth={2.5} />
-                    <span className="md:hidden text-[10px] font-bold uppercase tracking-widest">Remove Deliverable</span>
-                  </button>
+                <div className="md:col-span-1 flex justify-end items-center">
+                  {deliverables.length > 1 && (
+                    <button type="button" onClick={() => removeDeliverable(d.id)} className="p-2.5 rounded-xl border border-rose-500/10 text-rose-500 hover:bg-rose-500 hover:text-white transition-all">
+                      <LuTrash2 size={16} strokeWidth={2.5} />
+                    </button>
+                  )}
                 </div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Additional Info Section */}
-        <div className="p-5 sm:p-10 rounded-2xl sm:rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6 sm:space-y-8 transition-all">
+        {/* Additional Info */}
+        <div className="p-5 sm:p-10 rounded-2xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm space-y-6 sm:space-y-8">
           <div className="flex items-center gap-3 pb-4 border-b border-gray-50 dark:border-gray-800">
-            <div className="p-1.5 sm:p-2 rounded-lg bg-blue-500/10 text-blue-500">
-              <LuFileText size={18} className="sm:w-5 sm:h-5" strokeWidth={2.5} />
-            </div>
+            <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500"><LuFileText size={18} strokeWidth={2.5} /></div>
             <h2 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Additional Info</h2>
           </div>
-
-          <div className="space-y-5 sm:space-y-6">
+          <div className="space-y-5">
             <div className="space-y-2">
-              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Contract URL</label>
-              <div className="relative group/input">
-                <LuLink size={18} className="absolute left-4 sm:left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within/input:text-brand-500 transition-colors" strokeWidth={2.5} />
-                <input 
-                  type="text" 
-                  name="contractUrl"
-                  value={formData.contractUrl}
-                  onChange={handleInputChange}
-                  placeholder="https://drive.google.com/..."
-                  className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl pl-11 sm:pl-12 pr-4 sm:pr-5 py-3.5 sm:py-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all font-mono text-[11px] sm:text-sm"
-                />
+              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Contract URL</label>
+              <div className="relative">
+                <LuLink size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input type="text" name="contractUrl" value={formData.contractUrl} onChange={handleInputChange} placeholder="https://drive.google.com/..." className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" />
               </div>
             </div>
-
             <div className="space-y-2">
-              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest pl-1">Internal Notes</label>
-              <textarea 
-                rows={4}
-                name="notes"
-                value={formData.notes}
-                onChange={handleInputChange}
-                placeholder="Add guidelines or key points..."
-                className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-2xl sm:rounded-3xl px-4 sm:px-6 py-4 sm:py-5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-none shadow-inner"
-              />
+              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Internal Notes</label>
+              <textarea rows={4} name="notes" value={formData.notes} onChange={handleInputChange} placeholder="Add guidelines or key points..." className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-none" />
             </div>
           </div>
         </div>
 
-        {/* Footer Actions */}
+        {/* Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4 pt-4 pb-10">
-          <button 
-            onClick={onCancel}
-            className="w-full sm:w-auto px-10 py-3.5 rounded-xl sm:rounded-2xl text-sm font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all uppercase tracking-widest active:scale-95"
-          >
+          {formError && <p className="text-red-400 text-xs font-medium mr-auto">{formError}</p>}
+          <button type="button" onClick={onCancel} className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all uppercase tracking-widest">
             Cancel
           </button>
-          <button 
-            onClick={handleSave}
-            className="w-full sm:w-auto px-10 py-3.5 rounded-xl sm:rounded-2xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-xl shadow-brand-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-3 uppercase tracking-widest"
-          >
-            <LuSave size={18} strokeWidth={2.5} />
-            Save Deal
+          <button type="button" onClick={handleSave} disabled={createDeal.isPending || updateDeal.isPending} className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-xl shadow-brand-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-3 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">
+            {(createDeal.isPending || updateDeal.isPending) ? <><LuLoader size={18} className="animate-spin" /> Saving...</> : <><LuSave size={18} strokeWidth={2.5} /> {isEditMode ? "Update Deal" : "Save Deal"}</>}
           </button>
         </div>
       </div>

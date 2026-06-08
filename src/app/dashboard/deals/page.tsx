@@ -1,102 +1,127 @@
 "use client";
 
 import { useState } from "react";
-import { LuPlus } from "react-icons/lu";
+import { LuPlus, LuChevronDown, LuLoader } from "react-icons/lu";
 import { DealCard, AddDealForm } from "@/components/dashboard/deals";
-import type { DealCardProps } from "@/components/dashboard/deals/kanban";
-import DealsFilter from "@/components/dashboard/deals/deals-filter";
+import type { DealStatus, Platform } from "@/components/dashboard/deals/kanban";
+import { useDealsList } from "@/hooks/useDeals";
+import type { Deal } from "@/services/deal.service";
 
-const FILTER_OPTIONS = [
-  { id: "all", label: "All" },
-  { id: "active", label: "Active" },
-  { id: "overdue", label: "Overdue", hasDot: true, dotColor: "bg-warning-500" },
-  { id: "paid", label: "Paid" },
-  { id: "pitched", label: "Pitched" },
+const DEAL_STAGES = [
+  { value: "all", label: "All Stages" },
+  { value: "LEAD", label: "Lead" },
+  { value: "OUTREACH", label: "Outreach" },
+  { value: "NEGOTIATION", label: "Negotiation" },
+  { value: "PROPOSAL_SENT", label: "Proposal Sent" },
+  { value: "CONTRACT_SENT", label: "Contract Sent" },
+  { value: "APPROVED", label: "Approved" },
+  { value: "IN_PROGRESS", label: "In Progress" },
+  { value: "COMPLETED", label: "Completed" },
+  { value: "LOST", label: "Lost" },
+  { value: "CANCELLED", label: "Cancelled" },
 ];
 
-const ALL_DEALS: DealCardProps[] = [
-  {
-    id: 1,
-    title: "TechNova Solutions",
-    subtitle: "Q3 Campaign Pitch",
-    amount: "₹1,50,000",
-    status: "pitched" as const,
-    statusLabel: "Pending",
-    platforms: ["youtube" as const],
-    date: "Oct 15",
-    assigneeAvatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&auto=format&fit=crop",
-  },
-  {
-    id: 2,
-    title: "GlowBeats Audio",
-    subtitle: "Product Review",
-    amount: "₹75,000",
-    status: "pitched" as const,
-    statusLabel: "Pending",
-    platforms: ["instagram" as const],
-    date: "Oct 20",
-    assigneeAvatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=100&h=100&auto=format&fit=crop",
-  },
-  {
-    id: 3,
-    title: "StyleMantra",
-    subtitle: "Festive Collection",
-    amount: "₹2,00,000",
-    status: "active" as const,
-    statusLabel: "Active",
-    platforms: ["instagram" as const, "tiktok" as const],
-    deliverables: { current: 1, total: 3 },
-    date: "Oct 12",
-    assigneeAvatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?q=80&w=100&h=100&auto=format&fit=crop",
-  },
-  {
-    id: 4,
-    title: "UrbanEats App",
-    subtitle: "App Launch Promo",
-    amount: "₹85,000",
-    status: "overdue" as const,
-    statusLabel: "Overdue",
-    platforms: ["youtube" as const],
-    deliverables: { current: 0, total: 1 },
-    date: "Oct 05",
-    assigneeAvatar: "https://images.unsplash.com/photo-1628157588553-5eeea00af15c?q=80&w=100&h=100&auto=format&fit=crop",
-  },
-  {
-    id: 5,
-    title: "FitLife Supplements",
-    subtitle: "Monthly Retainer",
-    amount: "₹1,20,000",
-    status: "in-review" as const,
-    statusLabel: "In Review",
-    platforms: ["instagram" as const],
-    deliverables: { current: 2, total: 2 },
-    date: "Inv Sent",
-    assigneeAvatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?q=80&w=100&h=100&auto=format&fit=crop",
-  },
-];
+// Map backend stage to DealCard status
+function mapStageToStatus(stage: string): DealStatus {
+  switch (stage) {
+    case "LEAD":
+    case "OUTREACH":
+    case "PROPOSAL_SENT":
+      return "pitched";
+    case "NEGOTIATION":
+    case "CONTRACT_SENT":
+    case "APPROVED":
+    case "IN_PROGRESS":
+      return "active";
+    case "COMPLETED":
+      return "delivered";
+    case "LOST":
+    case "CANCELLED":
+      return "overdue";
+    default:
+      return "pitched";
+  }
+}
+
+function mapStageToLabel(stage: string): string {
+  const found = DEAL_STAGES.find((s) => s.value === stage);
+  return found?.label ?? stage;
+}
+
+// Map platforms from backend strings to DealCard Platform type
+function mapPlatforms(platforms: string[]): Platform[] {
+  const map: Record<string, Platform> = {
+    Instagram: "instagram",
+    YouTube: "youtube",
+    TikTok: "tiktok",
+    instagram: "instagram",
+    youtube: "youtube",
+    tiktok: "tiktok",
+  };
+  return platforms.map((p) => map[p]).filter(Boolean) as Platform[];
+}
+
+function formatCurrency(amount: string | null, currency: string): string {
+  if (!amount || parseFloat(amount) === 0) return "—";
+  const num = parseFloat(amount);
+  const symbol = currency === "USD" ? "$" : "₹";
+  return `${symbol}${num.toLocaleString("en-IN")}`;
+}
+
+function formatDate(dateStr: string): string {
+  const date = new Date(dateStr);
+  return date.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
+}
+
+function mapDealToCard(deal: Deal) {
+  const completedDeliverables = deal.deliverables.filter((d) => d.isCompleted).length;
+  const totalDeliverables = deal.deliverables.length;
+
+  return {
+    id: deal.id,
+    title: deal.brand.name,
+    subtitle: deal.title,
+    amount: formatCurrency(deal.amount, deal.currency),
+    status: mapStageToStatus(deal.stage),
+    statusLabel: mapStageToLabel(deal.stage),
+    platforms: mapPlatforms(deal.platforms),
+    deliverables: totalDeliverables > 0 ? { current: completedDeliverables, total: totalDeliverables } : undefined,
+    date: formatDate(deal.createdAt),
+    assigneeName: deal.contact?.name ?? deal.brand.name,
+  };
+}
 
 const DealsPage = () => {
   const [activeFilter, setActiveFilter] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
+  const [editingDealId, setEditingDealId] = useState<string | null>(null);
 
-  const filteredDeals = ALL_DEALS.filter(deal => {
-    if (activeFilter === "all") return true;
-    if (activeFilter === "overdue") return deal.status === "overdue";
-    if (activeFilter === "active") return deal.status === "active";
-    if (activeFilter === "pitched") return deal.status === "pitched";
-    if (activeFilter === "paid") return deal.status === "delivered";
-    return true;
-  });
+  const { data: deals, isLoading, error } = useDealsList(activeFilter);
 
-  if (showAddForm) {
+  // Find the deal being edited
+  const editingDeal = editingDealId ? deals?.find((d) => d.id === editingDealId) : null;
+
+  if (showAddForm || editingDeal) {
     return (
       <div className="p-4 sm:p-8 min-h-screen bg-white dark:bg-gray-900 transition-colors">
         <AddDealForm 
-          onSave={(data) => {
-            console.log("Saving deal:", data);
-            setShowAddForm(false);
-          }} 
-          onCancel={() => setShowAddForm(false)} 
+          onSave={() => { setShowAddForm(false); setEditingDealId(null); }} 
+          onCancel={() => { setShowAddForm(false); setEditingDealId(null); }}
+          editDeal={editingDeal ? {
+            id: editingDeal.id,
+            title: editingDeal.title,
+            brandId: editingDeal.brandId,
+            contactId: editingDeal.contactId,
+            stage: editingDeal.stage,
+            amount: editingDeal.amount,
+            currency: editingDeal.currency,
+            paymentTerms: editingDeal.paymentTerms,
+            paymentDueDate: editingDeal.paymentDueDate,
+            platforms: editingDeal.platforms,
+            contractUrl: editingDeal.contractUrl,
+            notes: editingDeal.notes,
+            deliverables: editingDeal.deliverables.map((d) => ({ id: d.id, type: d.type, quantity: d.quantity, dueDate: d.dueDate })),
+          } : undefined}
         />
       </div>
     );
@@ -109,26 +134,57 @@ const DealsPage = () => {
           onClick={() => setShowAddForm(true)}
           className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-gray-900 dark:bg-white px-6 py-2.5 text-xs font-bold text-white dark:text-gray-900 shadow-xl transition-all hover:opacity-90 active:scale-95 uppercase tracking-widest"
         >
-          <LuPlus className="h-4 w-4 stroke-[3]" />
+          <LuPlus className="h-4 w-4 stroke-3" />
           Add New Deal
         </button>
 
-        <DealsFilter
-          options={FILTER_OPTIONS}
-          activeFilter={activeFilter}
-          onFilterChange={setActiveFilter}
-        />
+        {/* Stage Filter Dropdown */}
+        <div className="relative w-full sm:w-auto">
+          <select
+            value={activeFilter}
+            onChange={(e) => setActiveFilter(e.target.value)}
+            className="w-full sm:w-52 appearance-none bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-2.5 pr-10 text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer"
+          >
+            {DEAL_STAGES.map((stage) => (
+              <option key={stage.value} value={stage.value}>{stage.label}</option>
+            ))}
+          </select>
+          <LuChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
-        {filteredDeals.map((deal) => (
-          <DealCard key={deal.id} {...deal} />
-        ))}
-      </div>
+      {/* Loading */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-20">
+          <LuLoader className="h-8 w-8 animate-spin text-gray-400" />
+        </div>
+      )}
 
-      {filteredDeals.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 text-gray-500">
-          <p className="text-lg font-medium">No deals found for this filter</p>
+      {/* Error */}
+      {error && (
+        <div className="flex items-center justify-center py-20">
+          <p className="text-sm text-red-400">Failed to load deals. Please try again.</p>
+        </div>
+      )}
+
+      {/* Deals Grid */}
+      {!isLoading && !error && deals && deals.length > 0 && (
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-6 pb-20">
+          {deals.map((deal) => (
+            <DealCard key={deal.id} {...mapDealToCard(deal)} onEdit={(id) => setEditingDealId(id as string)} />
+          ))}
+        </div>
+      )}
+
+      {/* Empty State */}
+      {!isLoading && !error && deals && deals.length === 0 && (
+        <div className="flex flex-col items-center justify-center py-20 gap-4">
+          <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+            <LuPlus className="h-6 w-6 text-gray-400" />
+          </div>
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            {activeFilter === "all" ? "No deals yet. Create your first deal." : `No deals with "${DEAL_STAGES.find(s => s.value === activeFilter)?.label}" stage.`}
+          </p>
         </div>
       )}
     </div>

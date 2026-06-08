@@ -2,12 +2,14 @@
 "use client";
 
 import React from "react";
+import Link from "next/link";
 import { 
   LuInstagram, 
   LuYoutube, 
   LuMusic2, 
   LuCalendar, 
   LuTriangleAlert,
+  LuPencil,
 } from "react-icons/lu";
 import { IconType } from "react-icons";
 
@@ -26,7 +28,9 @@ export type DealCardProps = {
   deliverables?: { current: number; total: number };
   date: string;
   assigneeAvatar?: string;
+  assigneeName?: string;
   className?: string;
+  onEdit?: (id: string | number) => void;
 };
 
 const PLATFORM_ICONS: Record<Platform, React.ElementType> = {
@@ -70,6 +74,7 @@ const STATUS_CONFIG: Record<DealStatus, { accent: string; badge: string; dot: st
 };
 
 const DealCard = ({
+  id,
   title,
   subtitle,
   amount,
@@ -79,12 +84,15 @@ const DealCard = ({
   deliverables,
   date,
   assigneeAvatar,
+  assigneeName,
   className = "",
+  onEdit,
 }: DealCardProps) => {
   const config = STATUS_CONFIG[status];
 
   return (
-    <div
+    <Link
+      href={`/dashboard/deals/${id}`}
       className={`
         group relative flex flex-col gap-5 p-6 rounded-2xl
         bg-white dark:bg-gray-900
@@ -107,6 +115,15 @@ const DealCard = ({
           <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">{subtitle}</p>
         </div>
         <div className="flex items-center gap-2">
+          {onEdit && (
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); onEdit(id); }}
+              className="p-1.5 rounded-lg text-gray-400 hover:text-brand-500 hover:bg-brand-500/10 transition-all opacity-0 group-hover:opacity-100"
+              title="Edit deal"
+            >
+              <LuPencil size={14} />
+            </button>
+          )}
           {status === "overdue" && (
             <div className="p-1.5 bg-rose-500/10 rounded-full">
               <LuTriangleAlert className="text-rose-500" size={16} />
@@ -171,13 +188,13 @@ const DealCard = ({
               <img src={assigneeAvatar} alt="Assignee" className="w-full h-full object-cover grayscale-[0.2] group-hover:grayscale-0 transition-all" />
             ) : (
               <div className="w-full h-full flex items-center justify-center text-[10px] font-bold text-gray-400 dark:text-gray-500">
-                U
+                {assigneeName?.charAt(0)?.toUpperCase() || "?"}
               </div>
             )}
           </div>
         </div>
       </div>
-    </div>
+    </Link>
   );
 };
 
