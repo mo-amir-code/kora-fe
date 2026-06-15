@@ -2,6 +2,7 @@
 import React from "react";
 import Image from "next/image";
 import { GuestGuard } from "@/components/guards";
+import { APP_NAME } from "@/lib/constants";
 
 interface AuthLayoutProps {
   children: React.ReactNode;
@@ -26,13 +27,13 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, pageTitle }) => {
             <div className="flex items-center gap-2.5 sm:gap-3 mb-5 sm:mb-10">
               <Image
                 src="/images/logo/logo-icon.svg"
-                alt="Kora"
+                alt={APP_NAME}
                 width={28}
                 height={28}
                 className="sm:w-8 sm:h-8"
               />
               <span className="text-white text-lg sm:text-xl font-semibold tracking-tight">
-                Kora
+                {APP_NAME}
               </span>
             </div>
 
@@ -75,7 +76,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, pageTitle }) => {
               <div className="hidden sm:block bg-[#151c2c] border border-[#1e293b] rounded-xl p-4 sm:p-5">
                 <p className="text-gray-400 text-xs sm:text-sm italic leading-relaxed mb-3 sm:mb-4">
                   &ldquo;I recovered ₹40,000 in overdue payments within my first
-                  week using Kora. It completely professionalized how I interact
+                  week using {APP_NAME}. It completely professionalized how I interact
                   with agencies.&rdquo;
                 </p>
                 <div className="flex items-center gap-3">
@@ -103,13 +104,13 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, pageTitle }) => {
             <div className="flex lg:hidden items-center gap-2.5 mb-8">
               <Image
                 src="/images/logo/logo-icon.svg"
-                alt="Kora"
+                alt={APP_NAME}
                 width={28}
                 height={28}
                 className="w-8 h-8"
               />
               <span className="text-white text-xl font-semibold tracking-tight">
-                Kora
+                {APP_NAME}
               </span>
             </div>
             {children}

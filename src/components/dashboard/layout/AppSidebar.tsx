@@ -8,16 +8,25 @@ import {
   ChevronDownIcon
 } from "@/icons";
 import { NavItem } from "./types";
-import { LuCalendar, LuDollarSign, LuHandshake, LuLayers, LuLayoutGrid, LuNotepadText, LuTags, LuWallet } from "react-icons/lu";
-
-
+import { 
+  LuCalendar, 
+  LuCircleHelp, 
+  LuDollarSign, 
+  LuHandshake, 
+  LuLayers, 
+  LuLayoutGrid, 
+  LuNotepadText, 
+  LuSettings, 
+  LuTags, 
+  LuWallet 
+} from "react-icons/lu";
+import { APP_NAME } from "@/lib/constants";
 
 const navItems: NavItem[] = [
   {
     icon: <LuLayoutGrid size={20} />,
     name: "Dashboard",
     path: "/dashboard",
-    // subItems: [{ name: "Ecommerce", path: "/", pro: false }],
   },
   {
     icon: <LuHandshake size={20} />,
@@ -56,9 +65,58 @@ const navItems: NavItem[] = [
   },
 ];
 
+const bottomNavItems: NavItem[] = [
+  {
+    icon: <LuSettings size={20} />,
+    name: "Settings",
+    path: "/dashboard/settings",
+  },
+  {
+    icon: <LuCircleHelp size={20} />,
+    name: "Help",
+    path: "/dashboard/settings/support",
+  },
+];
+
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+
+  const [openSubmenu, setOpenSubmenu] = useState<{
+    type: "main" | "others";
+    index: number;
+  } | null>(null);
+  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
+    {}
+  );
+  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
+
+  const isActive = useCallback((path: string) => path === pathname, [pathname]);
+
+  useEffect(() => {
+    if (openSubmenu !== null) {
+      const key = `${openSubmenu.type}-${openSubmenu.index}`;
+      if (subMenuRefs.current[key]) {
+        setSubMenuHeight((prevHeights) => ({
+          ...prevHeights,
+          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
+        }));
+      }
+    }
+  }, [openSubmenu]);
+
+  const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
+    setOpenSubmenu((prevOpenSubmenu) => {
+      if (
+        prevOpenSubmenu &&
+        prevOpenSubmenu.type === menuType &&
+        prevOpenSubmenu.index === index
+      ) {
+        return null;
+      }
+      return { type: menuType, index };
+    });
+  };
 
   const renderMenuItems = (
     navItems: NavItem[],
@@ -177,44 +235,6 @@ const AppSidebar: React.FC = () => {
     </ul>
   );
 
-  const [openSubmenu, setOpenSubmenu] = useState<{
-    type: "main" | "others";
-    index: number;
-  } | null>(null);
-  const [subMenuHeight, setSubMenuHeight] = useState<Record<string, number>>(
-    {}
-  );
-  const subMenuRefs = useRef<Record<string, HTMLDivElement | null>>({});
-
-  // const isActive = (path: string) => path === pathname;
-  const isActive = useCallback((path: string) => path === pathname, [pathname]);
-
-  useEffect(() => {
-    // Set the height of the submenu items when the submenu is opened
-    if (openSubmenu !== null) {
-      const key = `${openSubmenu.type}-${openSubmenu.index}`;
-      if (subMenuRefs.current[key]) {
-        setSubMenuHeight((prevHeights) => ({
-          ...prevHeights,
-          [key]: subMenuRefs.current[key]?.scrollHeight || 0,
-        }));
-      }
-    }
-  }, [openSubmenu]);
-
-  const handleSubmenuToggle = (index: number, menuType: "main" | "others") => {
-    setOpenSubmenu((prevOpenSubmenu) => {
-      if (
-        prevOpenSubmenu &&
-        prevOpenSubmenu.type === menuType &&
-        prevOpenSubmenu.index === index
-      ) {
-        return null;
-      }
-      return { type: menuType, index };
-    });
-  };
-
   return (
     <aside
       className={`fixed mt-16 flex flex-col lg:mt-0 top-0 px-5 left-0 bg-white dark:bg-gray-900 dark:border-gray-800 text-gray-900 h-screen transition-all duration-300 ease-in-out z-50 border-r border-gray-200 
@@ -239,21 +259,21 @@ const AppSidebar: React.FC = () => {
               <Image
                 className="dark:hidden"
                 src="/brand/kora-icon-with-text-transparent.png"
-                alt="Logo"
+                alt={`${APP_NAME} Logo`}
                 width={150}
                 height={40}
               />
               <Image
                 className="hidden dark:block"
                 src="/brand/kora-icon-with-text.png"
-                alt="Logo"
+                alt={`${APP_NAME} Logo`}
                 width={150}
                 height={40}
               />
             </>
           ) : (
             <Image
-              src="/images/logo/logo-icon.svg"
+              src="/brand/kora-icon-transparent.svg"
               alt="Logo"
               width={32}
               height={32}
@@ -261,13 +281,16 @@ const AppSidebar: React.FC = () => {
           )}
         </Link>
       </div>
-      <div className="flex flex-col overflow-y-auto duration-300 ease-linear no-scrollbar">
-        <nav className="mb-6">
-          <div className="flex flex-col gap-4">
+      <div className="flex flex-col flex-1 overflow-y-auto duration-300 ease-linear no-scrollbar">
+        <nav className="mb-6 flex flex-col flex-1">
+          <div className="flex flex-col gap-4 flex-1">
             <div>
               {renderMenuItems(navItems, "main")}
             </div>
-
+            
+            <div className="mt-auto pt-10 pb-6 border-t border-gray-200 dark:border-gray-800">
+              {renderMenuItems(bottomNavItems, "others")}
+            </div>
           </div>
         </nav>
       </div>
