@@ -1,9 +1,11 @@
 "use client";
 
-import React from "react";
-import { LuClock, LuEllipsisVertical, LuToggleLeft, LuToggleRight } from "react-icons/lu";
+import React, { useState } from "react";
+import { LuClock, LuEllipsisVertical, LuToggleLeft, LuToggleRight, LuPencil, LuTrash2 } from "react-icons/lu";
+import { Dropdown, DropdownItem } from "@/components/ui/dropdown";
 
 export interface ReminderRuleCardProps {
+  id: number;
   title: string;
   category: string;
   description: string;
@@ -12,9 +14,12 @@ export interface ReminderRuleCardProps {
   status: "active" | "paused";
   stats: string;
   onToggle?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
 }
 
 export const ReminderRuleCard = ({
+  id,
   title,
   category,
   description,
@@ -23,8 +28,11 @@ export const ReminderRuleCard = ({
   status,
   stats,
   onToggle,
+  onEdit,
+  onDelete,
   ...props
 }: ReminderRuleCardProps & { [key: string]: any }) => {
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isActive = status === "active";
   const iconTextColor = iconColor.replace("bg-", "text-");
 
@@ -46,9 +54,37 @@ export const ReminderRuleCard = ({
           </div>
         </div>
         
-        <button className="p-1 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors">
-          <LuEllipsisVertical size={18} />
-        </button>
+        <div className="relative">
+          <button 
+            onClick={() => setIsMenuOpen(!isMenuOpen)}
+            className="dropdown-toggle p-2 rounded-lg text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+          >
+            <LuEllipsisVertical size={18} />
+          </button>
+          
+          <Dropdown isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} className="w-[180px] origin-top-right !right-0 !left-auto">
+            <div className="p-2 space-y-0.5">
+              <DropdownItem 
+                onClick={() => { onEdit?.(); setIsMenuOpen(false); }}
+                className="flex items-center gap-3 py-2.5 group/item"
+              >
+                <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover/item:text-brand-500 group-hover/item:bg-brand-500/10 transition-all">
+                  <LuPencil size={14} />
+                </div>
+                <span className="text-xs font-bold transition-colors">Edit Rule</span>
+              </DropdownItem>
+              <DropdownItem 
+                onClick={() => { onDelete?.(); setIsMenuOpen(false); }}
+                className="flex items-center gap-3 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 group/item"
+              >
+                <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/5 flex items-center justify-center text-red-400 group-hover/item:text-red-500 group-hover/item:bg-red-500/10 transition-all">
+                  <LuTrash2 size={14} />
+                </div>
+                <span className="text-xs font-bold">Delete Rule</span>
+              </DropdownItem>
+            </div>
+          </Dropdown>
+        </div>
       </div>
 
       {/* Description */}

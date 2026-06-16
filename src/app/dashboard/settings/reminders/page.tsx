@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { LuArrowLeft, LuPlus, LuSmartphone, LuMail, LuBell } from "react-icons/lu";
 import { ReminderRuleCard } from "@/components/dashboard/settings/reminders/ReminderRuleCard";
-import { CreateRuleForm } from "@/components/dashboard/settings/reminders/CreateRuleForm";
+import { ConfirmationModal } from "@/components/common";
 
 const INITIAL_RULES = [
   {
@@ -40,13 +40,20 @@ const INITIAL_RULES = [
 ];
 
 export default function RemindersPage() {
-  const [isFormOpen, setIsFormOpen] = useState(false);
   const [rules, setRules] = useState(INITIAL_RULES);
+  const [ruleToDelete, setRuleToDelete] = useState<number | null>(null);
 
   const toggleRule = (id: number) => {
     setRules(prev => prev.map(r => 
       r.id === id ? { ...r, status: r.status === "active" ? "paused" : "active" } : r
     ));
+  };
+
+  const handleDeleteRule = () => {
+    if (ruleToDelete !== null) {
+      setRules(prev => prev.filter(r => r.id !== ruleToDelete));
+      setRuleToDelete(null);
+    }
   };
 
   return (
@@ -74,13 +81,13 @@ export default function RemindersPage() {
           </div>
         </div>
 
-        <button 
-          onClick={() => setIsFormOpen(true)}
+        <Link 
+          href="/dashboard/settings/reminders/create"
           className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-brand-500 text-white text-sm font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all active:scale-[0.98]"
         >
           <LuPlus size={20} strokeWidth={2.5} />
           Create New Rule
-        </button>
+        </Link>
       </div>
 
       {/* Rules Grid */}
@@ -90,12 +97,13 @@ export default function RemindersPage() {
             key={rule.id}
             {...rule}
             onToggle={() => toggleRule(rule.id)}
+            onDelete={() => setRuleToDelete(rule.id)}
           />
         ))}
 
         {/* Create Custom Rule Card */}
-        <button 
-          onClick={() => setIsFormOpen(true)}
+        <Link 
+          href="/dashboard/settings/reminders/create"
           className="group relative h-full min-h-[220px] rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-brand-500/50 hover:bg-brand-500/[0.02] transition-all flex flex-col items-center justify-center gap-4 py-8"
         >
           <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-brand-500 group-hover:bg-brand-50 dark:group-hover:bg-brand-500/10 transition-all">
@@ -105,14 +113,8 @@ export default function RemindersPage() {
             <h4 className="text-sm font-bold text-gray-900 dark:text-white">Create Custom Rule</h4>
             <p className="text-xs text-gray-500 dark:text-gray-600 font-medium">Set up custom triggers and actions.</p>
           </div>
-        </button>
+        </Link>
       </div>
-
-      {/* Create Rule Modal Form */}
-      <CreateRuleForm 
-        isOpen={isFormOpen}
-        onClose={() => setIsFormOpen(false)}
-      />
 
       {/* Footer Info */}
       <div className="pt-10 border-t border-gray-100 dark:border-gray-800 text-center">
@@ -120,6 +122,16 @@ export default function RemindersPage() {
           Automated workflows run on enterprise-grade infrastructure • 99.9% uptime
         </p>
       </div>
+      {/* Confirmation Modal */}
+      <ConfirmationModal 
+        isOpen={ruleToDelete !== null}
+        onClose={() => setRuleToDelete(null)}
+        onConfirm={handleDeleteRule}
+        title="Delete Reminder Rule?"
+        description="This action cannot be undone. This automation will stop running immediately across all your deals."
+        confirmLabel="Delete Rule"
+        variant="danger"
+      />
     </div>
   );
 }
