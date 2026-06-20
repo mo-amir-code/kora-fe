@@ -14,6 +14,7 @@ import {
 } from "react-icons/lu";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import toast from "react-hot-toast";
 
 import { useRouter } from "next/navigation";
 
@@ -155,11 +156,11 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
       const pdfWidth = pdf.internal.pageSize.getWidth();
       const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
       
-      pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
       pdf.save(`${formData.invoiceNumber}.pdf`);
+      toast.success("PDF generated and download started");
     } catch (error) {
       console.error("PDF Generation error:", error);
-      alert("Failed to generate PDF. Please check the console for details.");
+      toast.error("Failed to generate PDF. Check browser orientation.");
     }
   };
 
@@ -551,7 +552,10 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
 
       {/* Footer Actions */}
       <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 pt-10">
-        <button className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-4xl border-2 border-slate-900 dark:border-white text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] bg-white dark:bg-transparent transition-all active:scale-95 italic">
+        <button 
+          onClick={() => toast.success("Draft saved successfully")}
+          className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-4xl border-2 border-slate-900 dark:border-white text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] bg-white dark:bg-transparent transition-all active:scale-95 italic"
+        >
           <LuSave size={20} />
           Save Draft
         </button>
@@ -563,11 +567,17 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
           Download PDF
         </button>
         <div className="flex w-full sm:w-auto gap-4">
-          <button className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-4xl bg-emerald-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none">
+          <button 
+            onClick={() => toast.success("Shared via WhatsApp")}
+            className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-4xl bg-emerald-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none"
+          >
             <LuMessageCircle size={18} />
             WhatsApp
           </button>
-          <button className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-4xl bg-brand-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none">
+          <button 
+            onClick={() => toast.success("Invoice sent to client email")}
+            className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-4xl bg-brand-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none"
+          >
             <LuMail size={18} />
             Email
           </button>

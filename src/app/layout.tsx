@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/context/ThemeContext";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { QueryProvider } from "@/providers/QueryProvider";
+import { ToasterProvider } from "@/components/common";
 import { allMetadata } from "@/utils/data/metadata"
 
 const outfit = Outfit({
@@ -22,7 +23,10 @@ export default function RootLayout({
       <body className={`${outfit.className} dark:bg-gray-900`}>
         <QueryProvider>
           <ThemeProvider>
-            <SidebarProvider>{children}</SidebarProvider>
+            <SidebarProvider>
+              {children}
+              <ToasterProvider />
+            </SidebarProvider>
           </ThemeProvider>
         </QueryProvider>
       </body>

@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import { authService, MeResponse } from '@/services/auth.service';
 import { useAuthStore } from '@/stores/auth/auth';
 import { AuthUser } from '@/stores/auth/types';
+import toast from 'react-hot-toast';
 
 // Maps backend user response to frontend AuthUser shape
 export function mapToAuthUser(me: MeResponse | { id: string; email: string; fullName: string; avatarUrl: string | null }): AuthUser {
@@ -52,6 +53,10 @@ export function useSignin() {
     mutationFn: authService.signin,
     onSuccess: (data) => {
       setAuth({ user: mapToAuthUser(data.user), token: data.accessToken });
+      toast.success(`Welcome back, ${data.user.fullName}!`);
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -63,6 +68,10 @@ export function useSignup() {
     mutationFn: authService.signup,
     onSuccess: (data) => {
       setAuth({ user: mapToAuthUser(data.user), token: data.accessToken });
+      toast.success("Account created successfully!");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -71,6 +80,12 @@ export function useSignup() {
 export function useSignupSendOtp() {
   return useMutation({
     mutationFn: authService.signupSendOtp,
+    onSuccess: () => {
+      toast.success("OTP sent to your email");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
   });
 }
 
@@ -81,6 +96,10 @@ export function useSignupVerifyOtp() {
     mutationFn: authService.signupVerifyOtp,
     onSuccess: (data) => {
       setAuth({ user: mapToAuthUser(data.user), token: data.accessToken });
+      toast.success("Email verified successfully!");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -89,6 +108,12 @@ export function useSignupVerifyOtp() {
 export function useForgotPassword() {
   return useMutation({
     mutationFn: authService.forgotPassword,
+    onSuccess: () => {
+      toast.success("Reset link sent if account exists");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
   });
 }
 
@@ -96,5 +121,11 @@ export function useForgotPassword() {
 export function useResetPassword() {
   return useMutation({
     mutationFn: authService.resetPassword,
+    onSuccess: () => {
+      toast.success("Password reset successful. Please sign in.");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
+    },
   });
 }

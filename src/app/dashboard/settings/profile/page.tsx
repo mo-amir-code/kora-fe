@@ -1,14 +1,32 @@
 "use client";
 
-import React from "react";
 import Link from "next/link";
-import { LuArrowLeft } from "react-icons/lu";
+import { LuArrowLeft, LuLoader } from "react-icons/lu";
+import { useQuery } from "@tanstack/react-query";
+import api from "@/lib/axios";
 import { ProfileIdentityCard } from "@/components/dashboard/settings/profile/ProfileIdentityCard";
 import { ProfileFormCard } from "@/components/dashboard/settings/profile/ProfileFormCard";
 
 export default function ProfileSettingsPage() {
+  const { data: userData, isLoading, refetch } = useQuery({
+    queryKey: ["user-me"],
+    queryFn: async () => {
+      const res = await api.get("/user/me");
+      return res.data.data;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
+        <LuLoader className="w-10 h-10 text-brand-500 animate-spin" />
+        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading Profile...</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-700">
+    <div className="max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-10">
       {/* Header Section */}
       <div className="flex flex-col gap-4 sm:gap-6">
         <Link 
@@ -35,12 +53,12 @@ export default function ProfileSettingsPage() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
         {/* Left: Identity Card (4 columns) */}
         <div className="lg:col-span-4 lg:sticky lg:top-8">
-          <ProfileIdentityCard />
+          <ProfileIdentityCard user={userData} onUpdate={refetch} />
         </div>
 
         {/* Right: Detailed Form (8 columns) */}
         <div className="lg:col-span-8">
-          <ProfileFormCard />
+          <ProfileFormCard user={userData} onUpdate={refetch} />
         </div>
       </div>
 

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { LuArrowLeft, LuPlus, LuSmartphone, LuMail, LuBell } from "react-icons/lu";
 import { ReminderRuleCard } from "@/components/dashboard/settings/reminders/ReminderRuleCard";
 import { ConfirmationModal } from "@/components/common";
+import toast from "react-hot-toast";
 
 const INITIAL_RULES = [
   {
@@ -44,15 +45,21 @@ export default function RemindersPage() {
   const [ruleToDelete, setRuleToDelete] = useState<number | null>(null);
 
   const toggleRule = (id: number) => {
-    setRules(prev => prev.map(r => 
-      r.id === id ? { ...r, status: r.status === "active" ? "paused" : "active" } : r
-    ));
+    setRules(prev => prev.map(r => {
+      if (r.id === id) {
+        const newStatus = r.status === "active" ? "paused" : "active";
+        toast.success(`Rule ${newStatus === "active" ? "activated" : "paused"}`);
+        return { ...r, status: newStatus };
+      }
+      return r;
+    }));
   };
 
   const handleDeleteRule = () => {
     if (ruleToDelete !== null) {
       setRules(prev => prev.filter(r => r.id !== ruleToDelete));
       setRuleToDelete(null);
+      toast.success("Reminder rule deleted");
     }
   };
 

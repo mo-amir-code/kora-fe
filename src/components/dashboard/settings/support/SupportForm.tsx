@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { LuSend, LuLifeBuoy, LuMessagesSquare, LuMail } from "react-icons/lu";
+import toast from "react-hot-toast";
 
 export const SupportForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -9,7 +10,13 @@ export const SupportForm = () => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setTimeout(() => setIsSubmitting(false), 2000);
+    
+    // Simulate API call
+    setTimeout(() => {
+      setIsSubmitting(false);
+      toast.success("Inquiry sent! We'll get back to you soon.");
+      (e.target as HTMLFormElement).reset();
+    }, 1500);
   };
 
   return (

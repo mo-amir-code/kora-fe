@@ -1,20 +1,67 @@
-"use client";
+import React, { useState, useEffect } from "react";
+import { LuSave, LuMessageCircle, LuLoader } from "react-icons/lu";
+import api from "@/lib/axios";
+import toast from "react-hot-toast";
 
-import React, { useState } from "react";
-import { LuSave, LuSmartphone, LuMessageCircle } from "react-icons/lu";
+interface UserProfile {
+  fullName: string;
+  handle: string;
+  whatsappNumber: string | null;
+}
 
-export const ProfileFormCard = () => {
+interface ProfileFormCardProps {
+  user?: UserProfile;
+  onUpdate?: () => void;
+}
+
+export const ProfileFormCard = ({ user, onUpdate }: ProfileFormCardProps) => {
   const [formData, setFormData] = useState({
-    fullName: "Priya Sharma",
-    handle: "priyacreates",
-    mobile: "+91 9876543210",
-    whatsapp: "+91 9876543210",
-    sameAsMobile: true
+    fullName: "",
+    handle: "",
+    whatsappNumber: ""
   });
+  const [isSaving, setIsSaving] = useState(false);
+
+  useEffect(() => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || "",
+        handle: user.handle || "",
+        whatsappNumber: user.whatsappNumber || ""
+      });
+    }
+  }, [user]);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSaving(true);
+    const toastId = toast.loading("Saving changes...");
+
+    try {
+      await api.patch("/user/me", formData);
+      toast.success("Profile saved successfully", { id: toastId });
+      onUpdate?.();
+    } catch (error: any) {
+      console.error("Update error:", error);
+      toast.error(error.response?.data?.message || "Failed to save profile", { id: toastId });
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const handleCancel = () => {
+    if (user) {
+      setFormData({
+        fullName: user.fullName || "",
+        handle: user.handle || "",
+        whatsappNumber: user.whatsappNumber || ""
+      });
+    }
+  };
 
   return (
     <div className="p-6 sm:p-10 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800">
-      <div className="space-y-10">
+      <form onSubmit={handleSubmit} className="space-y-10">
         {/* Primary Information Section */}
         <div className="space-y-6">
           <div className="flex items-center gap-2 mb-2">
@@ -31,9 +78,11 @@ export const ProfileFormCard = () => {
               </label>
               <input 
                 type="text"
+                required
                 value={formData.fullName}
                 onChange={(e) => setFormData(p => ({ ...p, fullName: e.target.value }))}
-                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 rounded-2xl px-5 py-3.5 text-sm font-semibold text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all"
+                className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 rounded-2xl px-5 py-3.5 text-sm font-semibold text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all disabled:opacity-50"
+                disabled={isSaving}
               />
             </div>
             <div className="space-y-2">
@@ -44,9 +93,11 @@ export const ProfileFormCard = () => {
                 <span className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-600 font-bold transition-colors group-focus-within:text-brand-500">@</span>
                 <input 
                   type="text"
+                  required
                   value={formData.handle}
                   onChange={(e) => setFormData(p => ({ ...p, handle: e.target.value }))}
-                  className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 rounded-2xl pl-10 pr-5 py-3.5 text-sm font-semibold text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all font-mono"
+                  className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 rounded-2xl pl-10 pr-5 py-3.5 text-sm font-semibold text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all font-mono disabled:opacity-50"
+                  disabled={isSaving}
                 />
               </div>
             </div>
@@ -62,35 +113,10 @@ export const ProfileFormCard = () => {
                 Contact Details
               </h3>
             </div>
-            
-            <button 
-              type="button"
-              onClick={() => setFormData(p => ({ ...p, sameAsMobile: !p.sameAsMobile }))}
-              className="flex items-center gap-2 group"
-            >
-              <div className={`w-3 h-3 rounded-full border-2 transition-all ${formData.sameAsMobile ? 'bg-success-500 border-success-500' : 'border-gray-300 dark:border-white/10'}`} />
-              <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tight group-hover:text-success-500 transition-colors">
-                Same as mobile
-              </span>
-            </button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div className="space-y-2">
-              <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">
-                Mobile Number
-              </label>
-              <div className="relative group">
-                <LuSmartphone size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-brand-500 transition-colors" />
-                <input 
-                  type="text"
-                  value={formData.mobile}
-                  onChange={(e) => setFormData(p => ({ ...p, mobile: e.target.value }))}
-                  className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 rounded-2xl pl-12 pr-5 py-3.5 text-sm font-bold text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all tracking-wider font-mono text-right"
-                />
-              </div>
-            </div>
-            <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-6">
+            <div className="space-y-2 max-w-sm">
               <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">
                 WhatsApp Number
               </label>
@@ -98,9 +124,11 @@ export const ProfileFormCard = () => {
                 <LuMessageCircle size={18} className="absolute left-5 top-1/2 -translate-y-1/2 text-success-500" />
                 <input 
                   type="text"
-                  value={formData.whatsapp}
-                  onChange={(e) => setFormData(p => ({ ...p, whatsapp: e.target.value }))}
-                  className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 rounded-2xl pl-12 pr-5 py-3.5 text-sm font-bold text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all tracking-wider font-mono text-right"
+                  placeholder="+91 XXXXX XXXXX"
+                  value={formData.whatsappNumber}
+                  onChange={(e) => setFormData(p => ({ ...p, whatsappNumber: e.target.value }))}
+                  className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-100 dark:border-gray-700/50 rounded-2xl pl-12 pr-5 py-3.5 text-sm font-bold text-gray-900 dark:text-white outline-none focus:border-brand-500 transition-all tracking-wider font-mono disabled:opacity-50"
+                  disabled={isSaving}
                 />
               </div>
             </div>
@@ -111,19 +139,26 @@ export const ProfileFormCard = () => {
         <div className="pt-10 border-t border-gray-100 dark:border-gray-800 flex flex-col-reverse sm:flex-row items-center justify-end gap-3 sm:gap-4">
           <button 
             type="button"
-            className="w-full sm:w-auto px-10 py-4 rounded-2xl border border-gray-200 dark:border-gray-800 text-sm font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all active:scale-[0.98]"
+            onClick={handleCancel}
+            disabled={isSaving}
+            className="w-full sm:w-auto px-10 py-4 rounded-2xl border border-gray-200 dark:border-gray-800 text-sm font-bold text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-white/5 transition-all active:scale-[0.98] disabled:opacity-50"
           >
-            Cancel
+            Reset
           </button>
           <button 
             type="submit"
-            className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-brand-500 text-white text-sm font-bold hover:bg-brand-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+            disabled={isSaving}
+            className="w-full sm:w-auto px-10 py-4 rounded-2xl bg-brand-500 text-white text-sm font-bold hover:bg-brand-600 transition-all active:scale-[0.98] flex items-center justify-center gap-2 disabled:opacity-70"
           >
-            <LuSave size={18} strokeWidth={2.5} />
-            Save Changes
+            {isSaving ? (
+              <LuLoader size={18} className="animate-spin" />
+            ) : (
+              <LuSave size={18} strokeWidth={2.5} />
+            )}
+            {isSaving ? "Saving..." : "Save Changes"}
           </button>
         </div>
-      </div>
+      </form>
     </div>
   );
 };

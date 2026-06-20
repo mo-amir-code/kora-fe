@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { dealService, CreateDealData } from '@/services/deal.service';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from './useAuth';
 
 export function useDealsList(stage?: string) {
   return useQuery({
@@ -23,6 +25,10 @@ export function useCreateDeal() {
     mutationFn: dealService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
+      toast.success("Deal created successfully");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -34,6 +40,10 @@ export function useUpdateDeal(dealId: string) {
     mutationFn: (data: Partial<CreateDealData>) => dealService.update(dealId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
+      toast.success("Deal updated");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -45,6 +55,10 @@ export function useDeleteDeal() {
     mutationFn: dealService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals'] });
+      toast.success("Deal deleted");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -57,6 +71,10 @@ export function useUpdateDeliverables(dealId: string) {
       dealService.updateDeliverables(dealId, updates),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals', 'detail', dealId] });
+      toast.success("Deliverables updated");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -69,6 +87,10 @@ export function useAddDealActivity(dealId: string) {
       dealService.addActivity(dealId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['deals', 'detail', dealId] });
+      toast.success("Activity logged");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }

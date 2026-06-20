@@ -1,5 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { brandService, CreateBrandData, CreateContactData } from '@/services/brand.service';
+import toast from 'react-hot-toast';
+import { getErrorMessage } from './useAuth';
 
 export function useBrandsList() {
   return useQuery({
@@ -23,6 +25,10 @@ export function useCreateBrand() {
     mutationFn: brandService.create,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brands'] });
+      toast.success("Brand created successfully");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -35,6 +41,10 @@ export function useUpdateBrand(brandId: string) {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brands', brandId] });
       queryClient.invalidateQueries({ queryKey: ['brands'] });
+      toast.success("Brand updated successfully");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -46,6 +56,10 @@ export function useCreateBrandContact(brandId: string) {
     mutationFn: (data: CreateContactData) => brandService.createContact(brandId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brands', brandId] });
+      toast.success("Contact added successfully");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -58,6 +72,10 @@ export function useUpdateBrandContact(brandId: string) {
       brandService.updateContact(brandId, contactId, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brands', brandId] });
+      toast.success("Contact updated");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -69,6 +87,10 @@ export function useDeleteBrandContact(brandId: string) {
     mutationFn: (contactId: string) => brandService.deleteContact(brandId, contactId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brands', brandId] });
+      toast.success("Contact removed");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }
@@ -86,6 +108,10 @@ export function useDeleteBrand() {
     mutationFn: brandService.delete,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['brands'] });
+      toast.success("Brand deleted");
+    },
+    onError: (error) => {
+      toast.error(getErrorMessage(error));
     },
   });
 }

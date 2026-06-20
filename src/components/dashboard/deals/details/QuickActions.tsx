@@ -8,7 +8,27 @@ import {
   LuTrash2
 } from "react-icons/lu";
 
-const QuickActions = () => {
+import { useDeleteDeal } from "@/hooks/useDeals";
+import toast from "react-hot-toast";
+
+interface QuickActionsProps {
+  dealId?: string;
+}
+
+const QuickActions = ({ dealId }: QuickActionsProps) => {
+  const deleteDeal = useDeleteDeal();
+
+  const handleDelete = () => {
+    if (!dealId) return;
+    if (confirm("Are you sure you want to delete this deal?")) {
+      deleteDeal.mutate(dealId);
+    }
+  };
+
+  const handleSimulatedAction = (action: string) => {
+    toast.success(`${action} simulation started`);
+  };
+
   return (
     <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-6 sm:space-y-8 transition-all">
       <div className="text-[10px] sm:text-[11px] font-bold uppercase tracking-[2px] sm:tracking-[3px] text-gray-400 dark:text-gray-600 transition-colors">
@@ -17,12 +37,18 @@ const QuickActions = () => {
 
       <div className="flex flex-col gap-3 sm:gap-4">
         {/* Primary Actions */}
-        <button className="flex items-center justify-center gap-3 w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-brand-600 hover:bg-brand-700 text-white text-sm sm:text-base font-bold transition-all shadow-lg shadow-brand-500/20 active:scale-95">
+        <button 
+          onClick={() => handleSimulatedAction("Invoice Generation")}
+          className="flex items-center justify-center gap-3 w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-brand-600 hover:bg-brand-700 text-white text-sm sm:text-base font-bold transition-all shadow-lg shadow-brand-500/20 active:scale-95"
+        >
           <LuFileText className="w-4 h-4 sm:w-5 sm:h-5" />
           Generate Invoice
         </button>
 
-        <button className="flex items-center justify-center gap-3 w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm sm:text-base font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95">
+        <button 
+          onClick={() => handleSimulatedAction("WhatsApp Reminder")}
+          className="flex items-center justify-center gap-3 w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm sm:text-base font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
+        >
           <LuMessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
           Send WhatsApp Reminder
         </button>
@@ -40,13 +66,20 @@ const QuickActions = () => {
       </div>
 
       <div className="flex items-center justify-around pt-4 border-t border-gray-200 dark:border-gray-800">
-        <button className="flex items-center gap-2 text-xs font-bold text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all active:scale-95">
+        <button 
+          onClick={() => handleSimulatedAction("Archiving")}
+          className="flex items-center gap-2 text-xs font-bold text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white transition-all active:scale-95"
+        >
           <LuArchive size={14} />
           Archive
         </button>
-        <button className="flex items-center gap-2 text-xs font-bold text-rose-500/60 hover:text-rose-500 transition-all active:scale-95">
+        <button 
+          onClick={handleDelete}
+          disabled={deleteDeal.isPending}
+          className="flex items-center gap-2 text-xs font-bold text-rose-500/60 hover:text-rose-500 transition-all active:scale-95 disabled:opacity-50"
+        >
           <LuTrash2 size={14} />
-          Delete
+          {deleteDeal.isPending ? "Deleting..." : "Delete"}
         </button>
       </div>
     </div>
