@@ -15,6 +15,7 @@ type AuthState = {
     setUser: (user: AuthUser | null) => void;
     setToken: (token: string | null) => void;
     logout: () => void;
+    syncUser: () => Promise<void>;
 };
 
 

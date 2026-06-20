@@ -5,6 +5,7 @@ import Link from "next/link";
 
 export interface Invoice {
   id: string;
+  dbId?: string;
   brand: {
     name: string;
     logo?: string;
@@ -84,7 +85,7 @@ const InvoiceTable = ({ invoices }: InvoiceTableProps) => {
                 </td>
                 <td className="py-4 sm:py-6 px-2 sm:px-4">
                   <div className="flex items-center justify-center">
-                    <Link href={`/dashboard/invoices/edit/${invoice.id}`}>
+                    <Link href={`/dashboard/invoices/edit/${(invoice as any).dbId || invoice.id}`}>
                       <button className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-brand-500 hover:bg-brand-500/5 transition-all active:scale-90 border border-transparent hover:border-brand-500/20 group/btn">
                         <LuPencil size={14} className="sm:size-4" />
                       </button>

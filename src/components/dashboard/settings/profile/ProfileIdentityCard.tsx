@@ -4,6 +4,8 @@ import React, { useRef, useState } from "react";
 import { LuCamera, LuTrash2, LuImage, LuLoader } from "react-icons/lu";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
+import { useAuthStore } from "@/stores/auth/auth";
+import { mapToAuthUser } from "@/hooks/useAuth";
 
 interface UserProfile {
   fullName: string;
@@ -17,6 +19,7 @@ interface ProfileIdentityCardProps {
 }
 
 export const ProfileIdentityCard = ({ user, onUpdate }: ProfileIdentityCardProps) => {
+  const setUser = useAuthStore((s) => s.setUser);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -45,7 +48,10 @@ export const ProfileIdentityCard = ({ user, onUpdate }: ProfileIdentityCardProps
       const newAvatarUrl = uploadRes.data.data.url;
 
       // 2. Update user profile
-      await api.patch("/user/me", { avatarUrl: newAvatarUrl });
+      const userRes = await api.patch("/user/me", { avatarUrl: newAvatarUrl });
+
+      // 3. Sync with global AuthStore
+      setUser(mapToAuthUser(userRes.data.data));
 
       toast.success("Profile photo updated", { id: toastId });
       onUpdate?.();
@@ -65,7 +71,11 @@ export const ProfileIdentityCard = ({ user, onUpdate }: ProfileIdentityCardProps
     const toastId = toast.loading("Removing photo...");
 
     try {
-      await api.patch("/user/me", { avatarUrl: null });
+      const userRes = await api.patch("/user/me", { avatarUrl: null });
+      
+      // Sync with global AuthStore
+      setUser(mapToAuthUser(userRes.data.data));
+
       toast.success("Profile photo removed", { id: toastId });
       onUpdate?.();
     } catch (error: any) {

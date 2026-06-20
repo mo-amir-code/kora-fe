@@ -12,6 +12,7 @@ export function mapToAuthUser(me: MeResponse | { id: string; email: string; full
     name: me.fullName,
     email: me.email,
     avatar: me.avatarUrl,
+    avatarUrl: me.avatarUrl,
   };
 }
 

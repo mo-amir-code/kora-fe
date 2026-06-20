@@ -14,6 +14,7 @@ export interface Brand {
   totalEarned: string;
   activeDeals: number;
   totalValue: number;
+  deals?: any[];
   createdAt: string;
   contacts: BrandContact[];
   _count?: { deals: number };

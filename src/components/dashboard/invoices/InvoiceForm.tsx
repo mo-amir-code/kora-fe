@@ -10,13 +10,18 @@ import {
   LuMessageCircle,
   LuChevronDown,
   LuCalendar,
-  LuArrowLeft
+  LuArrowLeft,
+  LuArrowRight
 } from "react-icons/lu";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
+import { useRouter, useParams } from "next/navigation";
+import { useInvoicesList, useCreateInvoice, useUpdateInvoice, useInvoiceDetail } from "@/hooks/useInvoices";
+import { useDealsList } from "@/hooks/useDeals";
+import { useProfile } from "@/hooks/useProfile";
+import { CreateInvoiceData, InvoiceLineItem, InvoiceStatus } from "@/services/invoice.service";
+import DatePickerInput from "@/components/ui/DatePickerInput";
 import toast from "react-hot-toast";
-
-import { useRouter } from "next/navigation";
 
 interface LineItem {
   id: string;
@@ -33,33 +38,131 @@ interface InvoiceFormProps {
 
 const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
   const router = useRouter();
+  const params = useParams();
+  const dealIdFromQuery = params.dealId as string;
+  
+  const { data: deals, isLoading: isLoadingDeals } = useDealsList();
+  const { data: profile, isLoading: isLoadingProfile } = useProfile();
+  
+  const createInvoice = useCreateInvoice();
+  const updateInvoice = useUpdateInvoice();
+
   const [lineItems, setLineItems] = useState<LineItem[]>(
-    initialData?.lineItems || [
+    initialData?.lineItems?.map((li: any) => ({
+      id: li.id,
+      description: li.description,
+      qty: Number(li.quantity),
+      rate: Number(li.unitPrice),
+      amount: Number(li.amount)
+    })) || [
       { id: "1", description: "", qty: 1, rate: 0, amount: 0 }
     ]
   );
-  const [applyGst, setApplyGst] = useState(initialData?.applyGst ?? true);
+
+  const [applyGst, setApplyGst] = useState(initialData?.gstRate ? initialData.gstRate > 0 : true);
+  
   const [formData, setFormData] = useState({
-    deal: initialData?.deal || "TechBrand Q3 Sponsorship (Deliverable 2/2)",
-    invoiceNumber: initialData?.invoiceNumber || "INV-2023-089",
-    issueDate: initialData?.issueDate || "10/24/2023",
-    dueDate: initialData?.dueDate || "11/07/2023",
+    dealId: initialData?.dealId || dealIdFromQuery || "",
+    invoiceNumber: initialData?.invoiceNumber || "",
+    status: initialData?.status || "DRAFT",
+    issueDate: initialData?.issuedDate ? new Date(initialData.issuedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
+    dueDate: initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+    notes: initialData?.notes || "",
     from: {
-      legalName: initialData?.from?.legalName || "Priya Sharma",
-      upiId: initialData?.from?.upiId || "priya@upi",
-      accountNo: initialData?.from?.accountNo || "XXXX-XXX",
-      ifsc: initialData?.from?.ifsc || "HDFC000123"
+      legalName: initialData?.from?.legalName || profile?.invoiceSettings?.legalName || profile?.fullName || "",
+      upiId: initialData?.from?.upiId || profile?.invoiceSettings?.upiId || "",
+      accountNo: initialData?.from?.accountNo || profile?.invoiceSettings?.accountNo || "",
+      ifsc: initialData?.from?.ifsc || profile?.invoiceSettings?.ifsc || ""
     },
     billTo: {
-      brandName: initialData?.billTo?.brandName || "TechBrand India Pvt. Ltd.",
-      contact: initialData?.billTo?.contact || "accounting@techbrand.in",
-      gstin: initialData?.billTo?.gstin || "27ABCDE1234F1Z5"
+      brandName: initialData?.deal?.brand?.name || "Select a deal first",
+      contact: initialData?.deal?.brand?.email || "No contact found",
+      gstin: initialData?.deal?.brand?.gstin || "No GSTIN found"
     }
   });
 
-  const subtotal = lineItems.reduce((acc, item) => acc + item.amount, 0);
+  // Update Bill To when deal changes
+  React.useEffect(() => {
+    if (deals && formData.dealId) {
+      const selectedDeal = deals.find((d: any) => d.id === formData.dealId);
+      if (selectedDeal) {
+        setFormData(prev => ({
+          ...prev,
+          billTo: {
+            brandName: selectedDeal.brand?.name || "Unknown Brand",
+            contact: (selectedDeal.brand as any)?.email || "No contact found",
+            gstin: (selectedDeal.brand as any)?.gstin || "Not Available"
+          }
+        }));
+      }
+    }
+  }, [formData.dealId, deals]);
+
+  // Update From info when profile loads
+  React.useEffect(() => {
+    if (profile && !initialData) {
+      setFormData(prev => ({
+        ...prev,
+        from: {
+          legalName: profile.invoiceSettings?.legalName || profile.fullName || "",
+          upiId: profile.invoiceSettings?.upiId || "",
+          accountNo: profile.invoiceSettings?.accountNo || "",
+          ifsc: profile.invoiceSettings?.ifsc || ""
+        }
+      }));
+    }
+  }, [profile, initialData]);
+
+  const subtotal = lineItems.reduce((acc, item) => acc + Number(item.amount), 0);
   const gstAmount = applyGst ? subtotal * 0.18 : 0;
   const total = subtotal + gstAmount;
+
+  const handleSave = async (overriddenStatus?: InvoiceStatus) => {
+    if (!formData.dealId) {
+      return toast.error("Please select a deal");
+    }
+
+    const validLineItems: Omit<InvoiceLineItem, 'id'>[] = lineItems
+      .filter(item => item.description.trim())
+      .map(item => ({
+        description: item.description,
+        quantity: Number(item.qty),
+        unitPrice: Number(item.rate),
+        amount: Number(item.amount),
+      }));
+
+    if (validLineItems.length === 0) {
+      return toast.error("Please add at least one line item with a description");
+    }
+
+    const payload: CreateInvoiceData = {
+      dealId: formData.dealId,
+      status: overriddenStatus || formData.status,
+      subtotal: Number(subtotal),
+      gstRate: applyGst ? 18 : 0,
+      gstAmount: Number(gstAmount),
+      total: Number(total),
+      issuedDate: formData.issueDate,
+      dueDate: formData.dueDate,
+      notes: formData.notes || undefined,
+      lineItems: validLineItems,
+    };
+
+    // Only include invoiceNumber if user provided one (backend will auto-generate otherwise)
+    if (formData.invoiceNumber && formData.invoiceNumber.trim().length > 0) {
+      payload.invoiceNumber = formData.invoiceNumber.trim();
+    }
+
+    if (mode === 'edit' && initialData?.id) {
+      updateInvoice.mutate({ id: initialData.id, data: payload as any }, {
+        onSuccess: () => router.push('/dashboard/invoices')
+      });
+    } else {
+      createInvoice.mutate(payload, {
+        onSuccess: () => router.push('/dashboard/invoices')
+      });
+    }
+  };
   const invoiceRows = lineItems.filter((item) => item.description.trim() || item.amount > 0 || item.rate > 0);
 
   const formatMoney = (value: number) => `₹${Math.round(value).toLocaleString("en-IN")}`;
@@ -86,7 +189,12 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
   const handleUpdateLineItem = (id: string, field: keyof LineItem, value: any) => {
     setLineItems(lineItems.map(item => {
       if (item.id === id) {
-        const updatedItem = { ...item, [field]: value };
+        let finalValue = value;
+        if (field === 'qty' || field === 'rate' || field === 'amount') {
+          finalValue = Number(value) || 0;
+        }
+
+        const updatedItem = { ...item, [field]: finalValue };
         if (field === 'qty' || field === 'rate') {
           updatedItem.amount = Number(updatedItem.qty) * Number(updatedItem.rate);
         }
@@ -164,6 +272,21 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
     }
   };
 
+  const getStatusDisplay = () => {
+    const status = initialData?.status || 'DRAFT';
+    const statusMap: Record<string, { label: string; color: string }> = {
+      'DRAFT': { label: 'DRAFT MODE', color: 'text-brand-500' },
+      'SENT': { label: 'SENT', color: 'text-emerald-500' },
+      'PAID': { label: 'PAID', color: 'text-emerald-600' },
+      'OVERDUE': { label: 'OVERDUE', color: 'text-rose-500' },
+      'VOID': { label: 'VOID', color: 'text-slate-400' },
+      'CANCELLED': { label: 'CANCELLED', color: 'text-rose-400' },
+    };
+    return statusMap[status] || { label: status, color: 'text-brand-500' };
+  };
+
+  const statusInfo = getStatusDisplay();
+
   return (
     <div className="max-w-5xl mx-auto space-y-12 pb-24 px-4 sm:px-6">
       {/* Header with Go Back */}
@@ -181,14 +304,6 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
           </h1>
           <p className="text-xs font-black text-slate-400 dark:text-gray-500 uppercase tracking-[0.3em] italic">Manage your professional billing</p>
         </div>
-        <div className="flex items-center gap-3 bg-slate-50 dark:bg-white/5 p-2 rounded-3xl border border-slate-200 dark:border-white/10 self-start sm:self-auto">
-          <div className="px-5 py-3 rounded-2xl bg-white dark:bg-gray-800 shadow-none border border-slate-200 dark:border-white/5">
-            <span className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-widest italic">{formData.invoiceNumber}</span>
-          </div>
-          <div className="px-5 py-3">
-            <span className="text-[10px] font-black text-brand-500 uppercase tracking-widest italic">Draft Mode</span>
-          </div>
-        </div>
       </div>
 
       <div id="invoice-form-printable" className="space-y-6">
@@ -197,38 +312,75 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
           <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">Link to Deal</label>
           <div className="relative">
             <select 
+              value={formData.dealId}
+              onChange={(e) => setFormData(prev => ({ ...prev, dealId: e.target.value }))}
               className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4.5 text-sm font-black text-slate-900 dark:text-white appearance-none cursor-pointer focus:outline-none italic"
-              value={formData.deal}
-              onChange={(e) => setFormData({...formData, deal: e.target.value})}
             >
-              <option>{formData.deal}</option>
-              <option>Project Alpha Sponsorship</option>
-              <option>Nike Campaign Q4</option>
+              <option value="">Select a deal</option>
+              {deals?.map((deal: any) => (
+                <option key={deal.id} value={deal.id}>{deal.title}</option>
+              ))}
             </select>
-            <LuChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={20} />
+            <LuChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
           </div>
         </div>
 
         {/* Invoice Meta Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {[
-            { label: "Invoice Number", value: formData.invoiceNumber, key: 'invoiceNumber' },
-            { label: "Issue Date", value: formData.issueDate, key: 'issueDate', isDate: true },
-            { label: "Due Date", value: formData.dueDate, key: 'dueDate', isDate: true }
-          ].map((item) => (
-            <div key={item.key} className="bg-white dark:bg-gray-800/40 p-6 rounded-[2.5rem] border border-slate-200 dark:border-white/10 space-y-3">
-              <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">{item.label}</label>
-              <div className="relative">
-                <input 
-                  type="text" 
-                  value={item.value}
-                  onChange={(e) => setFormData({...formData, [item.key]: e.target.value})}
-                  className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-3.5 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
-                />
-                {item.isDate && <LuCalendar className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400" size={16} />}
-              </div>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          {/* Invoice Number */}
+          <div className="bg-white dark:bg-gray-800/40 p-6 rounded-[2.5rem] border border-slate-200 dark:border-white/10 space-y-3">
+            <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">Invoice Number</label>
+            <input
+              type="text"
+              value={formData.invoiceNumber}
+              placeholder="Leave empty to auto-generate"
+              onChange={(e) => setFormData(prev => ({ ...prev, invoiceNumber: e.target.value }))}
+              className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-3.5 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic placeholder:text-slate-300 dark:placeholder:text-gray-600"
+            />
+          </div>
+
+          {/* Invoice Status */}
+          <div className="bg-white dark:bg-gray-800/40 p-6 rounded-[2.5rem] border border-slate-200 dark:border-white/10 space-y-3">
+            <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">Invoice Status</label>
+            <div className="relative">
+              <select
+                value={formData.status}
+                onChange={(e) => setFormData(prev => ({ ...prev, status: e.target.value as InvoiceStatus }))}
+                className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-3.5 text-sm font-black text-slate-900 dark:text-white appearance-none cursor-pointer focus:outline-none italic"
+              >
+                <option value="DRAFT">DRAFT</option>
+                <option value="SENT">SENT</option>
+                <option value="VIEWED">VIEWED</option>
+                <option value="PARTIALLY_PAID">PARTIALLY PAID</option>
+                <option value="PAID">PAID</option>
+                <option value="OVERDUE">OVERDUE</option>
+                <option value="VOID">VOID</option>
+                <option value="CANCELLED">CANCELLED</option>
+              </select>
+              <LuChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" size={16} />
             </div>
-          ))}
+          </div>
+
+          {/* Issue Date */}
+          <div className="bg-white dark:bg-gray-800/40 p-6 rounded-[2.5rem] border border-slate-200 dark:border-white/10 space-y-3">
+            <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">Issue Date</label>
+            <DatePickerInput
+              value={formData.issueDate}
+              onChange={(val) => setFormData(prev => ({ ...prev, issueDate: val }))}
+              placeholder="Select issue date"
+            />
+          </div>
+
+          {/* Due Date */}
+          <div className="bg-white dark:bg-gray-800/40 p-6 rounded-[2.5rem] border border-slate-200 dark:border-white/10 space-y-3">
+            <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">Due Date</label>
+            <DatePickerInput
+              value={formData.dueDate}
+              onChange={(val) => setFormData(prev => ({ ...prev, dueDate: val }))}
+              placeholder="Select due date"
+              minDate={formData.issueDate || undefined}
+            />
+          </div>
         </div>
 
         {/* Parties Details Section */}
@@ -239,45 +391,41 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
               <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-[0.3em] italic">From</h3>
               <button className="text-[10px] font-black text-brand-500 uppercase tracking-[0.2em] italic">Edit Profile</button>
             </div>
-            <div className="space-y-5">
-              <div className="space-y-2.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] italic">Legal Name</label>
-                <input 
-                  type="text" 
-                  value={formData.from.legalName}
-                  onChange={(e) => setFormData({...formData, from: {...formData.from, legalName: e.target.value}})}
-                  className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
-                />
-              </div>
-              <div className="space-y-2.5">
-                <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] italic">UPI ID</label>
-                <input 
-                  type="text" 
-                  value={formData.from.upiId}
-                  onChange={(e) => setFormData({...formData, from: {...formData.from, upiId: e.target.value}})}
-                  className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-5">
-                <div className="space-y-2.5">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] italic">Account No.</label>
-                  <input 
-                    type="text" 
-                    value={formData.from.accountNo}
-                    onChange={(e) => setFormData({...formData, from: {...formData.from, accountNo: e.target.value}})}
-                    className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
-                  />
-                </div>
-                <div className="space-y-2.5">
-                  <label className="text-[9px] font-black text-slate-400 uppercase tracking-[0.25em] italic">IFSC</label>
-                  <input 
-                    type="text" 
-                    value={formData.from.ifsc}
-                    onChange={(e) => setFormData({...formData, from: {...formData.from, ifsc: e.target.value}})}
-                    className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-xl px-5 py-4 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
-                  />
-                </div>
-              </div>
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">Legal Name</label>
+              <input 
+                type="text" 
+                value={formData.from.legalName}
+                onChange={(e) => setFormData(prev => ({ ...prev, from: { ...prev.from, legalName: e.target.value } }))}
+                className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4.5 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
+              />
+            </div>
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">UPI ID</label>
+              <input 
+                type="text" 
+                value={formData.from.upiId}
+                onChange={(e) => setFormData(prev => ({ ...prev, from: { ...prev.from, upiId: e.target.value } }))}
+                className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4.5 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
+              />
+            </div>
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">Account No</label>
+              <input 
+                type="text" 
+                value={formData.from.accountNo}
+                onChange={(e) => setFormData(prev => ({ ...prev, from: { ...prev.from, accountNo: e.target.value } }))}
+                className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4.5 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
+              />
+            </div>
+            <div className="space-y-4">
+              <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">IFSC Code</label>
+              <input 
+                type="text" 
+                value={formData.from.ifsc}
+                onChange={(e) => setFormData(prev => ({ ...prev, from: { ...prev.from, ifsc: e.target.value } }))}
+                className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4.5 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic"
+              />
             </div>
           </div>
 
@@ -436,6 +584,18 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
             </div>
           </div>
         </div>
+
+        {/* Notes Section */}
+        <div className="bg-white dark:bg-gray-800/40 p-8 rounded-[2.5rem] border border-slate-200 dark:border-white/10 space-y-4">
+          <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">Notes</label>
+          <textarea 
+            value={formData.notes}
+            onChange={(e) => setFormData(prev => ({ ...prev, notes: e.target.value }))}
+            placeholder="Add any specific payment notes or terms..."
+            className="w-full bg-slate-50 dark:bg-gray-900/50 border border-slate-200 dark:border-white/10 rounded-2xl px-6 py-4.5 text-sm font-black text-slate-900 dark:text-white focus:outline-none italic min-h-[120px]"
+          />
+        </div>
+
       </div>
 
       <div
@@ -482,7 +642,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
 
           <div style={{ marginTop: "12px", display: "flex", justifyContent: "space-between", alignItems: "center", background: "#f8faff", border: "1px solid #e2e8ff", borderRadius: "12px", padding: "10px 12px" }}>
             <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.08em", color: "#64748b" }}>Billed For</p>
-            <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#1e293b" }}>{formData.deal}</p>
+            <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#1e293b" }}>{formData.billTo.brandName}</p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "24px", marginTop: "18px" }}>
@@ -514,7 +674,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
               <div key={item.id} style={{ display: "grid", gridTemplateColumns: "4.6fr 0.9fr 1.5fr 1.7fr", gap: "8px", padding: "14px 8px", borderBottom: "1px solid #eef2f7", borderRadius: "10px", background: index % 2 === 0 ? "#ffffff" : "#f8fafc" }}>
                 <div>
                   <p style={{ margin: 0, fontSize: "16px", fontWeight: 700, color: "#0f172a" }}>{item.description || "Service Item"}</p>
-                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#64748b" }}>{formData.deal}</p>
+                  <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#64748b" }}>{formData.billTo.brandName}</p>
                 </div>
                 <p style={{ margin: 0, textAlign: "center", fontSize: "16px", color: "#1e293b" }}>{item.qty}</p>
                 <p style={{ margin: 0, textAlign: "right", fontSize: "16px", color: "#1e293b" }}>{formatMoney(Number(item.rate))}</p>
@@ -551,35 +711,30 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
       </div>
 
       {/* Footer Actions */}
-      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 pt-10">
-        <button 
-          onClick={() => toast.success("Draft saved successfully")}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-4xl border-2 border-slate-900 dark:border-white text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] bg-white dark:bg-transparent transition-all active:scale-95 italic"
-        >
-          <LuSave size={20} />
-          Save Draft
-        </button>
+      <div className="flex flex-wrap items-center justify-center sm:justify-start gap-6 pt-10 border-t border-slate-100 dark:border-white/5">
         <button 
           onClick={downloadPDF}
-          className="flex-1 sm:flex-none flex items-center justify-center gap-3 px-12 py-5 rounded-4xl border-2 border-slate-900 dark:border-white text-[12px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] bg-white dark:bg-transparent transition-all active:scale-95 italic"
+          className="flex-1 sm:flex-none flex items-center justify-center gap-4 px-10 py-5 rounded-2xl border-2 border-slate-900 dark:border-white text-xs font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] bg-white dark:bg-transparent transition-all active:scale-[0.98] italic"
         >
-          <LuDownload size={20} />
+          <LuDownload size={18} />
           Download PDF
         </button>
         <div className="flex w-full sm:w-auto gap-4">
           <button 
-            onClick={() => toast.success("Shared via WhatsApp")}
-            className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-4xl bg-emerald-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none"
+            onClick={() => handleSave()}
+            disabled={createInvoice.isPending || updateInvoice.isPending}
+            className="flex-1 flex items-center justify-center gap-4 px-10 py-5 rounded-2xl border-2 border-slate-900 dark:border-white text-xs font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] bg-white dark:bg-transparent transition-all active:scale-[0.98] italic"
           >
-            <LuMessageCircle size={18} />
-            WhatsApp
+            <LuSave size={18} />
+            {mode === 'edit' ? 'Save Changes' : 'Save Invoice'}
           </button>
           <button 
-            onClick={() => toast.success("Invoice sent to client email")}
-            className="flex-1 flex items-center justify-center gap-3 px-8 py-5 rounded-4xl bg-brand-500 text-white text-[11px] font-black uppercase tracking-[0.2em] italic shadow-none"
+            onClick={() => handleSave('SENT')}
+            disabled={createInvoice.isPending || updateInvoice.isPending}
+            className="flex-1 flex items-center justify-center gap-4 px-10 py-5 rounded-2xl bg-brand-500 text-white text-xs font-black uppercase tracking-[0.25em] italic shadow-lg shadow-brand-500/20 active:scale-[0.98] transition-all"
           >
-            <LuMail size={18} />
-            Email
+            <LuArrowRight size={18} />
+            Issue & Send
           </button>
         </div>
       </div>

@@ -2,6 +2,8 @@ import React, { useState, useEffect } from "react";
 import { LuSave, LuMessageCircle, LuLoader } from "react-icons/lu";
 import api from "@/lib/axios";
 import toast from "react-hot-toast";
+import { useAuthStore } from "@/stores/auth/auth";
+import { mapToAuthUser } from "@/hooks/useAuth";
 
 interface UserProfile {
   fullName: string;
@@ -15,6 +17,7 @@ interface ProfileFormCardProps {
 }
 
 export const ProfileFormCard = ({ user, onUpdate }: ProfileFormCardProps) => {
+  const setUser = useAuthStore((s) => s.setUser);
   const [formData, setFormData] = useState({
     fullName: "",
     handle: "",
@@ -38,7 +41,11 @@ export const ProfileFormCard = ({ user, onUpdate }: ProfileFormCardProps) => {
     const toastId = toast.loading("Saving changes...");
 
     try {
-      await api.patch("/user/me", formData);
+      const userRes = await api.patch("/user/me", formData);
+      
+      // Sync with global AuthStore
+      setUser(mapToAuthUser(userRes.data.data));
+
       toast.success("Profile saved successfully", { id: toastId });
       onUpdate?.();
     } catch (error: any) {

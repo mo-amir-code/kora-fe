@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { LuArrowLeft, LuLoader } from "react-icons/lu";
+import { format } from "date-fns";
 import {
   BrandDetailHeader,
   BrandDetailTabs,
@@ -151,6 +152,29 @@ export default function BrandDetails() {
     isPrimary: c.isPrimary,
   }));
 
+  // Extract and map deals for the deals tab
+  const deals = ((brand as any).deals || []).map((d: any) => ({
+    id: d.id,
+    title: d.title,
+    date: format(new Date(d.createdAt), "MMM dd, yyyy"),
+    amount: formatCurrency(d.amount || 0),
+    status: d.paymentStatus,
+    stage: d.stage,
+    platforms: d.platforms || [],
+    logoUrl: brand.logoUrl,
+  }));
+
+  // Extract and map invoices for the invoices tab
+  const invoices = ((brand as any).deals || []).flatMap((d: any) => 
+    (d.invoices || []).map((inv: any) => ({
+      id: inv.invoiceNumber,
+      dbId: inv.id,
+      dateIssued: format(new Date(inv.issuedDate), "MMM dd, yyyy"),
+      amount: formatCurrency(inv.total),
+      status: inv.status,
+    }))
+  );
+
   return (
     <div className="space-y-6 relative">
       {/* Loading overlay — blocks interaction during mutations */}
@@ -193,12 +217,12 @@ export default function BrandDetails() {
           <BrandDetailTabs
             activeTab={activeTab}
             onTabChange={setActiveTab}
-            invoiceCount={0}
+            invoiceCount={invoices.length}
           />
 
           <div className="mt-6">
-            {activeTab === "deals" && <BrandDealsTab deals={[]} />}
-            {activeTab === "invoices" && <BrandInvoicesTab invoices={[]} />}
+            {activeTab === "deals" && <BrandDealsTab deals={deals} />}
+            {activeTab === "invoices" && <BrandInvoicesTab invoices={invoices} />}
             {activeTab === "notes" && (
               <BrandNotesTab
                 notes={brand.notes ?? []}

@@ -31,6 +31,16 @@ export const useAuthStore = create<AuthState>()(
           token: null,
           isAuthenticated: false,
         }),
+      syncUser: async () => {
+        try {
+          const { authService } = await import("@/services/auth.service");
+          const { mapToAuthUser } = await import("@/hooks/useAuth");
+          const me = await authService.getMe();
+          set({ user: mapToAuthUser(me) });
+        } catch (error) {
+          console.error("Failed to sync user:", error);
+        }
+      },
     }),
     {
       name: "kora-auth",

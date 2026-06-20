@@ -8,6 +8,10 @@ const nextConfig: NextConfig = {
         hostname: "storage.googleapis.com",
         pathname: "/kora-upload/**",
       },
+      {
+        protocol: "https",
+        hostname: "lh3.googleusercontent.com"
+      },
     ],
   },
   turbopack: {

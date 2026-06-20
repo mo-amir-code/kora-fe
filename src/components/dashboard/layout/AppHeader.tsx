@@ -1,8 +1,10 @@
 "use client";
 import { ThemeToggleButton } from "@/components/common";
 // import NotificationDropdown from "@/components/dashboard/header/NotificationDropdown";
+import NotificationDropdown from "@/components/dashboard/header/NotificationDropdown";
 import { UserDropdown } from "@/components/dashboard/header";
 import { useSidebar } from "@/context/SidebarContext";
+import { useAuthStore } from "@/stores/auth/auth";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useState, useEffect, useRef } from "react";
@@ -10,8 +12,12 @@ import { APP_NAME } from "@/lib/constants";
 
 const AppHeader: React.FC = () => {
   const [isApplicationMenuOpen, setApplicationMenuOpen] = useState(false);
-
   const { isMobileOpen, toggleSidebar, toggleMobileSidebar } = useSidebar();
+  const syncUser = useAuthStore((s) => s.syncUser);
+
+  useEffect(() => {
+    syncUser();
+  }, [syncUser]);
 
   const handleToggle = () => {
     if (window.innerWidth >= 1024) {

@@ -1,59 +1,18 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { LuPlus, LuCalendar } from "react-icons/lu";
+import { LuPlus, LuCalendar, LuChevronDown } from "react-icons/lu";
 import { InvoiceTable } from "@/components/dashboard/invoices";
 import type { Invoice } from "@/components/dashboard/invoices";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
-import { isWithinInterval } from "date-fns";
-
-const DUMMY_INVOICES: (Invoice & { rawDate: Date })[] = [
-  {
-    id: "#INV-2023-089",
-    brand: { name: "Samsung Mobile India" },
-    timeline: { label: "Issued", date: "Oct 12", subLabel: "Due", subDate: "Nov 12", isOverdue: true },
-    amount: "₹14,20,500",
-    status: "Overdue",
-    rawDate: new Date(2023, 9, 12)
-  },
-  {
-    id: "#INV-2023-092",
-    brand: { name: "Nike Running" },
-    timeline: { label: "Issued", date: "Nov 02", subLabel: "Due", subDate: "Dec 02" },
-    amount: "₹2,75,000",
-    status: "Sent",
-    rawDate: new Date(2023, 10, 2)
-  },
-  {
-    id: "#INV-2023-085",
-    brand: { name: "L'Oréal Paris" },
-    timeline: { label: "Issued", date: "Oct 28", subLabel: "Paid", subDate: "Nov 05", isPaid: true },
-    amount: "₹6,20,000",
-    status: "Paid",
-    rawDate: new Date(2023, 9, 28)
-  },
-  {
-    id: "#INV-2023-095",
-    brand: { name: "Skillshare Inc." },
-    timeline: { label: "Created", date: "Nov 10", subLabel: "Not Sent" },
-    amount: "₹1,10,000",
-    status: "Draft",
-    rawDate: new Date(2023, 10, 10)
-  },
-  {
-    id: "#INV-2023-094",
-    brand: { name: "Microsoft India" },
-    timeline: { label: "Issued", date: "Nov 08", subLabel: "Due", subDate: "Dec 08" },
-    amount: "₹8,50,000",
-    status: "Sent",
-    rawDate: new Date(2023, 10, 8)
-  }
-];
-
+import { useInvoicesList } from "@/hooks/useInvoices";
+import { format } from "date-fns";
 import Link from "next/link";
+import { Invoice as DBInvoice } from "@/services/invoice.service";
 
 const InvoicesPage = () => {
+  const { data: realInvoices, isLoading } = useInvoicesList();
   const [filter, setFilter] = useState<string>("All");
   const [dateRange, setDateRange] = useState<Date[]>([]);
   const flatpickrRef = useRef<any>(null);
@@ -97,8 +56,36 @@ const InvoicesPage = () => {
     }
   };
 
-  const filteredInvoices = DUMMY_INVOICES.filter(inv => {
-    const statusMatch = filter === "All" || inv.status === filter;
+  const mapInvoiceForTable = (inv: DBInvoice): (Invoice & { rawDate: Date; dbId: string }) => {
+    const issuedDate = new Date(inv.issuedDate);
+    const dueDate = new Date(inv.dueDate);
+    const isOverdue = new Date() > dueDate && inv.status !== 'PAID';
+    
+    return {
+      id: inv.invoiceNumber,
+      dbId: inv.id, // Keep the real ID for editing
+      brand: {
+        name: inv.deal?.brand?.name || "Unknown Brand",
+        logo: inv.deal?.brand?.logoUrl
+      },
+      timeline: {
+        label: "Issued",
+        date: format(issuedDate, "MMM dd"),
+        subLabel: inv.status === 'PAID' ? "Paid" : "Due",
+        subDate: format(dueDate, "MMM dd"),
+        isPaid: inv.status === 'PAID',
+        isOverdue: isOverdue
+      },
+      amount: `₹${inv.total.toLocaleString("en-IN")}`,
+      status: inv.status as any,
+      rawDate: issuedDate
+    };
+  };
+
+  const invoices = realInvoices?.map(mapInvoiceForTable) || [];
+
+  const filteredInvoices = invoices.filter(inv => {
+    const statusMatch = filter === "All" || inv.status.toLowerCase() === filter.toLowerCase();
     let dateMatch = true;
     if (dateRange.length === 2) {
       const start = new Date(dateRange[0]);
@@ -113,7 +100,7 @@ const InvoicesPage = () => {
 
   const getRangeLabel = () => {
     if (dateRange.length === 2) {
-      return `${dateRange[0].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} - ${dateRange[1].toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`;
+      return `${format(dateRange[0], "MMM dd")} - ${format(dateRange[1], "MMM dd")}`;
     }
     return "Date Range";
   };
@@ -122,21 +109,17 @@ const InvoicesPage = () => {
     <div className="p-4 sm:p-10 space-y-8 min-h-screen bg-white dark:bg-gray-900 transition-colors animate-in fade-in duration-700">
       {/* Action Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-        <div className="flex flex-wrap items-center gap-3">
-          {["All", "Sent", "Draft", "Paid", "Overdue"].map((f) => (
-            <button
-              key={f}
-              onClick={() => setFilter(f)}
-              className={`
-                px-3 sm:px-5 py-1.5 sm:py-2.5 rounded-lg sm:rounded-xl text-[9px] sm:text-[10px] font-black uppercase tracking-widest transition-all duration-300 border
-                ${filter === f 
-                  ? "bg-gray-900 dark:bg-brand-500 text-white border-transparent shadow-lg shadow-brand-500/10 scale-105" 
-                  : "bg-gray-50 dark:bg-gray-800 text-gray-400 dark:text-gray-500 border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700"}
-              `}
-            >
-              {f}
-            </button>
-          ))}
+        <div className="relative group">
+          <select
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+            className="appearance-none pl-6 pr-12 py-3.5 rounded-2xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-800 text-[10px] font-black uppercase tracking-widest text-gray-500 dark:text-gray-400 hover:border-brand-500/50 hover:text-brand-500 transition-all focus:outline-none cursor-pointer shadow-sm"
+          >
+            {["All", "Sent", "Draft", "Viewed", "Partially Paid", "Paid", "Overdue", "Void", "Cancelled"].map((f) => (
+              <option key={f} value={f}>{f}</option>
+            ))}
+          </select>
+          <LuChevronDown className="absolute right-6 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none group-hover:text-brand-500 transition-colors" size={14} />
         </div>
 
         <div className="flex items-center gap-3">
