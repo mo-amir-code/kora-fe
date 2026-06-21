@@ -18,6 +18,7 @@ interface Event {
   id: string;
   date: Date;
   title: string;
+  subtitle?: string;
   status: EventStatus;
   time?: string;
 }
@@ -105,6 +106,7 @@ const CalendarGrid = ({ currentDate, events, view }: CalendarGridProps) => {
                     <EventBadge 
                       key={event.id}
                       title={event.title}
+                      subtitle={event.subtitle}
                       status={event.status}
                       time={event.time}
                       isCompact

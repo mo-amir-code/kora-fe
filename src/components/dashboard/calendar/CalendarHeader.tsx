@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { LuChevronLeft, LuChevronRight, LuPlus } from "react-icons/lu";
+import { LuChevronLeft, LuChevronRight } from "react-icons/lu";
 import { format } from "date-fns";
 
 interface CalendarHeaderProps {
@@ -54,7 +54,7 @@ const CalendarHeader = ({
 
       <div className="flex flex-col sm:flex-row items-center gap-3 w-full lg:w-auto">
         {/* View Switcher - Hidden on mobile, shown at bottom in page.tsx */}
-        <div className="hidden sm:flex items-center bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl p-1 shadow-sm w-full sm:w-auto">
+      <div className="hidden sm:flex items-center bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl p-1 shadow-sm w-full sm:w-auto">
           <button 
             onClick={() => onViewChange("month")}
             className={`flex-1 sm:flex-none px-4 sm:px-6 py-2 sm:py-2.5 rounded-lg sm:rounded-xl text-[10px] sm:text-xs font-black uppercase tracking-widest transition-all ${
@@ -76,14 +76,8 @@ const CalendarHeader = ({
             Week
           </button>
         </div>
-
-        {/* Add Deadline Action */}
-        <button className="flex items-center justify-center gap-2 w-full sm:w-auto px-6 py-2.5 sm:py-3.5 rounded-xl sm:rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[10px] sm:text-xs font-black shadow-xl transition-all hover:scale-[1.02] active:scale-95 uppercase tracking-widest group">
-          <LuPlus size={16} strokeWidth={3} className="group-hover:rotate-90 transition-transform duration-300 sm:w-[18px] sm:h-[18px]" />
-          Add Deadline
-        </button>
-      </div>
     </div>
+  </div>
   );
 };
 

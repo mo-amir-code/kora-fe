@@ -1,48 +1,68 @@
 "use client";
 
-import React, { useState } from "react";
-import { addMonths, subMonths } from "date-fns";
+import React, { useState, useMemo } from "react";
+import {
+  addDays,
+  addMonths,
+  subMonths,
+  startOfMonth,
+  endOfMonth,
+  isSameMonth,
+} from "date-fns";
 import { CalendarHeader, CalendarGrid, CalendarSidebar } from "@/components/dashboard/calendar";
-
-// Dummy Data relative to current date (May 31, 2026)
-const DUMMY_EVENTS = [
-  {
-    id: "1",
-    date: new Date(2026, 4, 31), // May 31
-    title: "TechCorp Review",
-    status: "warning" as const,
-    time: "10:00 AM",
-  },
-  {
-    id: "2",
-    date: new Date(2026, 5, 1), // June 1
-    title: "Nykaa Campaign",
-    status: "brand" as const,
-    time: "2:00 PM",
-  },
-  {
-    id: "3",
-    date: new Date(2026, 5, 3), // June 3
-    title: "Samsung Integration",
-    status: "success" as const,
-    time: "11:00 AM",
-  },
-  {
-    id: "4",
-    date: new Date(2026, 5, 5), // June 5
-    title: "Draft Overdue",
-    status: "danger" as const,
-    time: "4:30 PM",
-  },
-];
+import { useCalendarEvents } from "@/hooks/useCalendar";
+import { LuLoader } from "react-icons/lu";
 
 const CalendarPage = () => {
-  const [currentDate, setCurrentDate] = useState(new Date());
+  const today = useMemo(() => new Date(), []);
+  const [currentDate, setCurrentDate] = useState(today);
   const [view, setView] = useState<"month" | "week">("month");
+
+  /**
+   * Smart range calculation:
+   * - Base: always 1st → last day of the selected month.
+   * - Current month edge case: if today + 7 days spills into the next month,
+   *   extend endDate to cover those extra days so the Week sidebar stays complete.
+   */
+  const { startDate, endDate } = useMemo(() => {
+    const start = startOfMonth(currentDate);
+    let end = endOfMonth(currentDate);
+
+    // Only apply the buffer when the user is viewing the current month
+    if (isSameMonth(currentDate, today)) {
+      const weekAhead = addDays(today, 7);
+      if (weekAhead > end) {
+        end = weekAhead;
+      }
+    }
+
+    return { startDate: start, endDate: end };
+  }, [currentDate, today]);
+
+  const { data: rawEvents, isLoading, error } = useCalendarEvents(startDate, endDate);
 
   const handlePrevMonth = () => setCurrentDate(subMonths(currentDate, 1));
   const handleNextMonth = () => setCurrentDate(addMonths(currentDate, 1));
-  const handleToday = () => setCurrentDate(new Date());
+  const handleToday = () => setCurrentDate(today);
+
+  // Parse ISO date strings from backend into Date objects
+  const events = rawEvents?.map(event => ({ ...event, date: new Date(event.date) })) ?? [];
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <LuLoader className="h-8 w-8 animate-spin text-gray-400" />
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <p className="text-sm text-red-500">Failed to load calendar events.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 sm:p-10 space-y-8 min-h-screen bg-white dark:bg-gray-900 transition-colors animate-in fade-in duration-700">
@@ -61,7 +81,7 @@ const CalendarPage = () => {
         <div className="xl:col-span-8 space-y-6">
           <CalendarGrid 
             currentDate={currentDate} 
-            events={DUMMY_EVENTS} 
+            events={events} 
             view={view}
           />
 
@@ -94,7 +114,7 @@ const CalendarPage = () => {
         <div className="xl:col-span-4 sticky top-10">
           <CalendarSidebar 
             currentDate={currentDate}
-            events={DUMMY_EVENTS}
+            events={events}
             view={view}
           />
         </div>

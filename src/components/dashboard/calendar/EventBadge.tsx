@@ -4,6 +4,7 @@ export type EventStatus = 'success' | 'warning' | 'danger' | 'brand';
 
 interface EventBadgeProps {
   title: string;
+  subtitle?: string;
   status: EventStatus;
   time?: string;
   isCompact?: boolean;
@@ -39,7 +40,7 @@ const getStatusStyles = (status: EventStatus) => {
   return map[status];
 };
 
-const EventBadge = ({ title, status, time, isCompact = false }: EventBadgeProps) => {
+const EventBadge = ({ title, subtitle, status, time, isCompact = false }: EventBadgeProps) => {
   const styles = getStatusStyles(status);
 
   if (isCompact) {
@@ -65,7 +66,11 @@ const EventBadge = ({ title, status, time, isCompact = false }: EventBadgeProps)
         <div className={`w-0.5 sm:w-1 h-6 sm:h-8 rounded-full bg-gradient-to-b from-white/20 to-transparent ${styles.dot}`} />
         <div className="space-y-0.5">
           <h4 className="text-xs sm:text-sm font-black text-gray-900 dark:text-white leading-tight truncate">{title}</h4>
-          <p className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest opacity-60">TechCorp India</p>
+          {subtitle && (
+            <p className="text-[8px] sm:text-[10px] font-bold text-gray-400 uppercase tracking-widest opacity-60">
+              {subtitle}
+            </p>
+          )}
         </div>
       </div>
     </div>

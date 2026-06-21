@@ -8,6 +8,7 @@ interface Event {
   id: string;
   date: Date;
   title: string;
+  subtitle?: string;
   status: EventStatus;
   time?: string;
 }
@@ -40,7 +41,7 @@ const CalendarSidebar = ({ currentDate, events, view }: CalendarSidebarProps) =>
   }, {} as Record<string, Event[]>);
 
   return (
-    <div className="space-y-6 sm:space-y-10">
+    <div className="space-y-6 sm:space-y-8">
       <div className="space-y-1 sm:space-y-2">
         <h2 className="text-xl sm:text-2xl font-black text-gray-900 dark:text-white tracking-tighter">
           {view === "month" ? "Selected Month" : "Current Week"}
@@ -53,7 +54,8 @@ const CalendarSidebar = ({ currentDate, events, view }: CalendarSidebarProps) =>
         </p>
       </div>
 
-      <div className="space-y-6 sm:space-y-10">
+      {/* Scrollable event list */}
+      <div className="max-h-[72vh] overflow-y-auto overflow-x-hidden space-y-6 sm:space-y-8 pr-1 pb-8 custom-scrollbar">
         {Object.entries(groupedEvents).map(([dayLabel, dayEvents]) => (
           <div key={dayLabel} className="space-y-4 sm:space-y-6">
             <div className="flex items-center gap-2 sm:gap-3">
@@ -66,6 +68,7 @@ const CalendarSidebar = ({ currentDate, events, view }: CalendarSidebarProps) =>
                 <EventBadge 
                   key={event.id}
                   title={event.title}
+                  subtitle={event.subtitle}
                   status={event.status}
                   time={event.time}
                 />
