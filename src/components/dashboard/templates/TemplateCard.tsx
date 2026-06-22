@@ -58,22 +58,22 @@ const TemplateCard = ({
           <LuClock className="h-3.5 w-3.5" strokeWidth={3} />
           <span>Last used: {lastUsed}</span>
         </div>
-        
+
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <button 
+          <button
             onClick={onEdit}
             className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 text-[10px] sm:text-[11px] font-bold text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all uppercase tracking-widest active:scale-95"
           >
             <LuPencil className="h-3.5 w-3.5" strokeWidth={2.5} />
             Edit
           </button>
-          <button 
+          {/* <button 
             onClick={onUse}
             className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-4 sm:px-5 py-2.5 rounded-xl bg-brand-600 dark:bg-brand-600 text-[10px] sm:text-[11px] font-bold text-white shadow-lg shadow-brand-500/20 hover:bg-brand-700 transition-all uppercase tracking-widest active:scale-95"
           >
             Use Template
             <LuArrowRight className="h-4 w-4" strokeWidth={3} />
-          </button>
+          </button> */}
         </div>
       </div>
     </div>

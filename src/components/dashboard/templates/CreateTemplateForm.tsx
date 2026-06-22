@@ -9,18 +9,23 @@ import {
   LuMail, 
   LuPlus 
 } from "react-icons/lu";
+import { toast } from "react-hot-toast";
 
 interface CreateTemplateFormProps {
+  initialData?: any;
   onSave: (data: any) => void;
   onCancel: () => void;
 }
 
 const CATEGORIES = [
-  "Payment Reminder",
-  "Invoice Follow-up",
-  "Deal Pitch",
-  "Deliverable Submitted",
-  "Thank You"
+  { id: "OUTREACH", label: "Brand Outreach" },
+  { id: "FOLLOW_UP", label: "Follow-up" },
+  { id: "NEGOTIATION", label: "Negotiation" },
+  { id: "CONTRACT", label: "Contract" },
+  { id: "INVOICE", label: "Invoice" },
+  { id: "PAYMENT_REMINDER", label: "Payment Reminder" },
+  { id: "THANK_YOU", label: "Thank You" },
+  { id: "CUSTOM", label: "Custom" }
 ];
 
 const PLACEHOLDERS = [
@@ -31,26 +36,51 @@ const PLACEHOLDERS = [
   "[Invoice Link]"
 ];
 
-const CreateTemplateForm = ({ onSave, onCancel }: CreateTemplateFormProps) => {
-  const [name, setName] = useState("");
-  const [category, setCategory] = useState("");
-  const [channels, setChannels] = useState({ whatsapp: true, email: false });
-  const [body, setBody] = useState("");
+const CreateTemplateForm = ({ initialData, onSave, onCancel }: CreateTemplateFormProps) => {
+  const isEditing = !!initialData;
+  const [name, setName] = useState(initialData?.name || "");
+  const [category, setCategory] = useState(initialData?.category || "");
+  
+  // Map backend channels (string array) to local boolean state
+  const [channels, setChannels] = useState({ 
+    whatsapp: initialData?.channels?.includes("WHATSAPP") ?? true, 
+    email: initialData?.channels?.includes("EMAIL") ?? false 
+  });
+  
+  const [body, setBody] = useState(initialData?.body || "");
 
   const toggleChannel = (channel: 'whatsapp' | 'email') => {
-    setChannels(prev => ({ ...prev, [channel]: !prev[channel] }));
+    setChannels((prev: { whatsapp: boolean; email: boolean }) => ({ ...prev, [channel]: !prev[channel] }));
   };
 
   const addPlaceholder = (placeholder: string) => {
-    setBody(prev => prev + " " + placeholder);
+    setBody((prev: string) => prev + " " + placeholder);
   };
 
   const handleSave = () => {
+    if (!name.trim()) {
+      toast.error("Template name is required");
+      return;
+    }
+    if (!category) {
+      toast.error("Please select a category");
+      return;
+    }
+    if (!body.trim()) {
+      toast.error("Template body cannot be empty");
+      return;
+    }
+
+    // Map boolean toggles to string array for backend
+    const channelArray: string[] = [];
+    if (channels.whatsapp) channelArray.push("WHATSAPP");
+    if (channels.email) channelArray.push("EMAIL");
+
     onSave({
-      name,
+      name: name.trim(),
       category,
-      channels,
-      body
+      channels: channelArray,
+      body: body.trim()
     });
   };
 
@@ -59,8 +89,8 @@ const CreateTemplateForm = ({ onSave, onCancel }: CreateTemplateFormProps) => {
       {/* Top Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
         <div className="space-y-1">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Create New Template</h1>
-          <p className="text-xs sm:text-sm text-gray-400 font-medium sm:hidden">Draft a custom message for your partners</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white tracking-tight">{isEditing ? "Edit Template" : "Create New Template"}</h1>
+          <p className="text-xs sm:text-sm text-gray-400 font-medium sm:hidden">{isEditing ? "Refine your saved response" : "Draft a custom message for your partners"}</p>
         </div>
 
         <div className="flex items-center gap-3">
@@ -75,7 +105,7 @@ const CreateTemplateForm = ({ onSave, onCancel }: CreateTemplateFormProps) => {
             className="flex-1 sm:flex-none px-6 py-2.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-[11px] sm:text-xs font-bold shadow-lg shadow-brand-500/20 transition-all active:scale-95 uppercase tracking-widest flex items-center justify-center gap-2"
           >
             <LuSave size={14} strokeWidth={2.5} />
-            Save Template
+            {isEditing ? "Save Changes" : "Save Template"}
           </button>
         </div>
       </div>
@@ -112,7 +142,7 @@ const CreateTemplateForm = ({ onSave, onCancel }: CreateTemplateFormProps) => {
                   className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl sm:rounded-2xl px-4 sm:px-5 py-3 sm:py-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
                 >
                   <option value="">Select a category</option>
-                  {CATEGORIES.map(cat => <option key={cat} value={cat}>{cat}</option>)}
+                  {CATEGORIES.map(cat => <option key={cat.id} value={cat.id}>{cat.label}</option>)}
                 </select>
                 <LuChevronDown className="absolute right-4 sm:right-5 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={18} />
               </div>

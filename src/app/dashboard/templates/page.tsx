@@ -2,68 +2,52 @@
 
 import React, { useState } from "react";
 import { TemplatesFilter, TemplateCard, CreateTemplateCard, CreateTemplateForm } from "@/components/dashboard/templates";
+import { useTemplates, useCreateTemplate, useUpdateTemplate } from "@/hooks/useTemplates";
+import { LuLoader, LuLayoutTemplate } from "react-icons/lu";
+import { MessageTemplate } from "@/services/template.service";
 
 const FILTER_OPTIONS = [
-  { id: "reminder", label: "Payment Reminder" },
-  { id: "followup", label: "Invoice Follow-up" },
-  { id: "pitch", label: "Deal Pitch" },
-  { id: "deliverable", label: "Deliverable Submitted" },
-  { id: "thanks", label: "Thank You" },
-];
-
-type Platform = "WhatsApp" | "Email";
-
-interface Template {
-  id: number;
-  category: string;
-  title: string;
-  platforms: Platform[];
-  preview: string;
-  lastUsed: string;
-}
-
-const TEMPLATESDATA: Template[] = [
-  {
-    id: 1,
-    category: "reminder",
-    title: "Gentle Payment Nudge",
-    platforms: ["WhatsApp", "Email"],
-    preview: "Hi [Brand Contact], hope you're having a great week! Just dropping a quick note to check on the status of invoice #...",
-    lastUsed: "2 days ago",
-  },
-  {
-    id: 2,
-    category: "reminder",
-    title: "Overdue Invoice - Final Notice",
-    platforms: ["Email"],
-    preview: "Dear [Brand Contact], This is a formal follow-up regarding invoice #[Invoice Number] which is now [Days Overdue] da...",
-    lastUsed: "12 days ago",
-  },
-  {
-    id: 3,
-    category: "reminder",
-    title: "Pre-payment Confirmation",
-    platforms: ["WhatsApp"],
-    preview: "Hey [Brand Contact]! We're scheduled to start shooting tomorrow. Just confirming if the 50% advance payment has...",
-    lastUsed: "5 days ago",
-  },
+  { id: "ALL", label: "All Templates" },
+  { id: "OUTREACH", label: "Brand Outreach" },
+  { id: "FOLLOW_UP", label: "Follow-up" },
+  { id: "NEGOTIATION", label: "Negotiation" },
+  { id: "CONTRACT", label: "Contract" },
+  { id: "INVOICE", label: "Invoice" },
+  { id: "PAYMENT_REMINDER", label: "Payment Reminder" },
+  { id: "THANK_YOU", label: "Thank You" },
+  { id: "CUSTOM", label: "Custom" }
 ];
 
 const Templates = () => {
-  const [activeFilter, setActiveFilter] = useState("reminder");
-  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [activeFilter, setActiveFilter] = useState("ALL");
+  const [showForm, setShowForm] = useState(false);
+  const [selectedTemplate, setSelectedTemplate] = useState<MessageTemplate | null>(null);
 
-  const filteredTemplates = TEMPLATESDATA.filter(t => t.category === activeFilter);
+  const { data: templates, isLoading, error } = useTemplates(
+    activeFilter === "ALL" ? undefined : activeFilter
+  );
+  const createMutation = useCreateTemplate();
+  const updateMutation = useUpdateTemplate();
 
-  if (showCreateForm) {
+  const handleCloseForm = () => {
+    setShowForm(false);
+    setSelectedTemplate(null);
+  };
+
+  if (showForm) {
     return (
       <div className="min-h-screen bg-white dark:bg-gray-900 transition-colors p-4 sm:p-0">
         <CreateTemplateForm 
-          onSave={(data) => {
-            console.log("Saving template:", data);
-            setShowCreateForm(false);
+          initialData={selectedTemplate}
+          onSave={async (data) => {
+            if (selectedTemplate) {
+              await updateMutation.mutateAsync({ id: selectedTemplate.id, data });
+            } else {
+              await createMutation.mutateAsync(data);
+            }
+            handleCloseForm();
           }} 
-          onCancel={() => setShowCreateForm(false)} 
+          onCancel={handleCloseForm} 
         />
       </div>
     );
@@ -78,20 +62,35 @@ const Templates = () => {
         className="px-1" 
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 pb-10">
-        {/* Aesthetic Create New Template Button/Card - Always first */}
-        <CreateTemplateCard onClick={() => setShowCreateForm(true)} />
-        
-        {filteredTemplates.map((template) => (
-          <TemplateCard
-            key={template.id}
-            title={template.title}
-            platforms={template.platforms}
-            preview={template.preview}
-            lastUsed={template.lastUsed}
-          />
-        ))}
-      </div>
+      {isLoading ? (
+        <div className="flex items-center justify-center py-20">
+          <LuLoader className="w-8 h-8 animate-spin text-brand-500" />
+        </div>
+      ) : error ? (
+        <div className="flex flex-col items-center justify-center py-20 gap-4 text-gray-500 border border-dashed border-gray-200 dark:border-gray-800 rounded-[2rem]">
+          <LuLayoutTemplate size={40} className="text-red-500 opacity-20" />
+          <p className="font-bold uppercase tracking-widest text-sm">Failed to load templates</p>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-8 pb-10 mt-1 sm:mt-2">
+          {/* Aesthetic Create New Template Button/Card - Always first */}
+          <CreateTemplateCard onClick={() => setShowForm(true)} />
+          
+          {templates?.map((template) => (
+            <TemplateCard
+              key={template.id}
+              title={template.name}
+              platforms={template.channels.map(c => c === "WHATSAPP" ? "WhatsApp" : "Email") as any}
+              preview={template.body}
+              lastUsed="Recently"
+              onEdit={() => {
+                setSelectedTemplate(template);
+                setShowForm(true);
+              }}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 };
