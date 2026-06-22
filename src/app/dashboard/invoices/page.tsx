@@ -3,13 +3,12 @@
 import React, { useState, useEffect, useRef } from "react";
 import { LuPlus, LuCalendar, LuChevronDown } from "react-icons/lu";
 import { InvoiceTable } from "@/components/dashboard/invoices";
-import type { Invoice } from "@/components/dashboard/invoices";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import { useInvoicesList } from "@/hooks/useInvoices";
 import { format } from "date-fns";
 import Link from "next/link";
-import { Invoice as DBInvoice } from "@/services/invoice.service";
+import { Invoice } from "@/services/invoice.service";
 
 const InvoicesPage = () => {
   const { data: realInvoices, isLoading } = useInvoicesList();
@@ -26,7 +25,6 @@ const InvoicesPage = () => {
         dateFormat: "M d",
         positionElement: buttonRef.current,
         onChange: (selectedDates) => {
-          // Flatten range: only update state when 2 dates are selected
           if (selectedDates.length === 2) {
             setDateRange(selectedDates);
           } else if (selectedDates.length === 0) {
@@ -56,45 +54,19 @@ const InvoicesPage = () => {
     }
   };
 
-  const mapInvoiceForTable = (inv: DBInvoice): (Invoice & { rawDate: Date; dbId: string }) => {
-    const issuedDate = new Date(inv.issuedDate);
-    const dueDate = new Date(inv.dueDate);
-    const isOverdue = new Date() > dueDate && inv.status !== 'PAID';
-    
-    return {
-      id: inv.invoiceNumber,
-      dbId: inv.id, // Keep the real ID for editing
-      brand: {
-        name: inv.deal?.brand?.name || "Unknown Brand",
-        logo: inv.deal?.brand?.logoUrl
-      },
-      timeline: {
-        label: "Issued",
-        date: format(issuedDate, "MMM dd"),
-        subLabel: inv.status === 'PAID' ? "Paid" : "Due",
-        subDate: format(dueDate, "MMM dd"),
-        isPaid: inv.status === 'PAID',
-        isOverdue: isOverdue
-      },
-      amount: `₹${inv.total.toLocaleString("en-IN")}`,
-      status: inv.status as any,
-      rawDate: issuedDate
-    };
-  };
-
-  const invoices = realInvoices?.map(mapInvoiceForTable) || [];
-
-  const filteredInvoices = invoices.filter(inv => {
+  const filteredInvoices = (realInvoices || []).filter(inv => {
     const statusMatch = filter === "All" || inv.status.toLowerCase() === filter.toLowerCase();
+    
     let dateMatch = true;
     if (dateRange.length === 2) {
       const start = new Date(dateRange[0]);
       start.setHours(0, 0, 0, 0);
       const end = new Date(dateRange[1]);
       end.setHours(23, 59, 59, 999);
-      const current = new Date(inv.rawDate);
-      dateMatch = current >= start && current <= end;
+      const issuedDate = new Date(inv.issuedDate);
+      dateMatch = issuedDate >= start && issuedDate <= end;
     }
+    
     return statusMatch && dateMatch;
   });
 
@@ -105,8 +77,16 @@ const InvoicesPage = () => {
     return "Date Range";
   };
 
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-white/10 border-t-gray-900 dark:border-t-white" />
+      </div>
+    );
+  }
+
   return (
-    <div className="p-4 sm:p-10 space-y-8 min-h-screen bg-white dark:bg-gray-900 transition-colors animate-in fade-in duration-700">
+    <div className="p-4 sm:p-10 space-y-8 min-h-screen bg-white dark:bg-gray-900 transition-colors">
       {/* Action Bar */}
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
         <div className="relative group">

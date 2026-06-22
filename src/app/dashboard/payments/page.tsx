@@ -1,127 +1,98 @@
-import React from "react";
-import { LuCircleAlert, LuClock, LuCircleCheck } from "react-icons/lu";
-import { PaymentStats, PaymentFilters, PaymentSection, PaymentItem } from "@/components/dashboard/payments";
-import type { PaymentItemProps } from "@/components/dashboard/payments/PaymentItem";
+'use client';
 
-const OVERDUE_PAYMENTS: PaymentItemProps[] = [
-  {
-    id: "1",
-    brand: "TechBrand India",
-    campaign: "Q3 Campaign",
-    invoiceNumber: "#INV-2023-089",
-    dueDate: "Oct 15",
-    amount: "₹1,00,000",
-    status: "overdue",
-    lateDays: 15,
-    logo: "https://images.unsplash.com/photo-1516321318423-f06f85e504b3?q=80\u0026w=100\u0026h=100\u0026auto=format"
-  },
-  {
-    id: "2",
-    brand: "Glow Skin Co",
-    campaign: "Moisturizer Launch",
-    invoiceNumber: "#INV-2023-092",
-    dueDate: "Oct 20",
-    amount: "₹50,000",
-    status: "overdue",
-    lateDays: 10,
-    logo: "https://images.unsplash.com/photo-1556228578-0d85b1a4d571?q=80\u0026w=100\u0026h=100\u0026auto=format"
-  }
-];
-
-const PENDING_PAYMENTS: PaymentItemProps[] = [
-  {
-    id: "3",
-    brand: "Lifestyle Co",
-    campaign: "Autumn Reels",
-    dueDate: "Nov 05",
-    amount: "₹75,000",
-    status: "pending",
-    logo: "https://images.unsplash.com/photo-1441986300917-64674bd600d8?q=80\u0026w=100\u0026h=100\u0026auto=format"
-  },
-  {
-    id: "4",
-    brand: "FitTrack",
-    campaign: "Yearly Subscription",
-    dueDate: "Nov 12",
-    amount: "₹45,000",
-    status: "pending",
-    logo: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80\u0026w=100\u0026h=100\u0026auto=format"
-  }
-];
-
-const PAID_PAYMENTS: PaymentItemProps[] = [
-  {
-    id: "5",
-    brand: "FitnessApp Promo",
-    campaign: "Home Workout",
-    datePaid: "Oct 28",
-    amount: "₹1,20,000",
-    status: "paid",
-    logo: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?q=80\u0026w=100\u0026h=100\u0026auto=format"
-  }
-];
+import React, { useState } from 'react';
+import { LuPlus, LuFilter, LuCalendar } from 'react-icons/lu';
+import { usePayments, usePaymentStats } from '@/hooks/usePayments';
+import { PaymentStats } from '@/components/dashboard/payments/PaymentStats';
+import { PaymentTable } from '@/components/dashboard/payments/PaymentTable';
 
 export default function PaymentsPage() {
+  const [filter, setFilter] = useState('all');
+  
+  const { data: payments = [], isLoading: paymentsLoading } = usePayments(filter);
+  const { data: stats, isLoading: statsLoading } = usePaymentStats();
+
+  const isLoading = paymentsLoading || statsLoading;
+
+  const filters = [
+    { label: 'All Payments', value: 'all' },
+    { label: 'Pending', value: 'PENDING' },
+    { label: 'Overdue', value: 'OVERDUE' },
+    { label: 'Paid', value: 'PAID' },
+  ];
+
   return (
-    <div className="max-w-[1600px] mx-auto p-4 sm:p-6 lg:p-8 space-y-8 sm:space-y-12 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
-
-      <div className="flex justify-end">
-        <PaymentFilters />
+    <div className="flex flex-col gap-8 p-6 md:p-10 max-w-7xl mx-auto min-h-screen">
+      {/* Header */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
+        <div className="flex flex-col gap-1">
+          <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
+            Payments & Cash Flow
+          </h1>
+          <p className="text-gray-500 dark:text-gray-400 font-medium">
+            Monitor your revenue, pending invoices, and upcoming milestones.
+          </p>
+        </div>
+        <div className="flex items-center gap-3">
+          <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-95">
+            <LuCalendar className="h-4 w-4" />
+            Schedule Reminder
+          </button>
+          <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-sm font-bold text-white dark:text-gray-900 hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none">
+            <LuPlus className="h-4 w-4" strokeWidth={3} />
+            Create Invoice
+          </button>
+        </div>
       </div>
 
-      {/* Metrics Board */}
-      <PaymentStats />
-
-      {/* Categorized Lists */}
-      <div className="space-y-12 sm:space-y-16">
-
-        {/* Overdue Section */}
-        <PaymentSection
-          title="Overdue — Needs Attention"
-          icon={<LuCircleAlert size={22} strokeWidth={2} className="text-rose-500" />}
-          count={OVERDUE_PAYMENTS.length}
-          content={
-            OVERDUE_PAYMENTS.map(payment => (
-              <PaymentItem key={payment.id} {...payment} />
-            ))
-          }
+      {/* Stats Section */}
+      {stats && (
+        <PaymentStats 
+          received={stats.received}
+          pending={stats.pending}
+          overdue={stats.overdue}
+          total={stats.total}
         />
+      )}
 
-        {/* Pending Section */}
-        <PaymentSection
-          title="Pending Payments"
-          icon={<LuClock size={22} strokeWidth={2} className="text-brand-500" />}
-          count={PENDING_PAYMENTS.length}
-          content={
-            PENDING_PAYMENTS.map(payment => (
-              <PaymentItem key={payment.id} {...payment} />
-            ))
-          }
-        />
+      {/* List Section */}
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div className="flex items-center gap-2 p-1 rounded-xl bg-gray-100 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-800 w-fit">
+            {filters.map((f) => (
+              <button
+                key={f.value}
+                onClick={() => setFilter(f.value)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                  filter === f.value
+                    ? 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 dark:hover:text-gray-300'
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+          <div className="flex items-center gap-2">
+             <div className="relative">
+              <LuFilter className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <select className="pl-9 pr-4 py-2 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-medium text-gray-700 dark:text-gray-300 appearance-none focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-white/20 transition-all">
+                <option>Sort by: Newest</option>
+                <option>Sort by: Oldest</option>
+                <option>Sort by: Highest Amount</option>
+              </select>
+             </div>
+          </div>
+        </div>
 
-        {/* Paid Section (Collapsible) */}
-        <PaymentSection
-          title="Paid"
-          icon={<LuCircleCheck size={22} strokeWidth={2} className="text-emerald-500" />}
-          count={PAID_PAYMENTS.length}
-          isCollapsible={true}
-          defaultOpen={false}
-          content={
-            PAID_PAYMENTS.map(payment => (
-              <PaymentItem key={payment.id} {...payment} />
-            ))
-          }
-        />
-
+        {isLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-white/10 border-t-gray-900 dark:border-t-white" />
+          </div>
+        ) : (
+          <PaymentTable payments={payments} />
+        )}
       </div>
-
-      {/* Footer / Info */}
-      <div className="pt-8 border-t border-gray-100 dark:border-gray-800 text-center">
-        <p className="text-[10px] font-bold text-gray-400 dark:text-gray-600 uppercase tracking-[0.2em]">
-          All transactions are handled securely via Kora Pay
-        </p>
-      </div>
-
     </div>
   );
 }

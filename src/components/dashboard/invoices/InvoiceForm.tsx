@@ -22,6 +22,7 @@ import { useProfile } from "@/hooks/useProfile";
 import { CreateInvoiceData, InvoiceLineItem, InvoiceStatus } from "@/services/invoice.service";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import toast from "react-hot-toast";
+import { formatInvoiceCurrency, formatInvoiceDate, generateInvoicePDF } from "./invoice-utils";
 
 interface LineItem {
   id: string;
@@ -165,13 +166,8 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
   };
   const invoiceRows = lineItems.filter((item) => item.description.trim() || item.amount > 0 || item.rate > 0);
 
-  const formatMoney = (value: number) => `₹${Math.round(value).toLocaleString("en-IN")}`;
-
-  const formatDate = (value: string) => {
-    const parsed = new Date(value);
-    if (Number.isNaN(parsed.getTime())) return value;
-    return parsed.toLocaleDateString("en-GB", { day: "2-digit", month: "short", year: "numeric" });
-  };
+  const formatMoney = formatInvoiceCurrency;
+  const formatDate = formatInvoiceDate;
 
   const handleAddLineItem = () => {
     setLineItems([
@@ -207,69 +203,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
   const goBack = () => router.push('/dashboard/invoices');
 
   const downloadPDF = async () => {
-    const input = document.getElementById("invoice-pdf-preview");
-    if (!input) return;
-
-    try {
-      const canvas = await html2canvas(input, {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff",
-        onclone: (clonedDoc) => {
-          // ULTRA-AGGRESSIVE FIX: html2canvas has a fragile CSS parser that crashes on 'oklch'.
-          // We don't just remove styles, we globally purge any oklch string from the clone.
-          
-          // 1. Remove all external/internal styles that might contain oklch
-          const styles = clonedDoc.querySelectorAll('style, link[rel="stylesheet"]');
-          styles.forEach(s => s.remove());
-
-          // 2. Clear all inline styles that might use oklch or complex modern CSS
-          const allElements = clonedDoc.body.querySelectorAll('*');
-          allElements.forEach((el: any) => {
-            const styleAttr = el.getAttribute('style') || '';
-            if (styleAttr.includes('oklch')) {
-              el.setAttribute('style', styleAttr.replace(/oklch\([^)]*\)/g, '#101828'));
-            }
-            // Ensure contrast for specific components
-            if (el.classList.contains('bg-brand-500')) el.style.backgroundColor = '#465fff';
-            if (el.classList.contains('text-white')) el.style.color = '#ffffff';
-            el.style.boxShadow = 'none';
-          });
-
-          // 3. Inject a standard-compliant, legacy-safe base stylesheet
-          const minimalStyle = clonedDoc.createElement('style');
-          minimalStyle.innerHTML = `
-            * { 
-              font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important; 
-              border-color: #e2e8f0 !important; 
-              color-scheme: light !important;
-            }
-            .font-black { font-weight: 900 !important; }
-            .uppercase { text-transform: uppercase !important; }
-            .italic { font-style: italic !important; }
-            .bg-brand-500 { background-color: #465fff !important; color: #ffffff !important; }
-            .bg-emerald-500 { background-color: #10b981 !important; color: #ffffff !important; }
-            .text-slate-900 { color: #0f172a !important; }
-            .text-slate-400 { color: #94a3b8 !important; }
-            .bg-white { background-color: #ffffff !important; }
-            .bg-slate-50 { background-color: #f8fafc !important; }
-            .border-slate-900 { border-color: #0f172a !important; }
-            input, select { background-color: #f8fafc !important; border-radius: 8px !important; }
-          `;
-          clonedDoc.head.appendChild(minimalStyle);
-        }
-      });
-      const imgData = canvas.toDataURL("image/png");
-      const pdf = new jsPDF("p", "mm", "a4");
-      const pdfWidth = pdf.internal.pageSize.getWidth();
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-      
-      pdf.save(`${formData.invoiceNumber}.pdf`);
-      toast.success("PDF generated and download started");
-    } catch (error) {
-      console.error("PDF Generation error:", error);
-      toast.error("Failed to generate PDF. Check browser orientation.");
-    }
+    await generateInvoicePDF("invoice-pdf-preview", formData.invoiceNumber);
   };
 
   const getStatusDisplay = () => {
