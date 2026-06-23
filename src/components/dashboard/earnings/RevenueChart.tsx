@@ -1,18 +1,16 @@
 "use client";
 
 import React from "react";
+import type { EarningsCurrency, EarningsDashboard } from "@/services/earnings.service";
+import { formatCompactCurrency } from "./earnings-utils";
 
-const CHART_DATA = [
-  { month: "Dec", paid: 45, pending: 15 },
-  { month: "Jan", paid: 52, pending: 25 },
-  { month: "Feb", paid: 38, pending: 40 },
-  { month: "Mar", paid: 65, pending: 20 },
-  { month: "Apr", paid: 48, pending: 35 },
-  { month: "May", paid: 72, pending: 18 },
-];
+interface RevenueChartProps {
+  trend: EarningsDashboard['trend'];
+  currency: EarningsCurrency;
+}
 
-const RevenueChart = () => {
-  const maxVal = 100; // Normalize the scale (e.g., ₹100k max)
+const RevenueChart = ({ trend, currency }: RevenueChartProps) => {
+  const maxVal = Math.max(1, ...trend.map((item) => item.paid + item.pending));
 
   return (
     <div className="p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-sm h-full flex flex-col">
@@ -31,12 +29,12 @@ const RevenueChart = () => {
       </div>
 
       <div className="flex-1 flex items-end justify-between gap-1 sm:gap-4 pt-4 min-h-[220px] sm:min-h-[240px] h-56 sm:h-64">
-        {CHART_DATA.map((data) => (
-          <div key={data.month} className="flex-1 h-full flex flex-col items-center group">
+        {trend.map((data) => (
+          <div key={data.monthKey} className="flex-1 h-full flex flex-col items-center group">
             <div className="w-full max-w-[32px] sm:max-w-[40px] h-full flex flex-col justify-end gap-0.5 relative">
               {/* Tooltip on Hover */}
               <div className="absolute -top-10 sm:-top-12 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[9px] sm:text-[10px] px-1.5 sm:px-2 py-1 rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-10 pointer-events-none shadow-xl border border-white/10">
-                Paid: ₹{data.paid}k | Pend: ₹{data.pending}k
+                Paid: {formatCompactCurrency(data.paid, currency)} | Pend: {formatCompactCurrency(data.pending, currency)}
               </div>
               
               {/* Stacked Bars */}

@@ -1,7 +1,9 @@
 "use client";
 
 import React from "react";
-import { LuTrendingUp, LuClock, LuInfo, LuDollarSign } from "react-icons/lu";
+import { LuTrendingUp, LuTrendingDown, LuClock, LuInfo, LuDollarSign } from "react-icons/lu";
+import type { EarningsCurrency, EarningsDashboard } from "@/services/earnings.service";
+import { formatEarningsCurrency } from "./earnings-utils";
 
 interface MetricCardProps {
   title: string;
@@ -30,22 +32,29 @@ const MetricCard = ({ title, value, subValue, subValueColor = "text-gray-500", i
   </div>
 );
 
-const MetricsOverview = () => {
+interface MetricsOverviewProps {
+  metrics: EarningsDashboard['metrics'];
+  currency: EarningsCurrency;
+}
+
+const MetricsOverview = ({ metrics, currency }: MetricsOverviewProps) => {
+  const earnedIsPositive = metrics.earnedChangePercentage >= 0;
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
       <MetricCard 
         title="Total Earned"
-        value="₹86,000"
-        subValue={<><LuTrendingUp size={14} /> +12% vs last month</>}
-        subValueColor="text-emerald-500"
+        value={formatEarningsCurrency(metrics.earned, currency)}
+        subValue={<>{earnedIsPositive ? <LuTrendingUp size={14} /> : <LuTrendingDown size={14} />} {earnedIsPositive ? '+' : ''}{metrics.earnedChangePercentage}% vs last month</>}
+        subValueColor={earnedIsPositive ? "text-emerald-500" : "text-rose-500"}
         icon={<LuDollarSign size={20} strokeWidth={2.5} />}
         iconBg="bg-emerald-500/10"
         iconColor="text-emerald-500"
       />
       <MetricCard 
         title="Total Pending"
-        value="₹42,500"
-        subValue="3 Invoices processing"
+        value={formatEarningsCurrency(metrics.pending, currency)}
+        subValue={`${metrics.pendingInvoiceCount} ${metrics.pendingInvoiceCount === 1 ? 'invoice' : 'invoices'} processing`}
         subValueColor="text-amber-500"
         icon={<LuClock size={20} strokeWidth={2.5} />}
         iconBg="bg-amber-500/10"
@@ -53,8 +62,8 @@ const MetricsOverview = () => {
       />
       <MetricCard 
         title="Total Overdue"
-        value="₹15,000"
-        subValue="Follow up required"
+        value={formatEarningsCurrency(metrics.overdue, currency)}
+        subValue={metrics.overdue > 0 ? "Follow up required" : "Nothing overdue"}
         subValueColor="text-rose-500"
         icon={<LuInfo size={20} strokeWidth={2.5} />}
         iconBg="bg-rose-500/10"
@@ -62,8 +71,8 @@ const MetricsOverview = () => {
       />
       <MetricCard 
         title="Avg. Deal Value"
-        value="₹28,500"
-        subValue="Based on 5 deals"
+        value={formatEarningsCurrency(metrics.averageDealValue, currency)}
+        subValue={`Based on ${metrics.dealCount} ${metrics.dealCount === 1 ? 'deal' : 'deals'}`}
         subValueColor="text-brand-500"
         icon={<LuTrendingUp size={20} strokeWidth={2.5} />}
         iconBg="bg-brand-500/10"
