@@ -16,9 +16,9 @@ function getTriggerLabel(type: string): string {
   return TRIGGER_TYPES.find((t) => t.value === type)?.label ?? type;
 }
 
-function formatHours(hours: number): string {
-  if (hours >= 24) return `${hours / 24} day${hours / 24 > 1 ? "s" : ""} before`;
-  return `${hours} hour${hours > 1 ? "s" : ""} before`;
+function formatOffset(value: number, unit: string): string {
+  if (unit === "immediately") return "Immediately";
+  return `${value} ${unit} before`;
 }
 
 const AutomatedReminders = () => {
@@ -28,14 +28,20 @@ const AutomatedReminders = () => {
   const deleteReminder = useDeleteReminder();
 
   const [showForm, setShowForm] = useState(false);
-  const [newRule, setNewRule] = useState({ triggerType: "PAYMENT_DUE", hoursBefore: "24", channelEmail: true, channelWhatsapp: false, channelPush: true });
+  const [newRule, setNewRule] = useState({ triggerType: "PAYMENT_DUE", offsetValue: "24", offsetUnit: "hours", channelEmail: true, channelWhatsapp: false, channelPush: true });
 
   const handleCreate = () => {
-    const hours = parseInt(newRule.hoursBefore);
-    if (!hours || hours <= 0) return;
+    const value = parseInt(newRule.offsetValue);
+    if (newRule.offsetUnit !== "immediately" && (!value || value <= 0)) return;
     createReminder.mutate(
-      { triggerType: newRule.triggerType, hoursBefore: hours, channelEmail: newRule.channelEmail, channelWhatsapp: newRule.channelWhatsapp },
-      { onSuccess: () => { setShowForm(false); setNewRule({ triggerType: "PAYMENT_DUE", hoursBefore: "24", channelEmail: true, channelWhatsapp: false, channelPush: true }); } }
+      { 
+        triggerType: newRule.triggerType, 
+        offsetValue: value, 
+        offsetUnit: newRule.offsetUnit,
+        channelEmail: newRule.channelEmail, 
+        channelWhatsapp: newRule.channelWhatsapp 
+      },
+      { onSuccess: () => { setShowForm(false); setNewRule({ triggerType: "PAYMENT_DUE", offsetValue: "24", offsetUnit: "hours", channelEmail: true, channelWhatsapp: false, channelPush: true }); } }
     );
   };
 
@@ -67,7 +73,7 @@ const AutomatedReminders = () => {
             >
               <div className="space-y-1 flex-1 min-w-0">
                 <h4 className="text-xs sm:text-sm font-bold text-gray-900 dark:text-white tracking-tight truncate">
-                  {formatHours(rule.hoursBefore)} — {getTriggerLabel(rule.triggerType)}
+                  {formatOffset(rule.offsetValue, rule.offsetUnit)} — {getTriggerLabel(rule.triggerType)}
                 </h4>
                 <p className="text-[10px] sm:text-xs font-medium text-gray-500 dark:text-gray-400">
                   {rule.channelEmail ? "Email" : ""}{rule.channelWhatsapp ? " • WhatsApp" : ""}{rule.channelPush ? " • Push" : ""}
@@ -118,13 +124,25 @@ const AutomatedReminders = () => {
             </select>
             <LuChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={14} />
           </div>
-          <input
-            type="number"
-            placeholder="Hours before (e.g. 24, 72)"
-            value={newRule.hoursBefore}
-            onChange={(e) => setNewRule({ ...newRule, hoursBefore: e.target.value })}
-            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-brand-500"
-          />
+          <div className="flex gap-2">
+            <input
+              type="number"
+              placeholder="0"
+              value={newRule.offsetValue}
+              onChange={(e) => setNewRule({ ...newRule, offsetValue: e.target.value })}
+              className="w-20 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-brand-500"
+            />
+            <select
+              value={newRule.offsetUnit}
+              onChange={(e) => setNewRule({ ...newRule, offsetUnit: e.target.value })}
+              className="flex-1 appearance-none bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl px-3 py-2 text-sm text-gray-900 dark:text-white outline-none focus:border-brand-500"
+            >
+              <option value="immediately">Immediately</option>
+              <option value="hours">Hours after</option>
+              <option value="days">Days after</option>
+              <option value="weeks">Weeks after</option>
+            </select>
+          </div>
           <label className="flex items-center gap-2 text-xs text-gray-600 dark:text-gray-400">
             <input
               type="checkbox"

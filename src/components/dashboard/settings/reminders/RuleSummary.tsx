@@ -8,25 +8,33 @@ interface RuleSummaryProps {
     trigger: string;
     offsetValue: string;
     offsetUnit: string;
-    channel: string;
+    channels: string[];
     recipients: string[];
+    nextFollowUps: string[];
   };
+  onSave?: () => void;
+  isSaving?: boolean;
 }
 
-export const RuleSummary = ({ data }: RuleSummaryProps) => {
+export const RuleSummary = ({ data, onSave, isSaving }: RuleSummaryProps) => {
   const getTimeline = () => {
-    if (data.offsetUnit === "immediately") return "Immediately";
-    return `${data.offsetValue} ${data.offsetUnit} post-trigger`;
+    if (data.trigger === "deliverable_due_soon" || data.trigger === "payment_due" || data.trigger === "deliverable_overdue" || data.trigger === "payment_overdue") {
+        return `${data.offsetValue} ${data.offsetUnit}`;
+    }
+    if (data.nextFollowUps && data.nextFollowUps.length > 0) {
+        return `${data.nextFollowUps.length} Scheduled Follow-ups`;
+    }
+    return "Custom Rule";
   };
 
   const getAudience = () => {
-    if (data.recipients.length === 0) return "None selected";
-    if (data.recipients.length === 1) {
-       if (data.recipients[0] === "primary") return "Primary Contact";
-       if (data.recipients[0] === "agency") return "Agency Rep";
-       if (data.recipients[0] === "me") return "Internal Me";
-    }
-    return `${data.recipients.length} Targets`;
+    if (data.recipients.length === 0) return "Me (Creator)";
+    const targets = data.recipients.map(r => {
+        if (r === "primary") return "Brand";
+        if (r === "me") return "Me";
+        return r;
+    });
+    return targets.join(", ");
   };
 
   return (
@@ -35,9 +43,9 @@ export const RuleSummary = ({ data }: RuleSummaryProps) => {
 
       <div className="space-y-5">
         {[
-          { label: "Trigger", value: getTimeline() },
-          { label: "Channel", value: data.channel.charAt(0).toUpperCase() + data.channel.slice(1) },
-          { label: "Audience", value: getAudience() }
+          { label: "Alert Timing", value: getTimeline() },
+          { label: "Notification", value: data.channels.length > 0 ? data.channels.join(", ") : "None" },
+          { label: "Delivery", value: getAudience() }
         ].map(item => (
           <div key={item.label} className="flex justify-between items-center text-sm font-semibold">
             <span className="text-gray-400 dark:text-gray-500">{item.label}</span>
@@ -53,16 +61,21 @@ export const RuleSummary = ({ data }: RuleSummaryProps) => {
       </div>
 
       <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
-        <button className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-500 text-white text-sm font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all">
-          <LuSave size={18} />
-          Save Rule
+        <button 
+          onClick={onSave}
+          disabled={isSaving}
+          className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-500 text-white text-sm font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isSaving ? (
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+          ) : (
+            <>
+              <LuSave size={18} />
+              Save Rule
+            </>
+          )}
         </button>
         
-        <button className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl border-2 border-gray-100 dark:border-gray-800 text-sm font-bold text-gray-500 dark:text-gray-400 hover:border-gray-200 dark:hover:border-gray-700 hover:bg-gray-50 dark:hover:bg-white/5 transition-all">
-          <LuFlaskConical size={18} />
-          Test Rule
-        </button>
-
         <button className="w-full py-2 text-xs font-bold text-gray-400 hover:text-red-500 transition-colors uppercase tracking-[0.2em] pt-4">
           Cancel
         </button>

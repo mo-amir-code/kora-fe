@@ -4,13 +4,13 @@ import React from "react";
 import Link from "next/link";
 import { LuArrowLeft } from "react-icons/lu";
 import { LoadingSpinner } from "@/components/common";
-import { 
-  DealHeader, 
-  Deliverables, 
-  DealStats, 
+import {
+  DealHeader,
+  Deliverables,
+  DealStats,
   QuickActions,
   DealActivity,
-  AutomatedReminders,
+  // AutomatedReminders,
   AddDealActivity,
   DealNotes,
   DealContractUrl
@@ -93,7 +93,7 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
     <div className="max-w-[1600px] mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
       {/* Navigation Header */}
       <div className="flex items-center gap-4">
-        <Link 
+        <Link
           href="/dashboard/deals"
           className="p-2.5 sm:p-3 rounded-xl sm:rounded-2xl bg-white dark:bg-[#13141c] border border-gray-200 dark:border-gray-800 text-gray-500 hover:text-brand-500 transition-all"
         >
@@ -107,10 +107,10 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
 
       {/* Main Content Layout */}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 sm:gap-8">
-        
+
         {/* Left Column: Core Info & Activity */}
         <div className="xl:col-span-2 space-y-6 sm:space-y-8">
-          <DealHeader 
+          <DealHeader
             title={deal.title}
             assignee={{
               name: deal.contact?.name ?? deal.brand.name,
@@ -142,13 +142,13 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
 
         {/* Right Column: Stats & Actions */}
         <div className="space-y-6 sm:space-y-8">
-          <DealStats 
+          <DealStats
             dueDate={formatDate(deal.paymentDueDate)}
             timeLeft={getTimeLeft(deal.paymentDueDate)}
             createdDate={formatDate(deal.createdAt)}
             createdYear={new Date(deal.createdAt).getFullYear().toString()}
           />
-          
+
           <QuickActions dealId={deal.id} />
 
           <DealContractUrl
@@ -162,8 +162,8 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
             onUpdate={(notes) => updateDeal.mutate({ notes })}
             isUpdating={updateDeal.isPending}
           />
-          
-          <AutomatedReminders />
+
+          {/* <AutomatedReminders /> */}
 
           <AddDealActivity
             onAdd={(data) => addActivity.mutate(data)}

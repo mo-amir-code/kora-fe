@@ -8,30 +8,60 @@ import { RuleDistribution } from "@/components/dashboard/settings/reminders/Rule
 import { RuleTemplate } from "@/components/dashboard/settings/reminders/RuleTemplate";
 import { RuleSummary } from "@/components/dashboard/settings/reminders/RuleSummary";
 import { ProTip } from "@/components/dashboard/settings/reminders/ProTip";
-
-const PREBUILT_TEMPLATES: Record<string, string> = {
-  payment: "Hi {{brand_name}}, just a quick nudge regarding invoice #{{invoice_id}} for {{amount}} which is due on {{due_date}}. Please ensure it is processed on time. Thanks!",
-  due_soon: "Hey team, this is a reminder that the deliverable '{{campaign_id}}' is due in 24 hours. Please confirm if everything is on track for submission.",
-  pitch: "Alert: The pitch for {{brand_name}} has reached its threshold with no reply. It might be time to manually follow up or adjust the strategy."
-};
+import { FollowUpManager } from "@/components/dashboard/settings/reminders/FollowUpManager";
+import { useCreateReminder } from "@/hooks/useReminders";
+import { useTemplates } from "@/hooks/useTemplates";
+import { useRouter } from "next/navigation";
 
 export default function CreateReminderPage() {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    trigger: string;
+    offsetValue: string;
+    offsetUnit: string;
+    channels: string[];
+    recipients: string[];
+    message: string;
+    nextFollowUps: string[];
+  }>({
     name: "",
-    trigger: "invoice_created",
+    trigger: "deliverable_due_soon",
     offsetValue: "24",
     offsetUnit: "hours",
-    channel: "whatsapp",
+    channels: ["whatsapp"],
     recipients: ["primary", "me"],
-    message: ""
+    message: "",
+    nextFollowUps: []
   });
+
+  const createMutation = useCreateReminder();
+  const { data: templates = [] } = useTemplates();
+  const router = useRouter();
 
   const handleUpdate = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const handleTemplateSelect = (templateId: string) => {
-    handleUpdate("message", PREBUILT_TEMPLATES[templateId] || "");
+  const handleTemplateSelect = (content: string) => {
+    handleUpdate("message", content);
+  };
+
+  const handleSubmit = () => {
+    createMutation.mutate({
+      name: formData.name,
+      triggerType: formData.trigger.toUpperCase(),
+      offsetValue: parseInt(formData.offsetValue),
+      offsetUnit: formData.offsetUnit,
+      nextFollowUps: formData.nextFollowUps,
+      channelEmail: formData.channels.includes("email"),
+      channelWhatsapp: formData.channels.includes("whatsapp"),
+      channelPush: formData.recipients.includes("me"),
+      messageTemplate: formData.message
+    }, {
+      onSuccess: () => {
+        router.push("/dashboard/settings/reminders");
+      }
+    });
   };
 
   return (
@@ -73,24 +103,34 @@ export default function CreateReminderPage() {
             onChange={handleUpdate}
           />
 
+          <FollowUpManager 
+            dates={formData.nextFollowUps}
+            onChange={(dates) => handleUpdate("nextFollowUps", dates)}
+          />
+
           <RuleDistribution 
             data={{
-              channel: formData.channel,
+              channels: formData.channels,
               recipients: formData.recipients
             }}
             onChange={handleUpdate}
           />
 
           <RuleTemplate 
-            data={{ message: formData.message }}
-            onChange={handleUpdate}
-            onTemplateSelect={handleTemplateSelect}
-          />
+             data={{ message: formData.message }}
+             templates={templates}
+             onChange={handleUpdate}
+             onTemplateSelect={handleTemplateSelect}
+           />
         </div>
 
         {/* Right Column: Actions & Info (4 Units) */}
         <div className="lg:col-span-4 lg:sticky lg:top-6 space-y-6">
-          <RuleSummary data={formData} />
+          <RuleSummary 
+            data={formData} 
+            onSave={handleSubmit}
+            isSaving={createMutation.isPending}
+          />
           <ProTip />
         </div>
 

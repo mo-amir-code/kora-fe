@@ -50,14 +50,15 @@ export const RuleFoundation = ({ data, onChange }: RuleFoundationProps) => {
               value={data.trigger}
               onChange={(e) => onChange("trigger", e.target.value)}
             >
-              <option value="invoice_created">When invoice is created</option>
-              <option value="invoice_overdue">When invoice is overdue</option>
-              <option value="deliverable_due">When deliverable is due</option>
-              <option value="pitch_sent">When pitch is sent</option>
+              <option value="deliverable_due_soon">Deliverable Due Soon</option>
+              <option value="deliverable_overdue">Deliverable Overdue</option>
+              <option value="payment_due">Payment Due</option>
+              <option value="payment_overdue">Payment Overdue</option>
+              <option value="missing_invoice">Missing Invoice</option>
             </select>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-4">
             <label className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest ml-1">
               Timing Offset
             </label>
@@ -74,10 +75,10 @@ export const RuleFoundation = ({ data, onChange }: RuleFoundationProps) => {
                 value={data.offsetUnit}
                 onChange={(e) => onChange("offsetUnit", e.target.value)}
               >
-                <option value="immediately">Immediately</option>
-                <option value="hours">Hours after</option>
-                <option value="days">Days after</option>
-                <option value="weeks">Weeks after</option>
+                <option value="minutes">Minutes</option>
+                <option value="hours">Hours</option>
+                <option value="days">Days</option>
+                <option value="weeks">Weeks</option>
               </select>
             </div>
           </div>

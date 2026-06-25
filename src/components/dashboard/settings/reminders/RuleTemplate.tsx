@@ -2,13 +2,15 @@
 
 import React from "react";
 import { LuLayoutTemplate, LuEye, LuEraser } from "react-icons/lu";
+import { MessageTemplate } from "@/services/template.service";
 
 interface RuleTemplateProps {
   data: {
     message: string;
   };
+  templates: MessageTemplate[];
   onChange: (field: string, value: string) => void;
-  onTemplateSelect?: (templateId: string) => void;
+  onTemplateSelect?: (content: string) => void;
 }
 
 const VARIABLES = [
@@ -19,17 +21,20 @@ const VARIABLES = [
   { id: "#invoice_url", label: "invoice_url" }
 ];
 
-export const RuleTemplate = ({ data, onChange, onTemplateSelect }: RuleTemplateProps) => {
+export const RuleTemplate = ({ data, templates, onChange, onTemplateSelect }: RuleTemplateProps) => {
   const insertVariable = (id: string) => {
     const variableText = `{{${id.replace('#', '')}}}`;
     onChange("message", data.message + variableText);
   };
 
-  const templates = [
-    { id: "payment", label: "Payment Reminder", icon: "💰" },
-    { id: "due_soon", label: "Deliverable Due", icon: "⏰" },
-    { id: "pitch", label: "Stale Pitch Alert", icon: "📣" }
-  ];
+  const getCategoryIcon = (category: string) => {
+    switch (category) {
+      case "PAYMENT_REMINDER": return "💰";
+      case "FOLLOW_UP": return "⏰";
+      case "INVOICE": return "📄";
+      default: return "📝";
+    }
+  };
 
   return (
     <div className="p-5 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 space-y-8">
@@ -55,13 +60,16 @@ export const RuleTemplate = ({ data, onChange, onTemplateSelect }: RuleTemplateP
           {templates.map(t => (
             <button
               key={t.id}
-              onClick={() => onTemplateSelect?.(t.id)}
-              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-800 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:border-brand-500/50 hover:text-brand-500 transition-all shadow-sm"
+              onClick={() => onTemplateSelect?.(t.body)}
+              className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 text-[11px] font-bold text-gray-600 dark:text-gray-300 hover:border-brand-500/50 hover:text-brand-500 transition-all shadow-sm"
             >
-              <span>{t.icon}</span>
-              {t.label}
+              <span>{getCategoryIcon(t.category)}</span>
+              {t.name}
             </button>
           ))}
+          {templates.length === 0 && (
+            <p className="text-[11px] font-medium text-gray-400 italic py-2">No saved templates found.</p>
+          )}
         </div>
       </div>
 
@@ -110,10 +118,6 @@ export const RuleTemplate = ({ data, onChange, onTemplateSelect }: RuleTemplateP
               >
                 <LuEraser size={14} />
                 Clear
-              </button>
-              <button className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-[10px] font-bold uppercase tracking-widest text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all">
-                <LuEye size={14} />
-                Preview
               </button>
             </div>
           </div>

@@ -5,7 +5,7 @@ import { LuShare2, LuSmartphone, LuMail, LuCheck } from "react-icons/lu";
 
 interface RuleDistributionProps {
   data: {
-    channel: string;
+    channels: string[];
     recipients: string[];
   };
   onChange: (field: string, value: any) => void;
@@ -39,24 +39,32 @@ export const RuleDistribution = ({ data, onChange }: RuleDistributionProps) => {
             {[
               { id: "whatsapp", label: "WhatsApp", sub: "Direct high-priority message", icon: LuSmartphone },
               { id: "email", label: "Email", sub: "Official record & thread", icon: LuMail }
-            ].map(c => (
-              <button
-                key={c.id}
-                onClick={() => onChange("channel", c.id)}
-                className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${data.channel === c.id ? 'border-brand-500 bg-brand-500/[0.03]' : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'}`}
-              >
-                <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${data.channel === c.id ? 'border-brand-500 bg-brand-500' : 'border-gray-300 dark:border-gray-700'}`}>
-                  {data.channel === c.id && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
-                </div>
-                <div className={`p-2.5 rounded-xl ${data.channel === c.id ? 'bg-brand-500/10 text-brand-500' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
-                  <c.icon size={18} />
-                </div>
-                <div>
-                  <h4 className={`text-sm font-bold ${data.channel === c.id ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>{c.label}</h4>
-                  <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{c.sub}</p>
-                </div>
-              </button>
-            ))}
+            ].map(c => {
+              const isSelected = data.channels.includes(c.id);
+              return (
+                <button
+                  key={c.id}
+                  onClick={() => {
+                    const newChannels = isSelected
+                      ? data.channels.filter(id => id !== c.id)
+                      : [...data.channels, c.id];
+                    onChange("channels", newChannels);
+                  }}
+                  className={`w-full flex items-center gap-4 p-4 rounded-2xl border transition-all text-left ${isSelected ? 'border-brand-500 bg-brand-500/[0.03]' : 'border-gray-100 dark:border-gray-800 hover:border-gray-200 dark:hover:border-gray-700'}`}
+                >
+                  <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all ${isSelected ? 'border-brand-500 bg-brand-500' : 'border-gray-300 dark:border-gray-700'}`}>
+                    {isSelected && <div className="w-1.5 h-1.5 rounded-full bg-white" />}
+                  </div>
+                  <div className={`p-2.5 rounded-xl ${isSelected ? 'bg-brand-500/10 text-brand-500' : 'bg-gray-100 dark:bg-gray-800 text-gray-400'}`}>
+                    <c.icon size={18} />
+                  </div>
+                  <div>
+                    <h4 className={`text-sm font-bold ${isSelected ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>{c.label}</h4>
+                    <p className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{c.sub}</p>
+                  </div>
+                </button>
+              );
+            })}
           </div>
         </div>
 

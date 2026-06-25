@@ -7,59 +7,33 @@ import { ReminderRuleCard } from "@/components/dashboard/settings/reminders/Remi
 import { ConfirmationModal } from "@/components/common";
 import toast from "react-hot-toast";
 
-const INITIAL_RULES = [
-  {
-    id: 1,
-    category: "WhatsApp Follow-up",
-    title: "Pre-Deliverable Check-in",
-    description: "Send a friendly WhatsApp reminder to brands 24h before a deliverable is due to confirm details.",
-    icon: LuSmartphone,
-    iconColor: "bg-success-500",
-    status: "active" as const,
-    stats: "Triggered 12x this week"
-  },
-  {
-    id: 2,
-    category: "Email Automation",
-    title: "Overdue Invoice Nag",
-    description: "Email invoice reminders to agencies automatically on overdue day 3 and day 7.",
-    icon: LuMail,
-    iconColor: "bg-blue-500",
-    status: "active" as const,
-    stats: "Triggered 4x this week"
-  },
-  {
-    id: 3,
-    category: "Internal Alert",
-    title: "Stale Pitch Warning",
-    description: "Notify me via app notification if a brand pitch hasn't received a reply in 5 days.",
-    icon: LuBell,
-    iconColor: "bg-orange-500",
-    status: "paused" as const,
-    stats: "Paused on Oct 12"
+import { useRemindersList, useToggleReminder, useDeleteReminder, ReminderRule } from "@/hooks/useReminders";
+
+const getTriggerLabel = (type: string) => {
+  switch (type) {
+    case "DELIVERABLE_DUE": return "Deliverable Due";
+    case "INVOICE_DUE": return "Invoice Overdue";
+    case "PAYMENT_DUE": return "Payment Due";
+    case "EXCLUSIVITY_ENDING": return "Exclusivity Ending";
+    default: return "Automation Rule";
   }
-];
+};
 
 export default function RemindersPage() {
-  const [rules, setRules] = useState(INITIAL_RULES);
-  const [ruleToDelete, setRuleToDelete] = useState<number | null>(null);
+  const { data: rules = [], isLoading } = useRemindersList();
+  const toggleMutation = useToggleReminder();
+  const deleteMutation = useDeleteReminder();
+  const [ruleToDelete, setRuleToDelete] = useState<string | null>(null);
 
-  const toggleRule = (id: number) => {
-    setRules(prev => prev.map(r => {
-      if (r.id === id) {
-        const newStatus = r.status === "active" ? "paused" : "active";
-        toast.success(`Rule ${newStatus === "active" ? "activated" : "paused"}`);
-        return { ...r, status: newStatus };
-      }
-      return r;
-    }));
+  const toggleRule = (id: string, currentStatus: boolean) => {
+    toggleMutation.mutate({ ruleId: id, isActive: !currentStatus });
   };
 
   const handleDeleteRule = () => {
     if (ruleToDelete !== null) {
-      setRules(prev => prev.filter(r => r.id !== ruleToDelete));
-      setRuleToDelete(null);
-      toast.success("Reminder rule deleted");
+      deleteMutation.mutate(ruleToDelete, {
+        onSuccess: () => setRuleToDelete(null),
+      });
     }
   };
 
@@ -99,11 +73,18 @@ export default function RemindersPage() {
 
       {/* Rules Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {rules.map((rule) => (
+        {rules.map((rule: ReminderRule) => (
           <ReminderRuleCard 
             key={rule.id}
-            {...rule}
-            onToggle={() => toggleRule(rule.id)}
+            id={rule.id as any}
+            title={rule.name || getTriggerLabel(rule.triggerType)}
+            category={rule.channelWhatsapp ? "WhatsApp Follow-up" : "Email Automation"}
+            description={rule.messageTemplate || `Reminder set for ${rule.offsetValue} ${rule.offsetUnit} after trigger.`}
+            icon={rule.channelWhatsapp ? LuSmartphone : LuMail}
+            iconColor={rule.channelWhatsapp ? "bg-success-500" : "bg-blue-500"}
+            status={rule.isActive ? "active" : "paused"}
+            stats={rule.isActive ? "Active Rule" : "Paused"}
+            onToggle={() => toggleRule(rule.id, rule.isActive)}
             onDelete={() => setRuleToDelete(rule.id)}
           />
         ))}
