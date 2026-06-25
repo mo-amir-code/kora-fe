@@ -1,22 +1,46 @@
 "use client";
 
 import React, { useState } from "react";
-import { LuSend, LuLifeBuoy, LuMessagesSquare, LuMail } from "react-icons/lu";
+import { LuSend } from "react-icons/lu";
 import toast from "react-hot-toast";
+import { supportService } from "@/services/support.service";
+import { useAuthStore } from "@/stores/auth/auth";
 
 export const SupportForm = () => {
+  const user = useAuthStore((s) => s.user);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [form, setForm] = useState({
+    name: "",
+    email: user?.email ?? "",
+    category: "General Inquiry",
+    subject: "",
+    message: "",
+  });
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (
+    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>
+  ) => {
+    setForm((prev) => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (!form.name || !form.email || !form.subject || !form.message) {
+      toast.error("Please fill in all fields.");
+      return;
+    }
+
     setIsSubmitting(true);
-    
-    // Simulate API call
-    setTimeout(() => {
-      setIsSubmitting(false);
+    try {
+      await supportService.submitInquiry(form);
       toast.success("Inquiry sent! We'll get back to you soon.");
-      (e.target as HTMLFormElement).reset();
-    }, 1500);
+      setForm({ name: "", email: "", category: "General Inquiry", subject: "", message: "" });
+    } catch {
+      toast.error("Failed to send inquiry. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -36,8 +60,11 @@ export const SupportForm = () => {
             <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">
               Full Name
             </label>
-            <input 
+            <input
               type="text"
+              name="name"
+              value={form.name}
+              onChange={handleChange}
               placeholder="Alex Johnson"
               className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 text-sm font-semibold text-gray-900 dark:text-white"
             />
@@ -46,8 +73,11 @@ export const SupportForm = () => {
             <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">
               Work Email
             </label>
-            <input 
+            <input
               type="email"
+              name="email"
+              value={form.email}
+              onChange={handleChange}
               placeholder="alex@example.com"
               className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 text-sm font-semibold text-gray-900 dark:text-white"
             />
@@ -59,7 +89,12 @@ export const SupportForm = () => {
             Issue Category
           </label>
           <div className="relative">
-            <select className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all text-sm font-semibold text-gray-900 dark:text-white appearance-none cursor-pointer">
+            <select
+              name="category"
+              value={form.category}
+              onChange={handleChange}
+              className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all text-sm font-semibold text-gray-900 dark:text-white appearance-none cursor-pointer"
+            >
               <option>General Inquiry</option>
               <option>Billing & Subscription</option>
               <option>Technical Issue</option>
@@ -76,8 +111,11 @@ export const SupportForm = () => {
           <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">
             Subject
           </label>
-          <input 
+          <input
             type="text"
+            name="subject"
+            value={form.subject}
+            onChange={handleChange}
             placeholder="How can we help?"
             className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 text-sm font-semibold text-gray-900 dark:text-white"
           />
@@ -87,19 +125,22 @@ export const SupportForm = () => {
           <label className="text-[10px] font-bold text-gray-500 dark:text-gray-400 uppercase tracking-widest ml-1">
             Message Details
           </label>
-          <textarea 
+          <textarea
             rows={4}
+            name="message"
+            value={form.message}
+            onChange={handleChange}
             placeholder="Please describe your issue or question in detail..."
             className="w-full px-5 py-3.5 sm:py-4 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/5 outline-none transition-all placeholder:text-gray-400 dark:placeholder:text-gray-600 text-sm font-semibold text-gray-900 dark:text-white resize-none"
           />
         </div>
 
-        <button 
+        <button
           disabled={isSubmitting}
           className="w-full px-8 py-4 rounded-2xl bg-brand-500 text-white text-sm font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all active:scale-[0.98] flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
-             <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
           ) : (
             <LuSend size={18} strokeWidth={2.5} />
           )}

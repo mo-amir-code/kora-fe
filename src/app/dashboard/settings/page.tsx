@@ -24,23 +24,23 @@ export default function SettingsPage() {
       href: "/dashboard/settings/reminders",
       icon: LuBell,
     },
-    {
-      title: "Integrations",
-      description: `Connect ${APP_NAME} with apps like Slack, Google, and your bank.`,
-      linkText: "Connect",
-      href: "/dashboard/settings/integrations",
-      icon: LuLink,
-    },
+    // {
+    //   title: "Integrations",
+    //   description: `Connect ${APP_NAME} with apps like Slack, Google, and your bank.`,
+    //   linkText: "Connect",
+    //   href: "/dashboard/settings/integrations",
+    //   icon: LuLink,
+    // },
   ];
 
   const generalItems = [
-    {
-      title: "Send Feedback",
-      description: "Tell us what you like, report a bug, or suggest a new feature.",
-      linkText: "Share",
-      href: "/dashboard/settings/feedback",
-      icon: LuMessageSquare,
-    },
+    // {
+    //   title: "Send Feedback",
+    //   description: "Tell us what you like, report a bug, or suggest a new feature.",
+    //   linkText: "Share",
+    //   href: "/dashboard/settings/feedback",
+    //   icon: LuMessageSquare,
+    // },
     {
       title: "Help Center",
       description: "Need help? Contact our team or read our easy-to-follow guides.",

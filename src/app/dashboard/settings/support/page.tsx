@@ -2,7 +2,7 @@
 
 import React from "react";
 import Link from "next/link";
-import { LuArrowLeft, LuLifeBuoy, LuMessagesSquare, LuMail, LuExternalLink } from "react-icons/lu";
+import { LuArrowLeft, LuLifeBuoy, LuMessagesSquare, LuMail } from "react-icons/lu";
 import { SupportForm } from "@/components/dashboard/settings/support";
 
 const CONTACT_METHODS = [
@@ -10,21 +10,18 @@ const CONTACT_METHODS = [
     icon: LuLifeBuoy,
     title: "Help Center",
     description: "Browse guides and documentation",
-    link: "help.kora.com",
     tag: "Docs"
   },
   {
     icon: LuMessagesSquare,
     title: "Live Chat",
     description: "Average response: 5 mins",
-    link: "Open Chat",
     tag: "Instant"
   },
   {
     icon: LuMail,
     title: "Email Support",
     description: "For complex inquiries",
-    link: "support@kora.com",
     tag: "24h"
   }
 ];
@@ -50,7 +47,7 @@ export default function SupportPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-20">
-        {/* Left: Contact Info */}
+        {/* Left: Contact Info (static, no links) */}
         <div className="lg:col-span-5 space-y-10 lg:space-y-12">
           <div className="space-y-4">
             <h1 className="text-3xl sm:text-5xl font-extrabold text-gray-900 dark:text-white tracking-tight leading-tight">
@@ -66,10 +63,10 @@ export default function SupportPage() {
             {CONTACT_METHODS.map((method, index) => (
               <div 
                 key={index}
-                className="group p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-800/50 hover:border-brand-500/30 transition-all flex items-center justify-between bg-white dark:bg-gray-900/40"
+                className="p-4 sm:p-5 rounded-2xl border border-gray-100 dark:border-gray-800/50 transition-all flex items-center justify-between bg-white dark:bg-gray-900/40"
               >
                 <div className="flex items-center gap-3 sm:gap-4">
-                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-brand-500 transition-colors">
+                  <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400">
                     <method.icon size={20} className="sm:size-[22px]" />
                   </div>
                   <div>
@@ -78,11 +75,7 @@ export default function SupportPage() {
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-[10px] font-bold text-brand-500/60 uppercase tracking-widest mb-1">{method.tag}</div>
-                  <div className="text-xs font-bold text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors flex items-center gap-1">
-                    {method.link}
-                    <LuExternalLink size={12} />
-                  </div>
+                  <div className="text-[10px] font-bold text-brand-500/60 uppercase tracking-widest">{method.tag}</div>
                 </div>
               </div>
             ))}
@@ -99,9 +92,9 @@ export default function SupportPage() {
       <div className="text-center pt-10 border-t border-gray-100 dark:border-gray-800">
         <p className="text-sm font-medium text-gray-500 dark:text-gray-400">
           Looking for immediate answers? 
-          <Link href="#" className="ml-1 text-brand-500 hover:underline font-bold">
+          <span className="ml-1 text-brand-500 font-bold">
             Visit our Knowledge Base
-          </Link>
+          </span>
         </p>
       </div>
     </div>
