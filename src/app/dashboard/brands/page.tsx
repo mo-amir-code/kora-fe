@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { LuPlus, LuLoader } from 'react-icons/lu';
+import { LoadingSpinner } from '@/components/common';
 import { BrandCard } from '@/components/dashboard/brands/BrandCard';
 import AddBrandForm from '@/components/dashboard/brands/AddBrandForm';
 import { useBrandsList, useDeleteBrand } from '@/hooks/useBrands';
@@ -53,7 +54,7 @@ const Brands = () => {
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-4">
           <div className="absolute inset-0 bg-white/40 dark:bg-gray-900/40 backdrop-blur-[1px]" />
           <div className="relative flex items-center gap-3 px-5 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl">
-            <LuLoader className="h-4 w-4 animate-spin text-rose-500" />
+            <LoadingSpinner size={16} minHeight="auto" className="!justify-start" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Deleting brand...</span>
           </div>
         </div>
@@ -70,12 +71,7 @@ const Brands = () => {
         </button>
       </div>
 
-      {/* Loading state */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-20">
-          <LuLoader className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
-      )}
+      {isLoading && <LoadingSpinner />}
 
       {/* Error state */}
       {error && (

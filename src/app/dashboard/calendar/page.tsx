@@ -11,7 +11,7 @@ import {
 } from "date-fns";
 import { CalendarHeader, CalendarGrid, CalendarSidebar } from "@/components/dashboard/calendar";
 import { useCalendarEvents } from "@/hooks/useCalendar";
-import { LuLoader } from "react-icons/lu";
+import { LoadingSpinner } from "@/components/common";
 
 const CalendarPage = () => {
   const today = useMemo(() => new Date(), []);
@@ -49,11 +49,7 @@ const CalendarPage = () => {
   const events = rawEvents?.map(event => ({ ...event, date: new Date(event.date) })) ?? [];
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LuLoader className="h-8 w-8 animate-spin text-gray-400" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error) {

@@ -2,13 +2,13 @@
 
 import React, { useState, useEffect, useRef } from "react";
 import { LuPlus, LuCalendar, LuChevronDown } from "react-icons/lu";
+import { LoadingSpinner } from "@/components/common";
 import { InvoiceTable } from "@/components/dashboard/invoices";
 import flatpickr from "flatpickr";
 import "flatpickr/dist/flatpickr.min.css";
 import { useInvoicesList } from "@/hooks/useInvoices";
 import { format } from "date-fns";
 import Link from "next/link";
-import { Invoice } from "@/services/invoice.service";
 
 const InvoicesPage = () => {
   const { data: realInvoices, isLoading } = useInvoicesList();
@@ -56,7 +56,7 @@ const InvoicesPage = () => {
 
   const filteredInvoices = (realInvoices || []).filter(inv => {
     const statusMatch = filter === "All" || inv.status.toLowerCase() === filter.toLowerCase();
-    
+
     let dateMatch = true;
     if (dateRange.length === 2) {
       const start = new Date(dateRange[0]);
@@ -66,7 +66,7 @@ const InvoicesPage = () => {
       const issuedDate = new Date(inv.issuedDate);
       dateMatch = issuedDate >= start && issuedDate <= end;
     }
-    
+
     return statusMatch && dateMatch;
   });
 
@@ -78,11 +78,7 @@ const InvoicesPage = () => {
   };
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-white/10 border-t-gray-900 dark:border-t-white" />
-      </div>
-    );
+    return <LoadingSpinner className="min-h-screen" />;
   }
 
   return (
@@ -105,13 +101,13 @@ const InvoicesPage = () => {
         <div className="flex items-center gap-3">
           <div className="relative group">
             <input ref={inputRef} className="hidden" />
-            <button 
+            <button
               ref={buttonRef}
               onClick={openPicker}
               className={`
                 flex items-center gap-2 px-6 py-3.5 rounded-2xl border text-[10px] font-black uppercase tracking-widest transition-all active:scale-95
-                ${dateRange.length === 2 
-                  ? "bg-brand-500 text-white border-transparent shadow-lg shadow-brand-500/20" 
+                ${dateRange.length === 2
+                  ? "bg-brand-500 text-white border-transparent shadow-lg shadow-brand-500/20"
                   : "bg-white dark:bg-gray-800 border-gray-200 dark:border-gray-800 text-gray-500 dark:text-gray-400 hover:border-brand-500/50 hover:text-brand-500"}
               `}
             >
@@ -119,7 +115,7 @@ const InvoicesPage = () => {
               {getRangeLabel()}
             </button>
             {dateRange.length === 2 && (
-              <button 
+              <button
                 onClick={handleClearDates}
                 className="absolute -top-1 -right-1 w-5 h-5 rounded-full bg-gray-900 dark:bg-white text-white dark:text-gray-900 flex items-center justify-center text-[10px] shadow-lg hover:scale-110 transition-transform z-10"
                 title="Clear Date Range"
@@ -140,7 +136,7 @@ const InvoicesPage = () => {
       {/* Table Section */}
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[2.5rem] p-4 sm:p-8 shadow-2xl shadow-black/5 overflow-hidden">
         <InvoiceTable invoices={filteredInvoices} />
-        
+
         {/* Pagination Placeholder */}
         <div className="mt-10 pt-8 border-t border-gray-50 dark:border-white/[0.03] flex items-center justify-between">
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">

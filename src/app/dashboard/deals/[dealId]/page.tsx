@@ -2,7 +2,8 @@
 
 import React from "react";
 import Link from "next/link";
-import { LuArrowLeft, LuLoader } from "react-icons/lu";
+import { LuArrowLeft } from "react-icons/lu";
+import { LoadingSpinner } from "@/components/common";
 import { 
   DealHeader, 
   Deliverables, 
@@ -64,11 +65,7 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
   const addActivity = useAddDealActivity(dealId);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <LuLoader className="h-8 w-8 animate-spin text-gray-400" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error || !deal) {

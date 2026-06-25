@@ -3,7 +3,8 @@
 import React, { useState } from "react";
 import { TemplatesFilter, TemplateCard, CreateTemplateCard, CreateTemplateForm } from "@/components/dashboard/templates";
 import { useTemplates, useCreateTemplate, useUpdateTemplate } from "@/hooks/useTemplates";
-import { LuLoader, LuLayoutTemplate } from "react-icons/lu";
+import { LuLayoutTemplate } from "react-icons/lu";
+import { LoadingSpinner } from "@/components/common";
 import { MessageTemplate } from "@/services/template.service";
 
 const FILTER_OPTIONS = [
@@ -63,9 +64,7 @@ const Templates = () => {
       />
 
       {isLoading ? (
-        <div className="flex items-center justify-center py-20">
-          <LuLoader className="w-8 h-8 animate-spin text-brand-500" />
-        </div>
+        <LoadingSpinner />
       ) : error ? (
         <div className="flex flex-col items-center justify-center py-20 gap-4 text-gray-500 border border-dashed border-gray-200 dark:border-gray-800 rounded-[2rem]">
           <LuLayoutTemplate size={40} className="text-red-500 opacity-20" />

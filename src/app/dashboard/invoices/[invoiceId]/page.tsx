@@ -3,13 +3,11 @@
 import React from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { LuArrowLeft, LuDownload, LuPencil, LuTrash2, LuCalendar, LuUser, LuBriefcase } from 'react-icons/lu';
+import { LoadingSpinner } from "@/components/common";
 import { useInvoiceDetail, useDeleteInvoice } from '@/hooks/useInvoices';
 import { useProfile } from '@/hooks/useProfile';
 import InvoiceStatusBadge from '@/components/dashboard/invoices/InvoiceStatusBadge';
 import Image from 'next/image';
-import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
-import toast from "react-hot-toast";
 import { formatInvoiceCurrency, formatInvoiceDate, generateInvoicePDF } from "@/components/dashboard/invoices/invoice-utils";
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
@@ -32,18 +30,14 @@ export default function InvoiceViewPage() {
   const formatDate = formatInvoiceDate;
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 dark:border-white/10 border-t-gray-900 dark:border-t-white" />
-      </div>
-    );
+    return <LoadingSpinner className="min-h-screen" />;
   }
 
   if (isError || !invoice) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen gap-4">
         <p className="text-gray-500 dark:text-gray-400 font-medium">Invoice not found or failed to load.</p>
-        <button 
+        <button
           onClick={() => router.back()}
           className="inline-flex items-center gap-2 text-sm font-bold text-gray-900 dark:text-white"
         >
@@ -66,7 +60,7 @@ export default function InvoiceViewPage() {
       {/* Header / Navigation */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
         <div className="flex flex-col gap-3">
-          <button 
+          <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors uppercase tracking-widest"
           >
@@ -82,22 +76,22 @@ export default function InvoiceViewPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          <button 
+          <button
             onClick={downloadPDF}
-            className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-95" 
+            className="p-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-95"
             title="Download PDF"
           >
             <LuDownload className="h-5 w-5" />
           </button>
           <div className="w-px h-8 bg-gray-200 dark:bg-gray-800 mx-2 hidden sm:block" />
-          <button 
+          <button
             onClick={() => router.push(`/dashboard/invoices/edit/${invoiceId}`)}
             className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-sm font-bold text-white dark:text-gray-900 hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none"
           >
             <LuPencil className="h-4 w-4" />
             Edit
           </button>
-          <button 
+          <button
             onClick={handleDelete}
             className="p-2.5 rounded-xl border border-rose-200 dark:border-rose-900/30 bg-white dark:bg-gray-900 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all active:scale-95"
             title="Delete Invoice"
@@ -196,7 +190,7 @@ export default function InvoiceViewPage() {
         <div className="lg:col-span-1 flex flex-col gap-6">
           <div className="p-6 rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/30 flex flex-col gap-6">
             <h4 className="text-xs font-bold text-gray-900 dark:text-white uppercase tracking-widest">Metadata</h4>
-            
+
             <div className="flex flex-col gap-4">
               <div className="flex items-start gap-3">
                 <div className="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-gray-500">
@@ -204,7 +198,7 @@ export default function InvoiceViewPage() {
                 </div>
                 <div className="flex flex-col">
                   <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-tight">Deal Context</span>
-                  <button 
+                  <button
                     onClick={() => router.push(`/dashboard/deals/${invoice.dealId}`)}
                     className="text-xs font-bold text-gray-900 dark:text-white hover:underline text-left"
                   >

@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { LuChevronLeft, LuChevronRight, LuDownload } from "react-icons/lu";
+import { LoadingSpinner } from "@/components/common";
 import { useEarnings } from "@/hooks/useEarnings";
 import MetricsOverview from "./MetricsOverview";
 import RevenueBreakdown from "./RevenueBreakdown";
@@ -33,7 +34,7 @@ const EarningsPage = () => {
   // };
 
   if (isLoading) {
-    return <div className="flex min-h-screen items-center justify-center"><div className="h-8 w-8 animate-spin rounded-full border-4 border-gray-200 border-t-gray-900 dark:border-white/10 dark:border-t-white" /></div>;
+    return <LoadingSpinner className="min-h-screen" />;
   }
 
   if (isError || !data) {

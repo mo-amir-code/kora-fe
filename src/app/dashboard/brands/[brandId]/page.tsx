@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { LuArrowLeft, LuLoader } from "react-icons/lu";
+import { LoadingSpinner } from "@/components/common";
 import { format } from "date-fns";
 import {
   BrandDetailHeader,
@@ -115,11 +116,7 @@ export default function BrandDetails() {
   // ─── LOADING / ERROR ────────────────────────────────────────────────────────
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center py-20">
-        <LuLoader className="h-8 w-8 animate-spin text-gray-400" />
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   if (error || !brand) {
@@ -182,7 +179,7 @@ export default function BrandDetails() {
         <div className="fixed inset-0 z-50 flex items-start justify-center pt-4 pointer-events-auto">
           <div className="absolute inset-0 bg-white/40 dark:bg-gray-900/40 backdrop-blur-[1px]" />
           <div className="relative flex items-center gap-3 px-5 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl">
-            <LuLoader className="h-4 w-4 animate-spin text-brand-500" />
+            <LoadingSpinner size={16} minHeight="auto" className="!justify-start" />
             <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Saving changes...</span>
           </div>
         </div>

@@ -1,7 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { LuPlus, LuChevronDown, LuLoader } from "react-icons/lu";
+import { LuPlus, LuChevronDown } from "react-icons/lu";
+import { LoadingSpinner } from "@/components/common";
 import { DealCard, AddDealForm } from "@/components/dashboard/deals";
 import type { DealStatus, Platform } from "@/components/dashboard/deals/kanban";
 import { useDealsList } from "@/hooks/useDeals";
@@ -153,12 +154,7 @@ const DealsPage = () => {
         </div>
       </div>
 
-      {/* Loading */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-20">
-          <LuLoader className="h-8 w-8 animate-spin text-gray-400" />
-        </div>
-      )}
+      {isLoading && <LoadingSpinner />}
 
       {/* Error */}
       {error && (

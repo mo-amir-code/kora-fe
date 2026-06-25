@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { LuArrowLeft, LuLoader } from "react-icons/lu";
+import { LuArrowLeft } from "react-icons/lu";
+import { LoadingSpinner } from "@/components/common";
 import { useQuery } from "@tanstack/react-query";
 import api from "@/lib/axios";
 import { ProfileIdentityCard } from "@/components/dashboard/settings/profile/ProfileIdentityCard";
@@ -17,12 +18,7 @@ export default function ProfileSettingsPage() {
   });
 
   if (isLoading) {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] gap-4">
-        <LuLoader className="w-10 h-10 text-brand-500 animate-spin" />
-        <p className="text-sm font-bold text-gray-400 uppercase tracking-widest">Loading Profile...</p>
-      </div>
-    );
+    return <LoadingSpinner />;
   }
 
   return (

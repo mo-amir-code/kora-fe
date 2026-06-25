@@ -4,77 +4,8 @@ import Greeting from "@/components/dashboard/home/greeting"
 import PaymentStatus from "@/components/dashboard/home/paymentstatus"
 import RecentActivity from "@/components/dashboard/home/recent-activity"
 import ActiveDeals from "@/components/dashboard/home/active-deals"
-import { LuWallet, LuClock, LuCircleAlert, LuCircleCheck, LuFileText, LuBell, LuSparkles, LuLoader } from "react-icons/lu"
-
-const ACTIVITIES = [
-  {
-    id: 1,
-    type: "delivered" as const,
-    entityName: "Spotify Promo",
-    suffix: "delivered",
-    time: "2 hours ago",
-    icon: LuCircleCheck,
-  },
-  {
-    id: 2,
-    type: "invoice" as const,
-    prefix: "Invoice sent to",
-    entityName: "Zomato",
-    amount: "₹35,000",
-    time: "5 hours ago",
-    icon: LuFileText,
-  },
-  {
-    id: 3,
-    type: "reminder" as const,
-    prefix: "Reminder sent to",
-    entityName: "Nykaa",
-    time: "Yesterday, 14:30",
-    icon: LuBell,
-  },
-  {
-    id: 4,
-    type: "pitch" as const,
-    prefix: "New deal pitched:",
-    entityName: "Bumble",
-    time: "Yesterday, 10:15",
-    icon: LuSparkles,
-  },
-];
-
-const ACTIVE_DEALS = [
-  {
-    id: 1,
-    dealName: "Nykaa Summer Campaign",
-    brandName: "Nykaa",
-    status: "pitched" as const,
-    progress: "1/3",
-    amount: "₹45,000",
-    dueStatus: "Due: 28 May",
-    logoInitial: "N",
-  },
-  {
-    id: 2,
-    dealName: "Nike Run Club Reel",
-    brandName: "Nike",
-    status: "in-progress" as const,
-    progress: "2/3",
-    amount: "₹30,000",
-    dueStatus: "Due: Tomorrow",
-    dueStatusType: "urgent" as const,
-    logoInitial: "N",
-  },
-  {
-    id: 3,
-    dealName: "Spotify Playlist Promo",
-    brandName: "Spotify",
-    status: "delivered" as const,
-    progress: "3/3",
-    amount: "₹25,000",
-    dueStatus: "Awaiting Invoice",
-    logoInitial: "S",
-  },
-];
+import { LuWallet, LuClock, LuCircleAlert, LuCircleCheck, LuFileText, LuBell, LuSparkles } from "react-icons/lu"
+import { LoadingSpinner } from "@/components/common"
 
 import { useEffect, useState } from "react"
 import { DeadlineDetailsModal } from "@/components/dashboard/home/deadline"
@@ -109,7 +40,7 @@ const DashboardHome = () => {
     const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
     const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
     if (isNaN(target.getTime())) return "upcoming"
-    
+
     const diffTime = target.getTime() - today.getTime()
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
@@ -148,8 +79,8 @@ const DashboardHome = () => {
     const mapActivityTypeToUI = (type: string): "delivered" | "invoice" | "reminder" | "pitch" => {
       switch (type) {
         case 'DELIVERABLE_COMPLETED': return "delivered";
-        case 'INVOICE_SENT': 
-        case 'INVOICE_CREATED': 
+        case 'INVOICE_SENT':
+        case 'INVOICE_CREATED':
         case 'PAYMENT_RECEIVED': return "invoice";
         case 'REMINDER_SENT': return "reminder";
         default: return "pitch";
@@ -161,7 +92,7 @@ const DashboardHome = () => {
       type: mapActivityTypeToUI(act.type),
       entityName: act.deal?.title || "Activity",
       prefix: act.type.replace(/_/g, ' ').toLowerCase(),
-      time: new Date(act.createdAt).toLocaleDateString(), 
+      time: new Date(act.createdAt).toLocaleDateString(),
       icon: getActivityIcon(act.type),
       amount: act.amount ? formatCurrency(act.amount) : undefined
     }))
@@ -175,8 +106,8 @@ const DashboardHome = () => {
     if (pitchedStages.includes(stage)) return "pitched";
     if (inProgressStages.includes(stage)) return "in-progress";
     if (deliveredStages.includes(stage)) return "delivered";
-    
-    return "pitched"; 
+
+    return "pitched";
   }
 
   const formatActiveDeals = (deals: any[]) => {
@@ -194,11 +125,7 @@ const DashboardHome = () => {
   }
 
   if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <LuLoader className="w-8 h-8 animate-spin text-brand-500" />
-      </div>
-    )
+    return <LoadingSpinner />
   }
 
   return (
@@ -240,7 +167,7 @@ const DashboardHome = () => {
             <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">
               Deadlines in next 7 days
             </h2>
-            
+
             {!data?.deadlines || data.deadlines.length === 0 ? (
               <div className="p-10 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-3xl flex flex-col items-center justify-center text-center">
                 <span className="text-4xl mb-4">🚀</span>
@@ -267,9 +194,9 @@ const DashboardHome = () => {
 
           {/* Active Deals Section */}
           <section>
-            <ActiveDeals 
-              deals={formatActiveDeals(data?.activeDeals || [])} 
-              totalCount={data?.activeDeals?.length || 0} 
+            <ActiveDeals
+              deals={formatActiveDeals(data?.activeDeals || [])}
+              totalCount={data?.activeDeals?.length || 0}
             />
           </section>
         </div>

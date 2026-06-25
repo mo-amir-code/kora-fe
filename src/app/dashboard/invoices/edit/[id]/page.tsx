@@ -4,6 +4,7 @@ import React from "react";
 import { InvoiceForm } from "@/components/dashboard/invoices";
 import { useParams } from "next/navigation";
 import { useInvoiceDetail } from "@/hooks/useInvoices";
+import { LoadingSpinner } from "@/components/common";
 
 const EditInvoicePage = () => {
   const params = useParams();
@@ -12,11 +13,7 @@ const EditInvoicePage = () => {
   const { data: invoice, isLoading, error } = useInvoiceDetail(id);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-900">
-        <div className="w-10 h-10 border-4 border-brand-500/20 border-t-brand-500 rounded-full animate-spin"></div>
-      </div>
-    );
+    return <LoadingSpinner minHeight="100vh" />;
   }
 
   if (error || !invoice) {
