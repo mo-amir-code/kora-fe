@@ -32,10 +32,12 @@ const ActiveDeals = ({ deals, totalCount, className = "" }: ActiveDealsProps) =>
         </Link>
       </div>
 
-      <div className="divide-y divide-gray-100 dark:divide-gray-800">
-        {deals.map((deal) => (
-          <ActiveDealItem key={deal.id} {...deal} />
-        ))}
+      <div className="max-h-[380px] overflow-y-auto custom-scrollbar pr-1">
+        <div className="divide-y divide-gray-100 dark:divide-gray-800">
+          {deals.map((deal) => (
+            <ActiveDealItem key={deal.id} {...deal} />
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -51,6 +51,16 @@ export type DeadlineCardProps = {
    * Callback when card is clicked
    */
   onClick?: () => void;
+
+  /**
+   * Grouped items for this deadline
+   */
+  items?: Array<{ id: string; type: string; dealTitle: string; dealId: string }>;
+
+  /**
+   * Callback to view details of grouped items
+   */
+  onViewDetails?: (items: Array<{ id: string; type: string; dealTitle: string; dealId: string }>) => void;
 };
 
 const STATUS_COLORS: Record<DeadlineStatus, { container: string; dot: string; label: string; avatar: string }> = {
@@ -84,6 +94,8 @@ const DeadlineCard = React.forwardRef<HTMLDivElement, DeadlineCardProps>(
       statusLabel,
       avatar,
       avatarUrl,
+      items = [],
+      onViewDetails,
       className = "",
       onClick,
     },
@@ -157,10 +169,24 @@ const DeadlineCard = React.forwardRef<HTMLDivElement, DeadlineCardProps>(
           </div>
         </div>
 
-        {/* Status: Dot + Label */}
-        <div className={`mt-4 sm:mt-5 flex items-center gap-2 ${colors.label}`}>
-          <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
-          <span className="text-xs sm:text-sm font-medium">{statusLabel}</span>
+        {/* Status: Dot + Label + Action */}
+        <div className="mt-4 sm:mt-5 flex items-center justify-between">
+          <div className={`flex items-center gap-2 ${colors.label}`}>
+            <div className={`w-2 h-2 rounded-full ${colors.dot}`} />
+            <span className="text-xs sm:text-sm font-medium">{statusLabel}</span>
+          </div>
+
+          {items.length > 1 && onViewDetails && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onViewDetails(items);
+              }}
+              className="text-xs font-semibold text-brand-600 dark:text-brand-400 hover:underline px-2 py-1 rounded-md hover:bg-brand-50 dark:hover:bg-brand-900/20"
+            >
+              Show Details
+            </button>
+          )}
         </div>
       </div>
     );
