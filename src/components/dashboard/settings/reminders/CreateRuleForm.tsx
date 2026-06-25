@@ -27,7 +27,7 @@ export const CreateRuleForm = ({ isOpen, onClose }: CreateRuleFormProps) => {
       />
 
       {/* Modal Container */}
-      <div className="relative w-full max-w-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden animate-in fade-in zoom-in duration-300">
+      <div className="relative w-full max-w-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-3xl overflow-hidden">
         <div className="p-8 sm:p-10 space-y-8">
           {/* Header */}
           <div className="flex items-center justify-between">

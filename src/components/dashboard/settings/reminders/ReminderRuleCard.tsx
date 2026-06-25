@@ -5,7 +5,7 @@ import { LuClock, LuEllipsisVertical, LuToggleLeft, LuToggleRight, LuPencil, LuT
 import { Dropdown, DropdownItem } from "@/components/ui/dropdown";
 
 export interface ReminderRuleCardProps {
-  id: number;
+  id: string;
   title: string;
   category: string;
   description: string;

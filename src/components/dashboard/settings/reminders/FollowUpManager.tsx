@@ -49,7 +49,7 @@ export const FollowUpManager = ({ dates: followups = [], onChange }: FollowUpMan
           return (
             <div 
               key={index}
-              className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 group animate-in fade-in slide-in-from-right-2 duration-300"
+              className="flex items-center gap-3 p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-800 group"
             >
               <div className="p-2 rounded-lg bg-white dark:bg-gray-900 text-gray-400">
                 <LuClock size={16} />

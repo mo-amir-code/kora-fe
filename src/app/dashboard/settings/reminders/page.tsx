@@ -8,18 +8,21 @@ import { ConfirmationModal } from "@/components/common";
 import toast from "react-hot-toast";
 
 import { useRemindersList, useToggleReminder, useDeleteReminder, ReminderRule } from "@/hooks/useReminders";
+import { useRouter } from "next/navigation";
 
 const getTriggerLabel = (type: string) => {
   switch (type) {
-    case "DELIVERABLE_DUE": return "Deliverable Due";
-    case "INVOICE_DUE": return "Invoice Overdue";
+    case "DELIVERABLE_DUE_SOON": return "Deliverable Due Soon";
+    case "DELIVERABLE_OVERDUE": return "Deliverable Overdue";
     case "PAYMENT_DUE": return "Payment Due";
-    case "EXCLUSIVITY_ENDING": return "Exclusivity Ending";
+    case "PAYMENT_OVERDUE": return "Payment Overdue";
+    case "MISSING_INVOICE": return "Missing Invoice";
     default: return "Automation Rule";
   }
 };
 
 export default function RemindersPage() {
+  const router = useRouter();
   const { data: rules = [], isLoading } = useRemindersList();
   const toggleMutation = useToggleReminder();
   const deleteMutation = useDeleteReminder();
@@ -38,7 +41,7 @@ export default function RemindersPage() {
   };
 
   return (
-    <div className="max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-10 animate-in fade-in slide-in-from-bottom-2 duration-700">
+    <div className="max-w-6xl mx-auto py-6 sm:py-10 px-4 sm:px-6 space-y-10">
       {/* Header Section */}
       <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
         <div className="space-y-4">
@@ -85,6 +88,7 @@ export default function RemindersPage() {
             status={rule.isActive ? "active" : "paused"}
             stats={rule.isActive ? "Active Rule" : "Paused"}
             onToggle={() => toggleRule(rule.id, rule.isActive)}
+            onEdit={() => router.push(`/dashboard/settings/reminders/edit/${rule.id}`)}
             onDelete={() => setRuleToDelete(rule.id)}
           />
         ))}

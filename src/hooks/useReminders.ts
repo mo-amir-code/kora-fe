@@ -9,7 +9,6 @@ export interface ReminderRule {
   triggerType: string;
   offsetValue: number;
   offsetUnit: string;
-  offsetDirection: string;
   nextFollowUps: string[];
   messageTemplate: string | null;
   channelEmail: boolean;
@@ -76,6 +75,23 @@ export const useDeleteReminder = () => {
     },
     onError: () => {
       toast.error("Failed to delete reminder rule");
+    },
+  });
+};
+
+export const useUpdateReminder = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ ruleId, data }: { ruleId: string; data: Partial<ReminderRule> }) => {
+      const res = await api.put(`/reminder/${ruleId}`, data);
+      return res.data.data as ReminderRule;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["reminder-rules"] });
+      toast.success("Reminder rule updated successfully");
+    },
+    onError: () => {
+      toast.error("Failed to update reminder rule");
     },
   });
 };

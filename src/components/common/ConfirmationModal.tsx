@@ -42,12 +42,12 @@ export const ConfirmationModal = ({
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 sm:p-6">
       {/* Backdrop */}
       <div 
-        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm animate-in fade-in duration-300"
+        className="absolute inset-0 bg-gray-900/60 backdrop-blur-sm"
         onClick={onClose}
       />
 
       {/* Modal Card */}
-      <div className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-[32px] border border-gray-200 dark:border-gray-800 shadow-2xl animate-in fade-in zoom-in-95 duration-300 overflow-hidden">
+      <div className="relative w-full max-w-md bg-white dark:bg-gray-900 rounded-[32px] border border-gray-200 dark:border-gray-800 shadow-2xl overflow-hidden">
         {/* Header/Close */}
         <button 
           onClick={onClose}
