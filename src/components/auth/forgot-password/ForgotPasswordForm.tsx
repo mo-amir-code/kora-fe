@@ -73,8 +73,8 @@ const ForgotPasswordForm: React.FC = () => {
   if (step === "otp") {
     return (
       <div>
-        <div className="flex items-center justify-center w-14 h-14 rounded-full bg-purple-600/10 mb-6">
-          <HiOutlineShieldCheck className="text-purple-400" size={28} />
+        <div className="flex items-center justify-center w-14 h-14 rounded-full bg-brand-500/10 mb-6">
+          <HiOutlineShieldCheck className="text-brand-500" size={28} />
         </div>
         <h2 className="text-white text-2xl sm:text-3xl font-bold mb-1.5">
           Enter verification code
@@ -100,7 +100,7 @@ const ForgotPasswordForm: React.FC = () => {
                 value={digit}
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-semibold rounded-lg bg-[#1a2231] border border-[#1e293b] text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200"
+                className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-semibold rounded-lg bg-gray-950 border border-gray-850 text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200"
                 autoFocus={index === 0}
               />
             ))}
@@ -110,7 +110,7 @@ const ForgotPasswordForm: React.FC = () => {
           <button
             type="submit"
             disabled={otp.join("").length !== 6 || forgotPassword.isPending}
-            className="w-full py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {forgotPassword.isPending ? (
               <span className="flex items-center justify-center gap-2">
@@ -144,7 +144,7 @@ const ForgotPasswordForm: React.FC = () => {
           <button
             type="button"
             onClick={handleResendOtp}
-            className="text-purple-400 font-medium hover:text-purple-300 transition-colors"
+            className="text-brand-500 font-medium hover:text-brand-400 transition-colors"
           >
             Resend OTP
           </button>
@@ -164,8 +164,8 @@ const ForgotPasswordForm: React.FC = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-center w-14 h-14 rounded-full bg-purple-600/10 mb-6">
-        <HiOutlineMail className="text-purple-400" size={28} />
+      <div className="flex items-center justify-center w-14 h-14 rounded-full bg-brand-500/10 mb-6">
+        <HiOutlineMail className="text-brand-500" size={28} />
       </div>
       <h2 className="text-white text-2xl sm:text-3xl font-bold mb-1.5">
         Forgot password?
@@ -186,7 +186,7 @@ const ForgotPasswordForm: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="arjun@example.com"
-            className="w-full px-4 py-3 rounded-lg bg-[#1a2231] border border-[#1e293b] text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200"
+            className="w-full px-4 py-3 rounded-lg bg-gray-950 border border-gray-850 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200"
             autoFocus
           />
         </div>
@@ -195,7 +195,7 @@ const ForgotPasswordForm: React.FC = () => {
         <button
           type="submit"
           disabled={!email || forgotPassword.isPending}
-          className="w-full py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {forgotPassword.isPending ? (
             <span className="flex items-center justify-center gap-2">
@@ -235,7 +235,7 @@ const ForgotPasswordForm: React.FC = () => {
         Remember your password?{" "}
         <Link
           href="/auth/signin"
-          className="text-purple-400 font-medium hover:text-purple-300 transition-colors"
+          className="text-brand-500 font-medium hover:text-brand-400 transition-colors"
         >
           Sign in
         </Link>
@@ -245,3 +245,4 @@ const ForgotPasswordForm: React.FC = () => {
 };
 
 export default ForgotPasswordForm;
+

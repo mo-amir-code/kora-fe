@@ -32,7 +32,7 @@ const features = [
 
 export default function FeaturesSection() {
   return (
-    <section className="py-16 sm:py-24 bg-slate-50 dark:bg-[#0f1520] border-y border-slate-200 dark:border-white/5 transition-colors duration-300">
+    <section className="py-16 sm:py-24 bg-slate-50 dark:bg-gray-900 border-y border-slate-200 dark:border-white/5 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
         <div className="text-center mb-12 sm:mb-20">
           <h2 className="text-2xl sm:text-3xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-3 sm:mb-4">
@@ -50,7 +50,7 @@ export default function FeaturesSection() {
             return (
               <div
                 key={feature.title}
-                className={`bg-white dark:bg-[#151c2c] border border-slate-200 dark:border-white/5 p-6 sm:p-8 rounded-2xl sm:rounded-3xl ${feature.hoverColor} transition-colors group shadow-sm dark:shadow-none`}
+                className={`bg-white dark:bg-gray-900/50 border border-slate-200 dark:border-white/5 p-6 sm:p-8 rounded-2xl sm:rounded-3xl ${feature.hoverColor} transition-colors group shadow-sm dark:shadow-none`}
               >
                 <div
                   className={`w-12 h-12 sm:w-14 sm:h-14 ${feature.iconBg} ${feature.iconColor} rounded-xl sm:rounded-2xl flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform`}

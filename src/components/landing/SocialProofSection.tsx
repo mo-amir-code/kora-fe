@@ -10,7 +10,7 @@ export default function SocialProofSection() {
   return (
     <section className="py-16 sm:py-24 lg:py-32 relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-4 sm:px-6">
-        <div className="bg-linear-to-br from-brand-100 dark:from-brand-900/40 to-slate-50 dark:to-[#0f1520] border border-brand-200 dark:border-white/10 rounded-2xl sm:rounded-4xl lg:rounded-[3rem] p-6 sm:p-8 md:p-12 lg:p-16 flex flex-col md:flex-row items-center gap-8 sm:gap-12 relative overflow-hidden transition-colors duration-300">
+        <div className="bg-linear-to-br from-brand-100 dark:from-brand-900/40 to-slate-50 dark:to-gray-900 border border-brand-200 dark:border-white/10 rounded-2xl sm:rounded-4xl lg:rounded-[3rem] p-6 sm:p-8 md:p-12 lg:p-16 flex flex-col md:flex-row items-center gap-8 sm:gap-12 relative overflow-hidden transition-colors duration-300">
           <div className="absolute -right-20 -top-20 w-64 h-64 bg-brand-500/10 dark:bg-brand-500/20 blur-[80px] rounded-full" />
 
           <div className="flex-1 space-y-4 sm:space-y-6 relative z-10">

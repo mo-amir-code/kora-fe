@@ -66,7 +66,7 @@ const ResetPasswordFormInner: React.FC = () => {
         </p>
         <Link
           href="/auth/signin"
-          className="text-purple-400 font-medium hover:text-purple-300 transition-colors text-sm"
+          className="text-brand-500 font-medium hover:text-brand-400 transition-colors text-sm"
         >
           Click here if not redirected
         </Link>
@@ -76,8 +76,8 @@ const ResetPasswordFormInner: React.FC = () => {
 
   return (
     <div>
-      <div className="flex items-center justify-center w-14 h-14 rounded-full bg-purple-600/10 mb-6">
-        <HiOutlineKey className="text-purple-400" size={28} />
+      <div className="flex items-center justify-center w-14 h-14 rounded-full bg-brand-500/10 mb-6">
+        <HiOutlineKey className="text-brand-500" size={28} />
       </div>
       <h2 className="text-white text-2xl sm:text-3xl font-bold mb-1.5">
         Reset your password
@@ -99,7 +99,7 @@ const ResetPasswordFormInner: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-lg bg-[#1a2231] border border-[#1e293b] text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200 pr-12"
+              className="w-full px-4 py-3 rounded-lg bg-gray-950 border border-gray-850 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 pr-12"
               autoFocus
             />
             <button
@@ -133,7 +133,7 @@ const ResetPasswordFormInner: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-4 py-3 rounded-lg bg-[#1a2231] border border-[#1e293b] text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200 pr-12"
+              className="w-full px-4 py-3 rounded-lg bg-gray-950 border border-gray-850 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 pr-12"
             />
             <button
               type="button"
@@ -171,7 +171,7 @@ const ResetPasswordFormInner: React.FC = () => {
             password.length < 8 ||
             resetPassword.isPending
           }
-          className="w-full py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {resetPassword.isPending ? (
             <span className="flex items-center justify-center gap-2">
@@ -204,7 +204,7 @@ const ResetPasswordFormInner: React.FC = () => {
         Back to{" "}
         <Link
           href="/auth/signin"
-          className="text-purple-400 font-medium hover:text-purple-300 transition-colors"
+          className="text-brand-500 font-medium hover:text-brand-400 transition-colors"
         >
           Sign in
         </Link>
@@ -222,3 +222,4 @@ const ResetPasswordForm: React.FC = () => {
 };
 
 export default ResetPasswordForm;
+

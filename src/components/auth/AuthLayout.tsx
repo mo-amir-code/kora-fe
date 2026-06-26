@@ -1,6 +1,7 @@
 "use client";
 import React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { GuestGuard } from "@/components/guards";
 import { APP_NAME } from "@/lib/constants";
 
@@ -19,23 +20,23 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, pageTitle }) => {
   return (
     <GuestGuard>
       {pageTitle && <title>{pageTitle}</title>}
-      <div className="min-h-screen min-h-[100dvh] bg-[#0B0F19] flex items-start sm:items-center justify-center p-0 sm:p-4 md:p-6 lg:p-8">
-        <div className="w-full min-h-[100dvh] sm:min-h-0 sm:max-w-[1100px] grid grid-cols-1 lg:grid-cols-2 gap-0 sm:rounded-2xl overflow-hidden sm:border sm:border-[#1e293b]/60 bg-[#0f1520]">
+      <div className="min-h-screen min-h-[100dvh] bg-gray-950 flex items-start sm:items-center justify-center p-0 sm:p-4 md:p-6 lg:p-8">
+        <div className="w-full min-h-[100dvh] sm:min-h-0 sm:max-w-[1100px] grid grid-cols-1 lg:grid-cols-2 gap-0 sm:rounded-2xl overflow-hidden sm:border sm:border-gray-800 bg-gray-950">
           {/* Left Panel - Branding (Hidden on Mobile) */}
-          <div className="hidden lg:flex bg-[#0f1520] px-5 pt-6 pb-4 sm:p-8 md:p-10 lg:p-12 flex-col justify-start lg:justify-between">
+          <div className="hidden lg:flex bg-gray-950 px-5 pt-6 pb-4 sm:p-8 md:p-10 lg:p-12 flex-col justify-start lg:justify-between">
             {/* Logo */}
-            <div className="flex items-center gap-2.5 sm:gap-3 mb-5 sm:mb-10">
+            <Link href="/" className="flex items-center gap-2.5 sm:gap-3 mb-5 sm:mb-10">
               <Image
-                src="/images/logo/logo-icon.svg"
+                src="/brand/kora-icon-transparent.svg"
                 alt={APP_NAME}
-                width={28}
-                height={28}
-                className="sm:w-8 sm:h-8"
+                width={32}
+                height={32}
+                className="w-7 h-7 sm:w-8 sm:h-8"
               />
-              <span className="text-white text-lg sm:text-xl font-semibold tracking-tight">
+              <span className="text-white text-lg sm:text-xl font-bold tracking-tight">
                 {APP_NAME}
               </span>
-            </div>
+            </Link>
 
             {/* Tagline */}
               <div className="lg:flex-1 flex flex-col justify-center">
@@ -73,7 +74,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, pageTitle }) => {
               </div>
 
               {/* Testimonial - Hidden on very small screens, shown on sm+ */}
-              <div className="hidden sm:block bg-[#151c2c] border border-[#1e293b] rounded-xl p-4 sm:p-5">
+              <div className="hidden sm:block bg-gray-900 border border-gray-800 rounded-xl p-4 sm:p-5">
                 <p className="text-gray-400 text-xs sm:text-sm italic leading-relaxed mb-3 sm:mb-4">
                   &ldquo;I recovered ₹40,000 in overdue payments within my first
                   week using {APP_NAME}. It completely professionalized how I interact
@@ -99,20 +100,20 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, pageTitle }) => {
           </div>
 
           {/* Right Panel - Form */}
-          <div className="bg-[#111827] px-5 py-8 sm:p-8 md:p-10 lg:p-12 flex flex-col justify-center min-h-[100dvh] sm:min-h-0 border-t lg:border-t-0 lg:border-l border-[#1e293b]/60">
+          <div className="bg-gray-900 px-5 py-8 sm:p-8 md:p-10 lg:p-12 flex flex-col justify-center min-h-[100dvh] sm:min-h-0 border-t lg:border-t-0 lg:border-l border-gray-800">
             {/* Mobile Logo */}
-            <div className="flex lg:hidden items-center gap-2.5 mb-8">
+            <Link href="/" className="flex lg:hidden items-center gap-2.5 mb-8">
               <Image
-                src="/images/logo/logo-icon.svg"
+                src="/brand/kora-icon-transparent.svg"
                 alt={APP_NAME}
-                width={28}
-                height={28}
+                width={32}
+                height={32}
                 className="w-8 h-8"
               />
-              <span className="text-white text-xl font-semibold tracking-tight">
+              <span className="text-white text-xl font-bold tracking-tight">
                 {APP_NAME}
               </span>
-            </div>
+            </Link>
             {children}
           </div>
         </div>
@@ -122,3 +123,4 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children, pageTitle }) => {
 };
 
 export default AuthLayout;
+

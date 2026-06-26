@@ -118,7 +118,7 @@ const SignUpForm: React.FC = () => {
                 value={digit}
                 onChange={(e) => handleOtpChange(index, e.target.value)}
                 onKeyDown={(e) => handleOtpKeyDown(index, e)}
-                className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-semibold rounded-lg bg-[#1a2231] border border-[#1e293b] text-white focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200"
+                className="w-12 h-14 sm:w-14 sm:h-16 text-center text-xl font-semibold rounded-lg bg-gray-950 border border-gray-850 text-white focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200"
                 autoFocus={index === 0}
               />
             ))}
@@ -135,7 +135,7 @@ const SignUpForm: React.FC = () => {
           <button
             type="submit"
             disabled={otp.join("").length !== 6 || verifyOtp.isPending}
-            className="w-full py-2.5 sm:py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full py-2.5 sm:py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-[0.98] min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {verifyOtp.isPending ? (
               <span className="flex items-center justify-center gap-2">
@@ -158,7 +158,7 @@ const SignUpForm: React.FC = () => {
             type="button"
             onClick={handleResendOtp}
             disabled={sendOtp.isPending}
-            className="text-purple-400 font-medium hover:text-purple-300 transition-colors disabled:opacity-50"
+            className="text-brand-500 font-medium hover:text-brand-400 transition-colors disabled:opacity-50"
           >
             {sendOtp.isPending ? "Sending..." : "Resend OTP"}
           </button>
@@ -191,7 +191,7 @@ const SignUpForm: React.FC = () => {
       <button
         type="button"
         onClick={handleGoogleAuth}
-        className="w-full flex items-center justify-center gap-2.5 sm:gap-3 px-4 py-2.5 sm:py-3 rounded-lg border border-[#1e293b] bg-[#151c2c] text-white text-xs sm:text-sm font-medium hover:bg-[#1a2338] active:bg-[#1a2338] transition-colors duration-200 min-h-[44px]"
+        className="w-full flex items-center justify-center gap-2.5 sm:gap-3 px-4 py-2.5 sm:py-3 rounded-lg border border-gray-800 bg-gray-950 text-white text-xs sm:text-sm font-medium hover:bg-gray-900 active:bg-gray-900 transition-colors duration-200 min-h-[44px]"
       >
         <FcGoogle className="w-4 h-4 sm:w-5 sm:h-5" />
         Continue with Google
@@ -199,11 +199,11 @@ const SignUpForm: React.FC = () => {
 
       {/* Divider */}
       <div className="flex items-center gap-3 sm:gap-4 my-3 sm:my-6">
-        <div className="flex-1 h-px bg-[#1e293b]" />
+        <div className="flex-1 h-px bg-gray-800" />
         <span className="text-gray-500 text-[10px] sm:text-xs font-medium tracking-wider uppercase whitespace-nowrap">
           Or continue with email
         </span>
-        <div className="flex-1 h-px bg-[#1e293b]" />
+        <div className="flex-1 h-px bg-gray-800" />
       </div>
 
       <form onSubmit={handleSendOtp} className="space-y-3 sm:space-y-4">
@@ -218,7 +218,7 @@ const SignUpForm: React.FC = () => {
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Arjun Sharma"
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-[#1a2231] border border-[#1e293b] text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200 min-h-[44px]"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-gray-950 border border-gray-850 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 min-h-[44px]"
           />
         </div>
 
@@ -233,7 +233,7 @@ const SignUpForm: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="arjun@example.com"
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-[#1a2231] border border-[#1e293b] text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200 min-h-[44px]"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-gray-950 border border-gray-850 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 min-h-[44px]"
           />
         </div>
 
@@ -249,7 +249,7 @@ const SignUpForm: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-[#1a2231] border border-[#1e293b] text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200 pr-11 sm:pr-12 min-h-[44px]"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-gray-950 border border-gray-850 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 pr-11 sm:pr-12 min-h-[44px]"
             />
             <button
               type="button"
@@ -273,7 +273,7 @@ const SignUpForm: React.FC = () => {
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-[#1a2231] border border-[#1e293b] text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200 pr-11 sm:pr-12 min-h-[44px]"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-gray-950 border border-gray-850 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 pr-11 sm:pr-12 min-h-[44px]"
             />
             <button
               type="button"
@@ -289,7 +289,7 @@ const SignUpForm: React.FC = () => {
         <button
           type="submit"
           disabled={sendOtp.isPending}
-          className="w-full py-2.5 sm:py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] mt-1 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2.5 sm:py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-[0.98] mt-1 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {sendOtp.isPending ? (
             <span className="flex items-center justify-center gap-2">
@@ -320,7 +320,7 @@ const SignUpForm: React.FC = () => {
         Already have an account?{" "}
         <Link
           href="/auth/signin"
-          className="text-purple-400 font-medium hover:text-purple-300 transition-colors"
+          className="text-brand-500 font-medium hover:text-brand-400 transition-colors"
         >
           Sign in
         </Link>
@@ -330,3 +330,4 @@ const SignUpForm: React.FC = () => {
 };
 
 export default SignUpForm;
+

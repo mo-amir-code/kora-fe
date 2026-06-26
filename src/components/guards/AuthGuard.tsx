@@ -37,8 +37,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   // Show loading while waiting for hydration
   if (!hydrated) {
     return (
-      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
       </div>
     );
   }
@@ -46,8 +46,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   // After hydration, if not authenticated show loading while redirect happens
   if (!isAuthenticated || !token) {
     return (
-      <div className="min-h-screen bg-[#0B0F19] flex items-center justify-center">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-purple-500 border-t-transparent" />
+      <div className="min-h-screen bg-gray-950 flex items-center justify-center">
+        <div className="h-10 w-10 animate-spin rounded-full border-4 border-brand-500 border-t-transparent" />
       </div>
     );
   }

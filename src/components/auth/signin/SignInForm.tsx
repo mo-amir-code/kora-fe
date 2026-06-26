@@ -35,7 +35,7 @@ const SignInForm: React.FC = () => {
       <button
         type="button"
         onClick={handleGoogleAuth}
-        className="w-full flex items-center justify-center gap-2.5 sm:gap-3 px-4 py-2.5 sm:py-3 rounded-lg border border-[#1e293b] bg-[#151c2c] text-white text-xs sm:text-sm font-medium hover:bg-[#1a2338] active:bg-[#1a2338] transition-colors duration-200 min-h-[44px]"
+        className="w-full flex items-center justify-center gap-2.5 sm:gap-3 px-4 py-2.5 sm:py-3 rounded-lg border border-gray-800 bg-gray-950 text-white text-xs sm:text-sm font-medium hover:bg-gray-900 active:bg-gray-900 transition-colors duration-200 min-h-[44px]"
       >
         <FcGoogle className="w-4 h-4 sm:w-5 sm:h-5" />
         Continue with Google
@@ -43,11 +43,11 @@ const SignInForm: React.FC = () => {
 
       {/* Divider */}
       <div className="flex items-center gap-3 sm:gap-4 my-4 sm:my-6">
-        <div className="flex-1 h-px bg-[#1e293b]" />
+        <div className="flex-1 h-px bg-gray-800" />
         <span className="text-gray-500 text-[10px] sm:text-xs font-medium tracking-wider uppercase whitespace-nowrap">
           Or continue with email
         </span>
-        <div className="flex-1 h-px bg-[#1e293b]" />
+        <div className="flex-1 h-px bg-gray-800" />
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-5">
@@ -62,7 +62,7 @@ const SignInForm: React.FC = () => {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             placeholder="arjun@example.com"
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-[#1a2231] border border-[#1e293b] text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200 min-h-[44px]"
+            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-gray-950 border border-gray-850 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 min-h-[44px]"
           />
         </div>
 
@@ -74,7 +74,7 @@ const SignInForm: React.FC = () => {
             </label>
             <Link
               href="/auth/forgot-password"
-              className="text-purple-400 text-xs font-medium hover:text-purple-300 transition-colors"
+              className="text-brand-500 text-xs font-medium hover:text-brand-400 transition-colors"
             >
               Forgot password?
             </Link>
@@ -86,7 +86,7 @@ const SignInForm: React.FC = () => {
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               placeholder="••••••••"
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-[#1a2231] border border-[#1e293b] text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-500/40 focus:border-purple-500 transition-all duration-200 pr-11 sm:pr-12 min-h-[44px]"
+              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-gray-950 border border-gray-850 text-white text-sm placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 pr-11 sm:pr-12 min-h-[44px]"
             />
             <button
               type="button"
@@ -106,7 +106,7 @@ const SignInForm: React.FC = () => {
         <button
           type="submit"
           disabled={signin.isPending}
-          className="w-full py-2.5 sm:py-3 rounded-lg bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-purple-600/20 hover:shadow-purple-600/30 active:scale-[0.98] min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full py-2.5 sm:py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-[0.98] min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {signin.isPending ? (
             <span className="flex items-center justify-center gap-2">
@@ -145,7 +145,7 @@ const SignInForm: React.FC = () => {
         Don&apos;t have an account?{" "}
         <Link
           href="/auth/signup"
-          className="text-purple-400 font-medium hover:text-purple-300 transition-colors"
+          className="text-brand-500 font-medium hover:text-brand-400 transition-colors"
         >
           Sign up
         </Link>
@@ -155,3 +155,4 @@ const SignInForm: React.FC = () => {
 };
 
 export default SignInForm;
+
