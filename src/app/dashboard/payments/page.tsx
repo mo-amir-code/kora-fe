@@ -1,14 +1,16 @@
 'use client';
 
 import React, { useState } from 'react';
-import { LuFilter } from 'react-icons/lu';
+import { LuFilter, LuPlus } from 'react-icons/lu';
 import { LoadingSpinner } from '@/components/common';
 import { usePayments, usePaymentStats } from '@/hooks/usePayments';
 import { PaymentStats } from '@/components/dashboard/payments/PaymentStats';
 import { PaymentTable } from '@/components/dashboard/payments/PaymentTable';
+import { AddPaymentEventModal } from '@/components/dashboard/payments/AddPaymentEventModal';
 
 export default function PaymentsPage() {
   const [filter, setFilter] = useState('all');
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   const { data: payments = [], isLoading: paymentsLoading } = usePayments(filter);
   const { data: stats, isLoading: statsLoading } = usePaymentStats();
@@ -31,29 +33,23 @@ export default function PaymentsPage() {
             Payments & Cash Flow
           </h1>
           <p className="text-gray-500 dark:text-gray-400 font-medium">
-            Monitor your revenue, pending invoices, and upcoming milestones.
+            Monitor liquidity, expected cash flow, collection speed, and milestone payments.
           </p>
         </div>
-        {/* <div className="flex items-center gap-3">
-          <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-bold text-gray-900 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-800 transition-all active:scale-95">
-            <LuCalendar className="h-4 w-4" />
-            Schedule Reminder
-          </button>
-          <button className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-sm font-bold text-white dark:text-gray-900 hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none">
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={() => setIsModalOpen(true)}
+            className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-sm font-bold text-white dark:text-gray-900 hover:opacity-90 transition-all active:scale-95 shadow-lg shadow-gray-200 dark:shadow-none"
+          >
             <LuPlus className="h-4 w-4" strokeWidth={3} />
-            Create Invoice
+            Add Payment Event
           </button>
-        </div> */}
+        </div>
       </div>
 
       {/* Stats Section */}
       {stats && (
-        <PaymentStats
-          received={stats.received}
-          pending={stats.pending}
-          overdue={stats.overdue}
-          total={stats.total}
-        />
+        <PaymentStats stats={stats} />
       )}
 
       {/* List Section */}
@@ -91,6 +87,12 @@ export default function PaymentsPage() {
           <PaymentTable payments={payments} />
         )}
       </div>
+
+      {/* Add Payment Event Modal */}
+      <AddPaymentEventModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+      />
     </div>
   );
 }

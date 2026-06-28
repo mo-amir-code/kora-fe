@@ -2,7 +2,8 @@
 "use client";
 
 import React from "react";
-import { LuPencil } from "react-icons/lu";
+import Link from "next/link";
+import { LuEye } from "react-icons/lu";
 
 export type DealStatus = "pitched" | "in-progress" | "delivered";
 
@@ -35,6 +36,7 @@ const STATUS_CONFIG: Record<DealStatus, { label: string; classes: string }> = {
 };
 
 const ActiveDealItem = ({
+  id,
   dealName,
   status,
   progress,
@@ -60,9 +62,11 @@ const ActiveDealItem = ({
 
         {/* Content */}
         <div className="flex-1 min-w-0">
-          <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate mb-1">
-            {dealName}
-          </h3>
+          <Link href={`/dashboard/deals/${id}`} className="hover:underline">
+            <h3 className="text-sm sm:text-base font-semibold text-gray-900 dark:text-white truncate mb-1">
+              {dealName}
+            </h3>
+          </Link>
           <div className="flex items-center gap-3 flex-wrap">
             <span className={`text-[10px] sm:text-xs font-bold px-2.5 py-0.5 rounded-full ${statusInfo.classes}`}>
               {statusInfo.label}
@@ -89,10 +93,14 @@ const ActiveDealItem = ({
           </p>
         </div>
 
-        {/* Edit Button */}
-        <button className="p-2 text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" title="Edit">
-          <LuPencil size={18} />
-        </button>
+        {/* View Button */}
+        <Link 
+          href={`/dashboard/deals/${id}`} 
+          className="p-2 text-gray-400 hover:text-brand-500 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors" 
+          title="View Deal"
+        >
+          <LuEye size={18} />
+        </Link>
       </div>
     </div>
   );
