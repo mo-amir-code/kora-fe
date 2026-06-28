@@ -6,6 +6,7 @@ import { LuArrowLeft, LuDownload, LuPencil, LuTrash2, LuCalendar, LuUser, LuBrie
 import { LoadingSpinner } from "@/components/common";
 import { useInvoiceDetail, useDeleteInvoice } from '@/hooks/useInvoices';
 import { useProfile } from '@/hooks/useProfile';
+import { useCurrency } from '@/hooks/useCurrency';
 import InvoiceStatusBadge from '@/components/dashboard/invoices/InvoiceStatusBadge';
 import Image from 'next/image';
 import { formatInvoiceCurrency, formatInvoiceDate, generateInvoicePDF } from "@/components/dashboard/invoices/invoice-utils";
@@ -19,6 +20,7 @@ export default function InvoiceViewPage() {
 
   const { data: invoice, isLoading, isError } = useInvoiceDetail(invoiceId);
   const { data: profile } = useProfile();
+  const { format, baseCurrency } = useCurrency();
   const deleteInvoice = useDeleteInvoice();
 
   const downloadPDF = async () => {
@@ -26,7 +28,7 @@ export default function InvoiceViewPage() {
     await generateInvoicePDF("invoice-pdf-preview", invoice.invoiceNumber);
   };
 
-  const formatMoney = formatInvoiceCurrency;
+  const formatMoney = (val: number | string) => formatInvoiceCurrency(val, baseCurrency);
   const formatDate = formatInvoiceDate;
 
   if (isLoading) {
@@ -153,10 +155,10 @@ export default function InvoiceViewPage() {
                             <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{item.quantity}</span>
                           </td>
                           <td className="py-6 px-4 text-right">
-                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">₹{item.unitPrice.toLocaleString('en-IN')}</span>
+                            <span className="text-sm font-medium text-gray-600 dark:text-gray-400">{format(item.unitPrice)}</span>
                           </td>
                           <td className="py-6 text-right">
-                            <span className="text-sm font-bold text-gray-900 dark:text-white">₹{item.amount.toLocaleString('en-IN')}</span>
+                            <span className="text-sm font-bold text-gray-900 dark:text-white">{format(item.amount)}</span>
                           </td>
                         </tr>
                       ))}
@@ -169,17 +171,17 @@ export default function InvoiceViewPage() {
               <div className="flex flex-col items-end gap-4 pt-10 border-t border-gray-100 dark:border-gray-800">
                 <div className="flex items-center justify-between w-full sm:w-64">
                   <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Subtotal</span>
-                  <span className="text-sm font-bold text-gray-900 dark:text-white">₹{invoice.subtotal.toLocaleString('en-IN')}</span>
+                  <span className="text-sm font-bold text-gray-900 dark:text-white">{format(invoice.subtotal)}</span>
                 </div>
                 {invoice.gstAmount && invoice.gstAmount > 0 && (
                   <div className="flex items-center justify-between w-full sm:w-64">
                     <span className="text-sm font-medium text-gray-500 dark:text-gray-400">GST ({invoice.gstRate}%)</span>
-                    <span className="text-sm font-bold text-gray-900 dark:text-white">₹{invoice.gstAmount.toLocaleString('en-IN')}</span>
+                    <span className="text-sm font-bold text-gray-900 dark:text-white">{format(invoice.gstAmount)}</span>
                   </div>
                 )}
                 <div className="flex items-center justify-between w-full sm:w-64 p-4 rounded-2xl bg-gray-900 dark:bg-white mt-4">
                   <span className="text-sm font-bold text-white dark:text-gray-900">Total Amount</span>
-                  <span className="text-xl font-bold text-white dark:text-gray-900 uppercase">₹{invoice.total.toLocaleString('en-IN')}</span>
+                  <span className="text-xl font-bold text-white dark:text-gray-900 uppercase">{format(invoice.total)}</span>
                 </div>
               </div>
             </div>

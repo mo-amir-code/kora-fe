@@ -7,6 +7,7 @@ import { DealCard, AddDealForm } from "@/components/dashboard/deals";
 import type { DealStatus, Platform } from "@/components/dashboard/deals/kanban";
 import { useDealsList } from "@/hooks/useDeals";
 import type { Deal } from "@/services/deal.service";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 const DEAL_STAGES = [
   { value: "all", label: "All Stages" },
@@ -64,9 +65,7 @@ function mapPlatforms(platforms: string[]): Platform[] {
 
 function formatCurrency(amount: string | null, currency: string): string {
   if (!amount || parseFloat(amount) === 0) return "—";
-  const num = parseFloat(amount);
-  const symbol = currency === "USD" ? "$" : "₹";
-  return `${symbol}${num.toLocaleString("en-IN")}`;
+  return formatCurrencyAmount(amount, currency);
 }
 
 function formatDate(dateStr: string): string {

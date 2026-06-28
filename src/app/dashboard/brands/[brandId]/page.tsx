@@ -36,16 +36,13 @@ const CATEGORY_COLORS: Record<string, string> = {
   OTHER: "bg-gray-100 dark:bg-gray-500/15 text-gray-600 dark:text-gray-400",
 };
 
-function formatCurrency(value: string | number): string {
-  const num = typeof value === "string" ? parseFloat(value) : value;
-  if (!num || num === 0) return "₹0";
-  return `₹${num.toLocaleString("en-IN")}`;
-}
+import { useCurrency } from "@/hooks/useCurrency";
 
 export default function BrandDetails() {
   const params = useParams();
   const brandId = params.brandId as string;
   const { data: brand, isLoading, error } = useBrandDetail(brandId);
+  const { format: formatCurrency } = useCurrency();
   const updateBrand = useUpdateBrand(brandId);
   const createContact = useCreateBrandContact(brandId);
   const updateContact = useUpdateBrandContact(brandId);

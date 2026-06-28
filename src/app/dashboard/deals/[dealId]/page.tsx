@@ -17,6 +17,8 @@ import {
 } from "@/components/dashboard/deals/details";
 import { useDealDetail, useUpdateDeliverables, useUpdateDeal, useAddDealActivity } from "@/hooks/useDeals";
 
+import { formatCurrencyAmount } from "@/lib/currency";
+
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "—";
   return new Date(dateStr).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
@@ -24,9 +26,7 @@ function formatDate(dateStr: string | null): string {
 
 function formatAmount(amount: string | null, currency: string): string {
   if (!amount || parseFloat(amount) === 0) return "—";
-  const num = parseFloat(amount);
-  const symbol = currency === "USD" ? "$" : "₹";
-  return `${symbol}${num.toLocaleString("en-IN", { minimumFractionDigits: 2 })}`;
+  return formatCurrencyAmount(amount, currency);
 }
 
 function getStageLabel(stage: string): string {

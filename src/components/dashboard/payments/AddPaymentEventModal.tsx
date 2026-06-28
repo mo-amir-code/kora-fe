@@ -5,6 +5,7 @@ import { LuX, LuWallet, LuCheck } from 'react-icons/lu';
 import { useDealsList } from '@/hooks/useDeals';
 import { useInvoicesList } from '@/hooks/useInvoices';
 import { useCreatePaymentEvent } from '@/hooks/usePayments';
+import { useCurrency } from '@/hooks/useCurrency';
 import toast from 'react-hot-toast';
 
 interface AddPaymentEventModalProps {
@@ -21,6 +22,7 @@ export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
   const { data: deals = [], isLoading: isLoadingDeals } = useDealsList();
   const { data: invoices = [], isLoading: isLoadingInvoices } = useInvoicesList();
   const createMutation = useCreatePaymentEvent();
+  const { symbol, format } = useCurrency();
 
   const [dealId, setDealId] = useState<string>(defaultDealId || '');
   const [invoiceId, setInvoiceId] = useState<string>('');
@@ -62,7 +64,6 @@ export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
         onSuccess: () => {
           toast.success('Payment event recorded successfully!');
           onClose();
-          // Reset form
           setAmount('');
           setReference('');
         },
@@ -79,7 +80,6 @@ export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
         className="w-full max-w-lg bg-white dark:bg-gray-900 rounded-3xl border border-gray-200 dark:border-gray-800 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100 dark:border-gray-800 bg-gray-50/50 dark:bg-gray-800/20">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-brand-500/10 text-brand-500">
@@ -102,9 +102,7 @@ export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
           </button>
         </div>
 
-        {/* Modal Form */}
         <form onSubmit={handleSubmit} className="p-6 overflow-y-auto space-y-5">
-          {/* Deal Field */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
               Associated Deal <span className="text-rose-500">*</span>
@@ -127,7 +125,6 @@ export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
             </select>
           </div>
 
-          {/* Invoice Field (Optional) */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
               Link to Invoice (Optional)
@@ -140,13 +137,12 @@ export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
               <option value="">Direct Deal Payment (No Invoice)</option>
               {filteredInvoices.map((inv: any) => (
                 <option key={inv.id} value={inv.id}>
-                  {inv.invoiceNumber} — ₹{Number(inv.total).toLocaleString()} ({inv.status})
+                  {inv.invoiceNumber} — {format(inv.total)} ({inv.status})
                 </option>
               ))}
             </select>
           </div>
 
-          {/* Event Type */}
           <div>
             <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
               Event Type <span className="text-rose-500">*</span>
@@ -176,16 +172,15 @@ export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
             </div>
           </div>
 
-          {/* Amount & Date Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
-                Amount (₹) <span className="text-rose-500">*</span>
+                Amount ({symbol}) <span className="text-rose-500">*</span>
               </label>
               <input
                 type="number"
                 step="any"
-                placeholder="e.g. 50000"
+                placeholder="e.g. 500"
                 value={amount}
                 onChange={(e) => setAmount(e.target.value)}
                 required
@@ -207,7 +202,6 @@ export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
             </div>
           </div>
 
-          {/* Payment Method & Reference */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
@@ -241,7 +235,6 @@ export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
             </div>
           </div>
 
-          {/* Submit Button */}
           <div className="pt-4 flex items-center justify-end gap-3 border-t border-gray-100 dark:border-gray-800">
             <button
               type="button"

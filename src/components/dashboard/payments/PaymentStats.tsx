@@ -1,6 +1,7 @@
 import React from 'react';
 import { LuCalendar, LuZap, LuTriangleAlert, LuChartPie } from 'react-icons/lu';
 import type { PaymentStats as PaymentStatsType } from '@/services/payment.service';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface PaymentStatsProps {
   stats: PaymentStatsType;
@@ -8,9 +9,7 @@ interface PaymentStatsProps {
 }
 
 export const PaymentStats: React.FC<PaymentStatsProps> = ({ stats }) => {
-  const formatCurrency = (amount: number) => {
-    return `₹${amount.toLocaleString('en-IN')}`;
-  };
+  const { format } = useCurrency();
 
   const expectedAmount = stats.expectedNext30Days?.amount ?? stats.pending;
   const expectedCount = stats.expectedNext30Days?.invoiceCount ?? 0;
@@ -25,7 +24,7 @@ export const PaymentStats: React.FC<PaymentStatsProps> = ({ stats }) => {
   const cards = [
     {
       label: 'Expected (Next 30 Days)',
-      value: formatCurrency(expectedAmount),
+      value: format(expectedAmount),
       icon: LuCalendar,
       description: expectedCount > 0 ? `${expectedCount} upcoming due ${expectedCount === 1 ? 'date' : 'dates'}` : 'Liquidity pipeline',
       colorClass: 'text-emerald-600 dark:text-emerald-400',
@@ -41,7 +40,7 @@ export const PaymentStats: React.FC<PaymentStatsProps> = ({ stats }) => {
     },
     {
       label: 'Action Required',
-      value: formatCurrency(overdueAmount),
+      value: format(overdueAmount),
       icon: LuTriangleAlert,
       description: overdueCount > 0 ? `${overdueCount} overdue ${overdueCount === 1 ? 'invoice' : 'invoices'} needing follow-up` : 'All invoices up to date',
       colorClass: 'text-rose-600 dark:text-rose-400',

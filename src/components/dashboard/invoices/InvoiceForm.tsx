@@ -19,6 +19,7 @@ import { useRouter, useParams } from "next/navigation";
 import { useInvoicesList, useCreateInvoice, useUpdateInvoice, useInvoiceDetail } from "@/hooks/useInvoices";
 import { useDealsList } from "@/hooks/useDeals";
 import { useProfile } from "@/hooks/useProfile";
+import { useCurrency } from "@/hooks/useCurrency";
 import { CreateInvoiceData, InvoiceLineItem, InvoiceStatus } from "@/services/invoice.service";
 import DatePickerInput from "@/components/ui/DatePickerInput";
 import toast from "react-hot-toast";
@@ -44,6 +45,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
 
   const { data: deals, isLoading: isLoadingDeals } = useDealsList();
   const { data: profile, isLoading: isLoadingProfile } = useProfile();
+  const { symbol, format, baseCurrency } = useCurrency();
 
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
@@ -166,7 +168,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
   };
   const invoiceRows = lineItems.filter((item) => item.description.trim() || item.amount > 0 || item.rate > 0);
 
-  const formatMoney = formatInvoiceCurrency;
+  const formatMoney = (val: number | string) => formatInvoiceCurrency(val, baseCurrency);
   const formatDate = formatInvoiceDate;
 
   const handleAddLineItem = () => {
@@ -411,7 +413,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
             <div className="hidden grid-cols-12 gap-6 px-4 sm:grid opacity-60">
               <div className="col-span-6 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] italic">Description</div>
               <div className="col-span-1 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] italic text-center">Qty</div>
-              <div className="col-span-2 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] italic text-center">Rate (₹)</div>
+              <div className="col-span-2 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] italic text-center">Rate ({symbol})</div>
               <div className="col-span-2 text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] italic text-right">Amount</div>
               <div className="col-span-1"></div>
             </div>
@@ -446,7 +448,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
                 <div className="col-span-1 sm:col-span-2 text-right">
                   <div className="space-y-0.5 px-2">
                     <p className="text-[10px] font-black text-slate-400 dark:text-gray-600 uppercase tracking-widest italic leading-none">Total</p>
-                    <p className="text-base font-black text-slate-900 dark:text-white italic">₹{item.amount.toLocaleString()}</p>
+                    <p className="text-base font-black text-slate-900 dark:text-white italic">{format(item.amount)}</p>
                   </div>
                 </div>
                 <div className="col-span-1 sm:col-span-1 flex justify-center">
@@ -477,7 +479,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
                   <span className="text-[11px] font-black text-slate-900 dark:text-white uppercase tracking-[0.2em] italic">Subtotal</span>
                   <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none">Net Amount Before Tax</p>
                 </div>
-                <span className="text-xl font-black text-slate-900 dark:text-white tracking-tighter italic">₹{subtotal.toLocaleString()}</span>
+                <span className="text-xl font-black text-slate-900 dark:text-white tracking-tighter italic">{format(subtotal)}</span>
               </div>
 
               {/* GST Block - Repositioned/Refined */}
@@ -501,7 +503,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
                 </label>
                 <div className="text-right">
                   <p className="text-[10px] font-black text-slate-300 dark:text-gray-600 uppercase tracking-widest italic leading-none mb-1">Tax Amount</p>
-                  <span className="text-lg font-black text-slate-900 dark:text-white tracking-tighter">+ ₹{gstAmount.toLocaleString()}</span>
+                  <span className="text-lg font-black text-slate-900 dark:text-white tracking-tighter">+ {format(gstAmount)}</span>
                 </div>
               </div>
 
@@ -512,7 +514,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
                   <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest font-mono">Invoice Final Settlement</p>
                 </div>
                 <span className="text-6xl font-black text-slate-900 dark:text-white tracking-tighter italic leading-none">
-                  ₹{total.toLocaleString()}
+                  {format(total)}
                 </span>
               </div>
             </div>

@@ -3,12 +3,15 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { LuChevronRight, LuCalendar, LuTag } from 'react-icons/lu';
 import { PaymentItem } from '@/services/payment.service';
+import { useCurrency } from '@/hooks/useCurrency';
 
 interface PaymentTableProps {
   payments: PaymentItem[];
 }
 
 export const PaymentTable: React.FC<PaymentTableProps> = ({ payments }) => {
+  const { format } = useCurrency();
+
   const statusStyles = {
     PAID: 'bg-emerald-50 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400 border-emerald-100 dark:border-emerald-500/20',
     PENDING: 'bg-amber-50 text-amber-700 dark:bg-amber-500/10 dark:text-amber-400 border-amber-100 dark:border-amber-500/20',
@@ -67,7 +70,7 @@ export const PaymentTable: React.FC<PaymentTableProps> = ({ payments }) => {
                 <td className="px-6 py-5">
                   <div className="flex flex-col">
                     <span className="text-sm font-bold text-gray-900 dark:text-white">
-                      ₹{item.amount.toLocaleString('en-IN')}
+                      {format(item.amount, item.currency)}
                     </span>
                     <span className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase">
                       {item.currency}

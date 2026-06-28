@@ -6,6 +6,7 @@ import { LoadingSpinner } from '@/components/common';
 import { BrandCard } from '@/components/dashboard/brands/BrandCard';
 import AddBrandForm from '@/components/dashboard/brands/AddBrandForm';
 import { useBrandsList, useDeleteBrand } from '@/hooks/useBrands';
+import { useCurrency } from '@/hooks/useCurrency';
 
 const CATEGORY_COLORS: Record<string, string> = {
   TECH: 'text-purple-500 bg-purple-500/10 dark:text-purple-400 dark:bg-purple-500/15',
@@ -25,16 +26,11 @@ const CATEGORY_COLORS: Record<string, string> = {
   OTHER: 'text-gray-500 bg-gray-500/10 dark:text-gray-400 dark:bg-gray-500/15',
 };
 
-function formatCurrency(value: string | number): string {
-  const num = typeof value === 'string' ? parseFloat(value) : value;
-  if (!num || num === 0) return '₹0';
-  return `₹${num.toLocaleString('en-IN')}`;
-}
-
 const Brands = () => {
   const [showAddForm, setShowAddForm] = useState(false);
   const { data: brands, isLoading, error } = useBrandsList();
   const deleteBrand = useDeleteBrand();
+  const { format } = useCurrency();
 
   if (showAddForm) {
     return (
@@ -48,50 +44,36 @@ const Brands = () => {
   }
 
   return (
-    <div className="flex flex-col gap-8 min-h-screen bg-white dark:bg-gray-900 transition-colors p-4 sm:p-0 relative">
-      {/* Deleting overlay */}
-      {deleteBrand.isPending && (
-        <div className="fixed inset-0 z-50 flex items-start justify-center pt-4">
-          <div className="absolute inset-0 bg-white/40 dark:bg-gray-900/40 backdrop-blur-[1px]" />
-          <div className="relative flex items-center gap-3 px-5 py-3 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl">
-            <LoadingSpinner size={16} minHeight="auto" className="!justify-start" />
-            <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Deleting brand...</span>
-          </div>
+    <div className="space-y-8">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold text-gray-900 dark:text-white sm:text-3xl tracking-tight">
+            Brands & Sponsors
+          </h1>
+          <p className="mt-1 text-xs sm:text-sm text-gray-500 dark:text-gray-400 font-medium">
+            Manage relationships, primary contacts, and lifetime value for all partner brands.
+          </p>
         </div>
-      )}
-
-      {/* Top action bar */}
-      <div className="flex w-full items-center justify-end">
-        <button 
+        <button
           onClick={() => setShowAddForm(true)}
-          className="flex items-center gap-2 rounded-xl bg-gray-900 dark:bg-white px-6 py-2.5 text-xs font-bold text-white dark:text-gray-900 shadow-xl transition-all hover:opacity-90 active:scale-95 uppercase tracking-widest"
+          className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-xs font-bold hover:opacity-90 transition-all shadow-md active:scale-95 shrink-0"
         >
-          <LuPlus className="h-4 w-4 stroke-[3]" />
+          <LuPlus className="h-4 w-4" />
           Add Brand
         </button>
       </div>
 
-      {isLoading && <LoadingSpinner />}
-
-      {/* Error state */}
-      {error && (
-        <div className="flex items-center justify-center py-20">
-          <p className="text-sm text-red-400">Failed to load brands. Please try again.</p>
+      {isLoading ? (
+        <LoadingSpinner />
+      ) : error ? (
+        <div className="p-8 text-center bg-rose-50 dark:bg-rose-500/10 rounded-2xl border border-rose-200 dark:border-rose-500/20 text-rose-600 dark:text-rose-400 text-xs font-bold">
+          Failed to load brands. Please try again.
         </div>
-      )}
-
-      {/* Empty state */}
-      {!isLoading && !error && brands && brands.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
-            <LuPlus className="h-6 w-6 text-gray-400" />
-          </div>
-          <p className="text-sm text-gray-500 dark:text-gray-400">No brands yet. Add your first brand partner.</p>
+      ) : !brands || brands.length === 0 ? (
+        <div className="p-12 text-center bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
+          <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">No brands found. Click "Add Brand" to get started.</p>
         </div>
-      )}
-
-      {/* Grid of brand cards */}
-      {brands && brands.length > 0 && (
+      ) : (
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 pb-20">
           {brands.map((brand) => {
             const primaryContact = brand.contacts.find(c => c.isPrimary) || brand.contacts[0];
@@ -105,7 +87,7 @@ const Brands = () => {
                 name={brand.name}
                 category={{ label: categoryKey.replace('_', ' '), colorClass }}
                 dealsCount={brand.activeDeals ?? 0}
-                totalValue={formatCurrency(brand.totalValue ?? 0)}
+                totalValue={format(brand.totalValue ?? 0)}
                 contactName={primaryContact?.name ?? '—'}
                 contactRole={primaryContact?.role ?? ''}
                 contactEmail={primaryContact?.email ?? ''}

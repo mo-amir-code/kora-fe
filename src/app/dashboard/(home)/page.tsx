@@ -10,13 +10,13 @@ import { LoadingSpinner } from "@/components/common"
 import { useEffect, useState } from "react"
 import { DeadlineDetailsModal } from "@/components/dashboard/home/deadline"
 import api from "@/lib/axios"
-
-// ... (Existing ACTIVITIES and ACTIVE_DEALS constants)
+import { useCurrency } from "@/hooks/useCurrency"
 
 const DashboardHome = () => {
   const [data, setData] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [selectedGroup, setSelectedGroup] = useState<{ brandName: string; items: any[] } | null>(null)
+  const { format } = useCurrency();
 
   useEffect(() => {
     const fetchDashboard = async () => {
@@ -58,11 +58,7 @@ const DashboardHome = () => {
   }
 
   const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat('en-IN', {
-      style: 'currency',
-      currency: 'INR',
-      maximumFractionDigits: 0
-    }).format(amount)
+    return format(amount);
   }
 
   const getActivityIcon = (type: string) => {
@@ -119,7 +115,7 @@ const DashboardHome = () => {
       status: mapDealStageToStatus(deal.stage),
       progress: deal.progress,
       amount: formatCurrency(deal.amount || 0),
-      dueStatus: "Active", // Placeholder or can fetch real due status
+      dueStatus: "Active",
       logoInitial: deal.brandName.charAt(0)
     }))
   }
@@ -131,7 +127,7 @@ const DashboardHome = () => {
   return (
     <div className="space-y-8">
       {/* Greeting Section */}
-      <Greeting name={data?.user?.name || "Priya"} />
+      <Greeting name={data?.user?.name || "User"} />
 
       {/* Payment Status Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -163,57 +159,65 @@ const DashboardHome = () => {
       <div className="flex flex-col-reverse xl:flex-row gap-6">
         <div className="flex-1 min-w-0 space-y-10">
           {/* Deadline Section */}
-          <section>
-            <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-5">
-              Deadlines in next 7 days
-            </h2>
-
-            {!data?.deadlines || data.deadlines.length === 0 ? (
-              <div className="p-10 border-2 border-dashed border-gray-100 dark:border-gray-800 rounded-3xl flex flex-col items-center justify-center text-center">
-                <span className="text-4xl mb-4">🚀</span>
-                <p className="text-gray-500 font-medium">All caught up! No deadlines for the next 7 days.</p>
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">
+                  Upcoming Deadlines
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Tasks and deliverables requiring your attention
+                </p>
               </div>
-            ) : (
-              <div className="flex items-center gap-4 overflow-x-auto pb-4 no-scrollbar">
-                {data.deadlines.map((group: any, idx: number) => (
+            </div>
+            {data?.deadlinesGrouped && Object.keys(data.deadlinesGrouped).length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(data.deadlinesGrouped).map(([brandName, items]: [string, any]) => (
                   <DeadlineCard
-                    key={idx}
-                    brandName={group.brand.name}
-                    itemCount={group.items.length}
-                    itemType={group.items.length === 1 ? group.items[0].type.split('_').pop()?.toLowerCase() || 'item' : 'Items'}
-                    status={getStatus(group.dueDate)}
-                    statusLabel={getStatusLabel(group.dueDate)}
-                    avatarUrl={group.brand.logoUrl}
-                    items={group.items}
-                    onViewDetails={(items) => setSelectedGroup({ brandName: group.brand.name, items })}
+                    key={brandName}
+                    brandName={brandName}
+                    itemCount={items.length}
+                    itemType={items.length === 1 ? (items[0]?.title || 'Deliverable') : 'Deliverables'}
+                    status={items[0]?.dueDate ? getStatus(items[0].dueDate) : 'upcoming'}
+                    statusLabel={items[0]?.dueDate ? getStatusLabel(items[0].dueDate) : 'Pending'}
+                    avatar={brandName.charAt(0)}
+                    items={items}
+                    onViewDetails={() => setSelectedGroup({ brandName, items })}
                   />
                 ))}
               </div>
+            ) : (
+              <div className="p-8 text-center bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">No upcoming deadlines.</p>
+              </div>
             )}
-          </section>
+          </div>
 
           {/* Active Deals Section */}
-          <section>
-            <ActiveDeals
-              deals={formatActiveDeals(data?.activeDeals || [])}
-              totalCount={data?.activeDeals?.length || 0}
-            />
-          </section>
+          {data?.activeDeals && data.activeDeals.length > 0 && (
+            <div>
+              <ActiveDeals deals={formatActiveDeals(data.activeDeals)} totalCount={data.activeDeals.length} />
+            </div>
+          )}
         </div>
 
-        {/* Recent Activity Side Bar */}
-        <aside className="xl:w-[350px] w-full shrink-0">
-          <RecentActivity activities={formatActivities(data?.activities || [])} />
-        </aside>
+        {/* Right Sidebar: Recent Activity */}
+        <div className="w-full xl:w-80 shrink-0">
+          {data?.activities && (
+            <RecentActivity activities={formatActivities(data.activities)} />
+          )}
+        </div>
       </div>
 
-      {/* Details Modal */}
-      <DeadlineDetailsModal
-        isOpen={!!selectedGroup}
-        onClose={() => setSelectedGroup(null)}
-        brandName={selectedGroup?.brandName || ""}
-        items={selectedGroup?.items || []}
-      />
+      {/* Deadline Modal */}
+      {selectedGroup && (
+        <DeadlineDetailsModal
+          isOpen={!!selectedGroup}
+          onClose={() => setSelectedGroup(null)}
+          brandName={selectedGroup.brandName}
+          items={selectedGroup.items}
+        />
+      )}
     </div>
   )
 }

@@ -10,6 +10,7 @@ import RevenueChart from "./RevenueChart";
 import RecentDealsTable from "./RecentDealsTable";
 import YearlySummary from "./YearlySummary";
 import { currentMonthKey, downloadEarningsCsv, formatMonth, shiftMonth } from "./earnings-utils";
+import { useCurrency } from "@/hooks/useCurrency";
 import type { EarningsCurrency, EarningsDealFilter } from "@/services/earnings.service";
 
 const DEAL_FILTER_OPTIONS: Array<{ value: EarningsDealFilter; label: string }> = [
@@ -22,8 +23,16 @@ const DEAL_FILTER_OPTIONS: Array<{ value: EarningsDealFilter; label: string }> =
 
 const EarningsPage = () => {
   const [currentMonth, setCurrentMonth] = useState(currentMonthKey);
-  const [currency, setCurrency] = useState<EarningsCurrency>('INR');
+  const { baseCurrency } = useCurrency();
+  const [currency, setCurrency] = useState<EarningsCurrency>((baseCurrency as EarningsCurrency) || 'USD');
   const [dealFilter, setDealFilter] = useState<EarningsDealFilter>('expected');
+
+  React.useEffect(() => {
+    if (baseCurrency) {
+      setCurrency(baseCurrency as EarningsCurrency);
+    }
+  }, [baseCurrency]);
+
   const { data, isLoading, isError, refetch } = useEarnings(currentMonth, currency, dealFilter);
 
   // const sendToCa = () => {

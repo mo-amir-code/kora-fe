@@ -2,12 +2,14 @@ import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 import toast from "react-hot-toast";
 
+import { formatCurrencyAmount } from "../../../lib/currency";
+
 /**
- * Common formatting for Indian Rupee
+ * Common formatting for Invoice Currency
  */
-export const formatInvoiceCurrency = (amount: number | string) => {
+export const formatInvoiceCurrency = (amount: number | string, currencyCode: string = "USD") => {
   const value = typeof amount === 'string' ? parseFloat(amount.replace(/[^0-9.-]+/g, "")) : amount;
-  return `₹${Math.round(value || 0).toLocaleString("en-IN")}`;
+  return formatCurrencyAmount(value || 0, currencyCode);
 };
 
 /**
