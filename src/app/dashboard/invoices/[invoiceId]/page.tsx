@@ -296,8 +296,8 @@ export default function InvoiceViewPage() {
               <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#64748b" }}>From</p>
               <p style={{ margin: 0, fontSize: "29px", fontWeight: 800, color: "#0f172a" }}>{profile?.invoiceSettings?.legalName || profile?.fullName || ""}</p>
               <p style={{ margin: "6px 0 0", fontSize: "14px", color: "#334155" }}>{profile?.invoiceSettings?.upiId || ""}</p>
-              <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#334155" }}>A/C: {profile?.invoiceSettings?.accountNo || ""}</p>
-              <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#334155" }}>IFSC: {profile?.invoiceSettings?.ifsc || ""}</p>
+              <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#334155" }}>A/C: {profile?.invoiceSettings?.bankAccount || profile?.invoiceSettings?.accountNo || ""}</p>
+              <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#334155" }}>IFSC: {profile?.invoiceSettings?.bankIfsc || profile?.invoiceSettings?.ifsc || ""}</p>
             </div>
             <div>
               <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: 800, textTransform: "uppercase", letterSpacing: "0.1em", color: "#64748b" }}>Bill To</p>
