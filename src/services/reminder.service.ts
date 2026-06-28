@@ -4,6 +4,7 @@ export interface ReminderRule {
   id: string;
   triggerType: string;
   hoursBefore: number;
+  recipients?: string[];
   channelEmail: boolean;
   channelWhatsapp: boolean;
   channelPush: boolean;
@@ -12,21 +13,21 @@ export interface ReminderRule {
 
 export const reminderService = {
   list: async (): Promise<ReminderRule[]> => {
-    const response = await api.get('/reminders');
+    const response = await api.get('/reminder');
     return response.data.data;
   },
 
-  create: async (data: { triggerType: string; hoursBefore: number; channelEmail?: boolean; channelWhatsapp?: boolean }): Promise<ReminderRule> => {
-    const response = await api.post('/reminders', data);
+  create: async (data: { triggerType: string; hoursBefore: number; recipients?: string[]; channelEmail?: boolean; channelWhatsapp?: boolean }): Promise<ReminderRule> => {
+    const response = await api.post('/reminder', data);
     return response.data.data;
   },
 
   toggle: async (ruleId: string, isActive: boolean): Promise<ReminderRule> => {
-    const response = await api.patch(`/reminders/${ruleId}`, { isActive });
+    const response = await api.patch(`/reminder/${ruleId}`, { isActive });
     return response.data.data;
   },
 
   delete: async (ruleId: string): Promise<void> => {
-    await api.delete(`/reminders/${ruleId}`);
+    await api.delete(`/reminder/${ruleId}`);
   },
 };

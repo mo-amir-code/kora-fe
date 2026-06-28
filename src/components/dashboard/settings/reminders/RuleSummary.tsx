@@ -29,12 +29,15 @@ export const RuleSummary = ({ data, onSave, isSaving }: RuleSummaryProps) => {
 
   const getAudience = () => {
     if (data.recipients.length === 0) return "Me (Creator)";
-    const targets = data.recipients.map(r => {
-        if (r === "primary") return "Brand";
+    const targets = data.recipients
+      .filter((r) => r !== "brand_contacts")
+      .map((r) => {
+        if (r === "primary") return "Primary Contact";
+        if (r === "all") return "All Contacts";
         if (r === "me") return "Me";
         return r;
-    });
-    return targets.join(", ");
+      });
+    return targets.length > 0 ? targets.join(", ") : "Me (Creator)";
   };
 
   return (

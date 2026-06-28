@@ -10,6 +10,7 @@ export interface ReminderRule {
   offsetValue: number;
   offsetUnit: string;
   nextFollowUps: string[];
+  recipients: string[];
   messageTemplate: string | null;
   channelEmail: boolean;
   channelWhatsapp: boolean;

@@ -53,12 +53,7 @@ export default function EditReminderPage() {
             ...(rule.channelEmail ? ["email"] : []),
             ...(rule.channelWhatsapp ? ["whatsapp"] : [])
           ],
-          recipients: [
-            ...(rule.channelPush ? ["me"] : []),
-            // Note: Recipient identification depends on how we map primary/agency in DB
-            // For now, mirroring create logic's common recipients
-            "primary" 
-          ],
+          recipients: rule.recipients && rule.recipients.length > 0 ? rule.recipients : ["primary", "me"],
           message: rule.messageTemplate || "",
           nextFollowUps: rule.nextFollowUps || []
         });
@@ -83,6 +78,7 @@ export default function EditReminderPage() {
         offsetValue: parseInt(formData.offsetValue),
         offsetUnit: formData.offsetUnit,
         nextFollowUps: formData.nextFollowUps,
+        recipients: formData.recipients,
         channelEmail: formData.channels.includes("email"),
         channelWhatsapp: formData.channels.includes("whatsapp"),
         channelPush: formData.recipients.includes("me"),
@@ -150,7 +146,8 @@ export default function EditReminderPage() {
           <RuleDistribution 
             data={{
               channels: formData.channels,
-              recipients: formData.recipients
+              recipients: formData.recipients,
+              trigger: formData.trigger,
             }}
             onChange={handleUpdate}
           />

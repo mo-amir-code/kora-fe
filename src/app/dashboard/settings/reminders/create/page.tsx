@@ -53,6 +53,7 @@ export default function CreateReminderPage() {
       offsetValue: parseInt(formData.offsetValue),
       offsetUnit: formData.offsetUnit,
       nextFollowUps: formData.nextFollowUps,
+      recipients: formData.recipients,
       channelEmail: formData.channels.includes("email"),
       channelWhatsapp: formData.channels.includes("whatsapp"),
       channelPush: formData.recipients.includes("me"),
@@ -111,7 +112,8 @@ export default function CreateReminderPage() {
           <RuleDistribution 
             data={{
               channels: formData.channels,
-              recipients: formData.recipients
+              recipients: formData.recipients,
+              trigger: formData.trigger,
             }}
             onChange={handleUpdate}
           />
