@@ -149,7 +149,7 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
             createdYear={new Date(deal.createdAt).getFullYear().toString()}
           />
 
-          <QuickActions dealId={deal.id} />
+          {/* <QuickActions dealId={deal.id} /> */}
 
           <DealContractUrl
             contractUrl={deal.contractUrl}
