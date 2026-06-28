@@ -1,15 +1,16 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { LuArrowLeft, LuDownload, LuPencil, LuTrash2, LuCalendar, LuUser, LuBriefcase } from 'react-icons/lu';
+import { LuArrowLeft, LuDownload, LuPencil, LuTrash2, LuCalendar, LuUser, LuBriefcase, LuChevronDown, LuLoader } from 'react-icons/lu';
 import { LoadingSpinner } from "@/components/common";
-import { useInvoiceDetail, useDeleteInvoice } from '@/hooks/useInvoices';
+import { useInvoiceDetail, useDeleteInvoice, useUpdateInvoice } from '@/hooks/useInvoices';
 import { useProfile } from '@/hooks/useProfile';
 import { useCurrency } from '@/hooks/useCurrency';
 import InvoiceStatusBadge from '@/components/dashboard/invoices/InvoiceStatusBadge';
 import Image from 'next/image';
 import { formatInvoiceCurrency, formatInvoiceDate, generateInvoicePDF } from "@/components/dashboard/invoices/invoice-utils";
+import { InvoiceStatus } from '@/services/invoice.service';
 
 const capitalize = (s: string) => s.charAt(0).toUpperCase() + s.slice(1).toLowerCase();
 
@@ -22,6 +23,37 @@ export default function InvoiceViewPage() {
   const { data: profile } = useProfile();
   const { format, baseCurrency } = useCurrency();
   const deleteInvoice = useDeleteInvoice();
+  const updateInvoice = useUpdateInvoice();
+
+  const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const statusDropdownRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (statusDropdownRef.current && !statusDropdownRef.current.contains(e.target as Node)) {
+        setShowStatusDropdown(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClick);
+    return () => document.removeEventListener('mousedown', handleClick);
+  }, []);
+
+  const INVOICE_STATUS_OPTIONS: { value: InvoiceStatus; label: string }[] = [
+    { value: 'DRAFT', label: 'Draft' },
+    { value: 'SENT', label: 'Sent' },
+    { value: 'VIEWED', label: 'Viewed' },
+    { value: 'PARTIALLY_PAID', label: 'Partially Paid' },
+    { value: 'PAID', label: 'Paid' },
+    { value: 'OVERDUE', label: 'Overdue' },
+    { value: 'CANCELLED', label: 'Cancelled' },
+  ];
+
+  const handleStatusChange = (newStatus: InvoiceStatus) => {
+    if (invoice && newStatus !== invoice.status) {
+      updateInvoice.mutate({ id: invoiceId, data: { status: newStatus } });
+    }
+    setShowStatusDropdown(false);
+  };
 
   const downloadPDF = async () => {
     if (!invoice) return;
@@ -73,7 +105,41 @@ export default function InvoiceViewPage() {
             <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white tracking-tight">
               {invoice.invoiceNumber}
             </h1>
-            <InvoiceStatusBadge status={capitalize(invoice.status) as any} />
+            <div className="relative" ref={statusDropdownRef}>
+              <button
+                onClick={() => setShowStatusDropdown(!showStatusDropdown)}
+                disabled={updateInvoice.isPending}
+                className="flex items-center gap-1.5 focus:outline-none cursor-pointer group rounded-full"
+                title="Click to update status"
+              >
+                {updateInvoice.isPending ? (
+                  <LuLoader className="h-4 w-4 animate-spin text-gray-400" />
+                ) : (
+                  <>
+                    <InvoiceStatusBadge status={capitalize(invoice.status) as any} />
+                    <LuChevronDown className="h-4 w-4 text-gray-400 group-hover:text-gray-600 dark:group-hover:text-gray-200 transition-colors" />
+                  </>
+                )}
+              </button>
+
+              {showStatusDropdown && (
+                <div className="absolute left-0 top-full mt-2 z-50 w-44 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl custom-scrollbar max-h-64 overflow-y-auto">
+                  {INVOICE_STATUS_OPTIONS.map((opt) => (
+                    <button
+                      key={opt.value}
+                      onClick={() => handleStatusChange(opt.value)}
+                      className={`w-full text-left px-4 py-2 text-xs font-bold transition-colors ${
+                        opt.value === invoice.status
+                          ? 'bg-brand-500/10 text-brand-600 dark:text-brand-400'
+                          : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
 

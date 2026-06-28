@@ -11,21 +11,12 @@ import RecentDealsTable from "./RecentDealsTable";
 import YearlySummary from "./YearlySummary";
 import { currentMonthKey, downloadEarningsCsv, formatMonth, shiftMonth } from "./earnings-utils";
 import { useCurrency } from "@/hooks/useCurrency";
-import type { EarningsCurrency, EarningsDealFilter } from "@/services/earnings.service";
-
-const DEAL_FILTER_OPTIONS: Array<{ value: EarningsDealFilter; label: string }> = [
-  { value: "expected", label: "Expected This Month" },
-  { value: "paid", label: "Paid This Month" },
-  { value: "created", label: "Created This Month" },
-  { value: "overdue", label: "Overdue" },
-  { value: "all", label: "All" },
-];
+import type { EarningsCurrency } from "@/services/earnings.service";
 
 const EarningsPage = () => {
   const [currentMonth, setCurrentMonth] = useState(currentMonthKey);
   const { baseCurrency } = useCurrency();
   const [currency, setCurrency] = useState<EarningsCurrency>((baseCurrency as EarningsCurrency) || 'USD');
-  const [dealFilter, setDealFilter] = useState<EarningsDealFilter>('expected');
 
   React.useEffect(() => {
     if (baseCurrency) {
@@ -33,7 +24,7 @@ const EarningsPage = () => {
     }
   }, [baseCurrency]);
 
-  const { data, isLoading, isError, refetch } = useEarnings(currentMonth, currency, dealFilter);
+  const { data, isLoading, isError, refetch } = useEarnings(currentMonth, currency);
 
   // const sendToCa = () => {
   //   if (!data) return;
@@ -64,28 +55,6 @@ const EarningsPage = () => {
             <span className="px-3 sm:px-6 text-xs sm:text-sm font-bold text-gray-900 dark:text-white uppercase tracking-widest">{formatMonth(currentMonth)}</span>
             <button onClick={() => setCurrentMonth((month) => shiftMonth(month, 1))} aria-label="Next month" className="p-2 hover:bg-white dark:hover:bg-gray-700 rounded-lg text-gray-500 dark:text-gray-400 transition-all active:scale-95"><LuChevronRight size={16} strokeWidth={2.5} /></button>
           </div>
-          <div className="flex items-center rounded-xl border border-gray-200 bg-gray-50 p-1 shadow-sm dark:border-gray-700 dark:bg-gray-800" aria-label="Display currency">
-            {(['INR', 'USD'] as const).map((option) => (
-              <button
-                key={option}
-                type="button"
-                onClick={() => setCurrency(option)}
-                className={`rounded-lg px-3 py-2 text-[10px] font-bold tracking-widest transition-all ${currency === option ? 'bg-white text-gray-900 shadow-sm dark:bg-gray-700 dark:text-white' : 'text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'}`}
-              >
-                {option}
-              </button>
-            ))}
-          </div>
-          <select
-            value={dealFilter}
-            onChange={(event) => setDealFilter(event.target.value as EarningsDealFilter)}
-            className="w-full sm:w-auto appearance-none rounded-xl border border-gray-200 bg-gray-50 px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest text-gray-500 outline-none transition-all hover:border-brand-500/50 hover:text-brand-500 focus:border-brand-500 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-400"
-            aria-label="Deals filter"
-          >
-            {DEAL_FILTER_OPTIONS.map((option) => (
-              <option key={option.value} value={option.value}>{option.label}</option>
-            ))}
-          </select>
         </div>
 
         <div className="flex items-center gap-3 w-full lg:w-auto">

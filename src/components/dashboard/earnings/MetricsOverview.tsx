@@ -54,7 +54,7 @@ const MetricsOverview = ({ metrics, currency }: MetricsOverviewProps) => {
       <MetricCard 
         title="Total Pending"
         value={formatEarningsCurrency(metrics.pending, currency)}
-        subValue={`${metrics.pendingInvoiceCount} ${metrics.pendingInvoiceCount === 1 ? 'invoice' : 'invoices'} processing`}
+        subValue={`${metrics.pendingInvoiceCount} ${metrics.pendingInvoiceCount === 1 ? 'deal' : 'deals'} pending`}
         subValueColor="text-amber-500"
         icon={<LuClock size={20} strokeWidth={2.5} />}
         iconBg="bg-amber-500/10"

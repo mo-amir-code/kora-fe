@@ -2,11 +2,12 @@ import api from '@/lib/axios';
 
 export interface PaymentItem {
   id: string;
-  type: 'INVOICE' | 'PAYMENT_EVENT';
+  type: 'DEAL' | 'PAYMENT_EVENT';
   brandName: string;
   brandLogo: string | null;
   dealTitle: string;
   amount: number;
+  remaining: number;
   currency: string;
   dueDate: string | null;
   status: 'PAID' | 'PENDING' | 'OVERDUE';

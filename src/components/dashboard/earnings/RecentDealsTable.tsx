@@ -30,6 +30,7 @@ const RecentDealsTable = ({ deals }: RecentDealsTableProps) => {
             <tr className="border-b border-gray-100 dark:border-gray-800">
               <th className="py-4 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Brand &amp; Deal</th>
               <th className="py-4 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Value</th>
+              <th className="py-4 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap">Remaining</th>
               <th className="py-4 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap hidden sm:table-cell">Platform</th>
               <th className="py-4 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap text-center">Status</th>
               <th className="py-4 px-4 text-[10px] font-bold text-gray-400 uppercase tracking-widest whitespace-nowrap text-right">Paid Date</th>
@@ -53,6 +54,7 @@ const RecentDealsTable = ({ deals }: RecentDealsTableProps) => {
                   </div>
                 </td>
                 <td className="py-4 px-4 text-sm font-bold text-gray-900 dark:text-white">{formatEarningsCurrency(deal.value, deal.currency)}</td>
+                <td className="py-4 px-4 text-sm font-bold text-amber-500 dark:text-amber-400">{formatEarningsCurrency(deal.remaining, deal.currency)}</td>
                 <td className="py-4 px-4 hidden sm:table-cell">
                   {deal.platforms.length > 0 ? (
                     <PlatformsTooltip platforms={deal.platforms} />

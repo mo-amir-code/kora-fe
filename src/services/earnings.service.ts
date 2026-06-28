@@ -30,6 +30,7 @@ export interface EarningsDashboard {
     brandLogo: string | null;
     dealTitle: string;
     value: number;
+    remaining: number;
     currency: EarningsCurrency;
     platforms: string[];
     status: EarningsDealStatus;
@@ -47,9 +48,8 @@ export const earningsService = {
   getDashboard: async (
     month: string,
     currency: EarningsCurrency = 'INR',
-    filter: EarningsDealFilter = 'expected',
   ): Promise<EarningsDashboard> => {
-    const response = await api.get('/earnings', { params: { month, currency, filter } });
+    const response = await api.get('/earnings', { params: { month, currency } });
     return response.data.data;
   },
 };

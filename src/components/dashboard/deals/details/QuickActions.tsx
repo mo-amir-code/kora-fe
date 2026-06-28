@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 import {
   LuFileText,
   LuMessageSquare,
@@ -13,9 +14,10 @@ import toast from "react-hot-toast";
 
 interface QuickActionsProps {
   dealId?: string;
+  onRecordPayment?: () => void;
 }
 
-const QuickActions = ({ dealId }: QuickActionsProps) => {
+const QuickActions = ({ dealId, onRecordPayment }: QuickActionsProps) => {
   const deleteDeal = useDeleteDeal();
 
   const handleDelete = () => {
@@ -38,30 +40,30 @@ const QuickActions = ({ dealId }: QuickActionsProps) => {
       <div className="flex flex-col gap-3 sm:gap-4">
         {/* Primary Actions */}
         <button 
-          onClick={() => handleSimulatedAction("Invoice Generation")}
-          className="flex items-center justify-center gap-3 w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-brand-600 hover:bg-brand-700 text-white text-sm sm:text-base font-bold transition-all shadow-lg shadow-brand-500/20 active:scale-95"
+          onClick={onRecordPayment}
+          className="flex items-center justify-center gap-3 w-full py-3.5 sm:py-4 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm sm:text-base font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95 cursor-pointer"
+        >
+          <LuWallet className="w-4 h-4 sm:w-5 sm:h-5" />
+          Record Received Payment
+        </button>
+
+        <Link 
+          href={dealId ? `/dashboard/invoices/create?dealId=${dealId}` : "/dashboard/invoices/create"}
+          className="flex items-center justify-center gap-3 w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-brand-600 hover:bg-brand-700 text-white text-sm sm:text-base font-bold transition-all shadow-lg shadow-brand-500/20 active:scale-95 cursor-pointer"
         >
           <LuFileText className="w-4 h-4 sm:w-5 sm:h-5" />
           Generate Invoice
-        </button>
-
-        <button 
-          onClick={() => handleSimulatedAction("WhatsApp Reminder")}
-          className="flex items-center justify-center gap-3 w-full py-3 sm:py-4 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-sm sm:text-base font-bold transition-all shadow-lg shadow-emerald-500/20 active:scale-95"
-        >
-          <LuMessageSquare className="w-4 h-4 sm:w-5 sm:h-5" />
-          Send WhatsApp Reminder
-        </button>
+        </Link>
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-4">
-        <button className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-[10px] sm:text-xs font-bold transition-all active:scale-95">
+        <button onClick={() => handleSimulatedAction("Mark Delivered")} className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-[10px] sm:text-xs font-bold transition-all active:scale-95 cursor-pointer">
           <LuCircleCheck className="w-3.5 h-3.5" />
           Mark Delivered
         </button>
-        <button className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-[10px] sm:text-xs font-bold transition-all active:scale-95">
+        <button onClick={onRecordPayment} className="flex items-center justify-center gap-2 w-full py-3 rounded-xl border border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 bg-gray-50 dark:bg-gray-900/40 text-gray-500 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white text-[10px] sm:text-xs font-bold transition-all active:scale-95 cursor-pointer">
           <LuWallet className="w-3.5 h-3.5" />
-          Mark Paid
+          Record Payment
         </button>
       </div>
 

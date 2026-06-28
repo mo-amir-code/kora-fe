@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LuX, LuWallet, LuCheck } from 'react-icons/lu';
 import { useDealsList } from '@/hooks/useDeals';
 import { useInvoicesList } from '@/hooks/useInvoices';
@@ -12,25 +12,55 @@ interface AddPaymentEventModalProps {
   isOpen: boolean;
   onClose: () => void;
   defaultDealId?: string;
+  defaultAmount?: string | number;
+  defaultInvoiceId?: string;
 }
 
 export const AddPaymentEventModal: React.FC<AddPaymentEventModalProps> = ({
   isOpen,
   onClose,
   defaultDealId,
+  defaultAmount,
+  defaultInvoiceId,
 }) => {
-  const { data: deals = [], isLoading: isLoadingDeals } = useDealsList();
-  const { data: invoices = [], isLoading: isLoadingInvoices } = useInvoicesList();
+  const { data: deals = [] } = useDealsList();
+  const { data: invoices = [] } = useInvoicesList();
   const createMutation = useCreatePaymentEvent();
   const { symbol, format } = useCurrency();
 
   const [dealId, setDealId] = useState<string>(defaultDealId || '');
-  const [invoiceId, setInvoiceId] = useState<string>('');
+  const [invoiceId, setInvoiceId] = useState<string>(defaultInvoiceId || '');
   const [type, setType] = useState<'PAYMENT_RECEIVED' | 'PARTIAL_PAYMENT' | 'REFUND' | 'CHARGEBACK' | 'ADJUSTMENT'>('PAYMENT_RECEIVED');
-  const [amount, setAmount] = useState<string>('');
+  const [amount, setAmount] = useState<string>(defaultAmount !== undefined ? String(defaultAmount) : '');
   const [method, setMethod] = useState<string>('Bank Transfer');
   const [reference, setReference] = useState<string>('');
   const [paidAt, setPaidAt] = useState<string>(new Date().toISOString().split('T')[0]);
+
+  useEffect(() => {
+    if (isOpen) {
+      const activeDealId = defaultDealId || dealId || '';
+      setDealId(activeDealId);
+
+      const targetDeal = deals.find((d: any) => d.id === activeDealId);
+      if (defaultAmount !== undefined && defaultAmount !== null) {
+        setAmount(String(defaultAmount));
+      } else if (targetDeal) {
+        const total = parseFloat(String(targetDeal.amount || '0'));
+        const paid = parseFloat(String(targetDeal.amountPaid || '0'));
+        const remaining = Math.max(0, total - paid);
+        setAmount(remaining > 0 ? String(remaining) : (total > 0 ? String(total) : ''));
+      }
+
+      if (defaultInvoiceId) {
+        setInvoiceId(defaultInvoiceId);
+      } else if (activeDealId) {
+        const matchingInv = invoices.find((inv: any) => (inv.dealId === activeDealId || inv.deal?.id === activeDealId) && inv.status !== 'PAID');
+        if (matchingInv) {
+          setInvoiceId(matchingInv.id);
+        }
+      }
+    }
+  }, [isOpen, defaultDealId, defaultAmount, defaultInvoiceId, deals, invoices]);
 
   if (!isOpen) return null;
 

@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import { LuArrowLeft } from "react-icons/lu";
 import { LoadingSpinner } from "@/components/common";
@@ -15,6 +15,7 @@ import {
   DealNotes,
   DealContractUrl
 } from "@/components/dashboard/deals/details";
+import { AddPaymentEventModal } from "@/components/dashboard/payments/AddPaymentEventModal";
 import { useDealDetail, useUpdateDeliverables, useUpdateDeal, useAddDealActivity } from "@/hooks/useDeals";
 
 import { formatCurrencyAmount } from "@/lib/currency";
@@ -64,6 +65,8 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
   const updateDeal = useUpdateDeal(dealId);
   const addActivity = useAddDealActivity(dealId);
 
+  const [isPaymentModalOpen, setIsPaymentModalOpen] = useState(false);
+
   if (isLoading) {
     return <LoadingSpinner />;
   }
@@ -88,6 +91,10 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
     status: (d.isCompleted ? "DELIVERED" : "PENDING") as "DELIVERED" | "PENDING",
     isChecked: d.isCompleted,
   }));
+
+  const totalAmountNum = deal.amount ? parseFloat(String(deal.amount)) : 0;
+  const amountPaidNum = deal.amountPaid ? parseFloat(String(deal.amountPaid)) : 0;
+  const remainingNum = Math.max(0, totalAmountNum - amountPaidNum);
 
   return (
     <div className="max-w-[1600px] mx-auto p-4 sm:p-8 space-y-6 sm:space-y-8 min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors">
@@ -116,13 +123,15 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
               name: deal.contact?.name ?? deal.brand.name,
               email: "",
             }}
-            amount={formatAmount(deal.amount, deal.currency)}
+            dealAmount={formatAmount(deal.amount, deal.currency)}
+            remainingAmount={formatAmount(String(remainingNum), deal.currency)}
             status={getStageLabel(deal.stage).toUpperCase()}
             stage={deal.stage}
             platforms={deal.platforms}
             logo={deal.brand.logoUrl ?? undefined}
             onStageChange={(stage) => updateDeal.mutate({ stage })}
             isUpdatingStage={updateDeal.isPending}
+            onRecordPayment={() => setIsPaymentModalOpen(true)}
           />
 
           <Deliverables
@@ -149,7 +158,7 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
             createdYear={new Date(deal.createdAt).getFullYear().toString()}
           />
 
-          {/* <QuickActions dealId={deal.id} /> */}
+          <QuickActions dealId={deal.id} onRecordPayment={() => setIsPaymentModalOpen(true)} />
 
           <DealContractUrl
             contractUrl={deal.contractUrl}
@@ -172,6 +181,13 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
         </div>
 
       </div>
+
+      <AddPaymentEventModal
+        isOpen={isPaymentModalOpen}
+        onClose={() => setIsPaymentModalOpen(false)}
+        defaultDealId={deal.id}
+        defaultAmount={remainingNum > 0 ? remainingNum : (deal.amount ? parseFloat(String(deal.amount)) : 0)}
+      />
     </div>
   );
 }

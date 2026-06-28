@@ -2,7 +2,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { LuMail, LuUser, LuInstagram, LuYoutube, LuLoader } from "react-icons/lu";
+import { LuMail, LuUser, LuInstagram, LuYoutube, LuLoader, LuWallet } from "react-icons/lu";
 
 const DEAL_STAGES = [
   { value: "LEAD", label: "Lead" },
@@ -24,28 +24,37 @@ export type DealHeaderProps = {
     email: string;
     avatar?: string;
   };
-  amount: string;
+  amount?: string;
+  dealAmount?: string;
+  remainingAmount?: string;
   status: string;
   stage?: string;
   platforms: string[];
   logo?: string;
   onStageChange?: (stage: string) => void;
   isUpdatingStage?: boolean;
+  onRecordPayment?: () => void;
 };
 
 const DealHeader = ({
   title,
   assignee,
   amount,
+  dealAmount,
+  remainingAmount,
   status,
   stage,
   platforms,
   logo,
   onStageChange,
   isUpdatingStage,
+  onRecordPayment,
 }: DealHeaderProps) => {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const finalDealAmount = dealAmount ?? amount ?? "—";
+  const finalRemainingAmount = remainingAmount ?? "—";
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -68,7 +77,7 @@ const DealHeader = ({
   return (
     <div className="relative group rounded-3xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 p-5 sm:p-8 transition-all">
       {/* Top Accent Gradient Line */}
-      <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-brand-500 via-blue-500 to-emerald-500" />
+      <div className="absolute top-0 left-0 right-0 h-[3px] rounded-t-3xl bg-gradient-to-r from-brand-500 via-blue-500 to-emerald-500" />
       
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-6 sm:gap-8">
         <div className="flex items-center gap-4 sm:gap-6">
@@ -103,13 +112,40 @@ const DealHeader = ({
           </div>
         </div>
 
-        <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 sm:text-right">
-          <div className="text-2xl sm:text-4xl font-bold text-emerald-600 dark:text-emerald-500 tracking-tighter">
-            {amount}
+        <div className="flex flex-col sm:items-end justify-between sm:justify-start gap-3 sm:text-right">
+          {/* Amounts Box */}
+          <div className="flex items-center gap-4 sm:gap-6 bg-gray-50/80 dark:bg-gray-800/40 px-4 py-2.5 rounded-2xl border border-gray-200/60 dark:border-gray-700/50">
+            <div className="space-y-0.5 text-left sm:text-right">
+              <span className="text-[9px] sm:text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider block leading-none">Deal Amount</span>
+              <span className="text-xs sm:text-sm font-black text-gray-900 dark:text-white tracking-tight block">
+                {finalDealAmount}
+              </span>
+            </div>
+
+            <div className="w-[1px] h-7 bg-gray-200 dark:bg-gray-700/60" />
+
+            <div className="space-y-0.5 text-left sm:text-right">
+              <span className="text-[9px] sm:text-[10px] font-extrabold text-gray-400 dark:text-gray-500 uppercase tracking-wider block leading-none">Remaining</span>
+              <span className="text-xs sm:text-sm font-black text-emerald-600 dark:text-emerald-500 tracking-tight block">
+                {finalRemainingAmount}
+              </span>
+            </div>
           </div>
 
-          {/* Clickable Stage Badge */}
-          <div className="relative" ref={dropdownRef}>
+          <div className="flex items-center gap-2">
+            {onRecordPayment && (
+              <button
+                type="button"
+                onClick={onRecordPayment}
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 transition-all cursor-pointer active:scale-95"
+              >
+                <LuWallet size={12} />
+                Record Payment
+              </button>
+            )}
+
+            {/* Clickable Stage Badge */}
+            <div className="relative" ref={dropdownRef}>
             <button
               onClick={() => setShowDropdown(!showDropdown)}
               disabled={isUpdatingStage}
@@ -125,7 +161,7 @@ const DealHeader = ({
 
             {/* Dropdown */}
             {showDropdown && (
-              <div className="absolute right-0 top-full mt-2 z-50 w-48 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl max-h-64 overflow-y-auto">
+              <div className="absolute right-0 top-full mt-2 z-50 w-48 py-2 rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 shadow-xl max-h-64 overflow-y-auto custom-scrollbar">
                 {DEAL_STAGES.map((s) => (
                   <button
                     key={s.value}
@@ -143,6 +179,7 @@ const DealHeader = ({
             )}
           </div>
         </div>
+      </div>
       </div>
 
       <div className="mt-6 sm:mt-8 pt-6 sm:pt-8 border-t border-gray-200 dark:border-gray-800 flex flex-col sm:flex-row sm:items-center gap-4">

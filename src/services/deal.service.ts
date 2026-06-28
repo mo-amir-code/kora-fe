@@ -7,6 +7,8 @@ export interface Deal {
   title: string;
   stage: string;
   amount: string | null;
+  amountPaid?: string | number | null;
+  paymentStatus?: string;
   currency: string;
   paymentTerms: string | null;
   paymentDueDate: string | null;
@@ -15,8 +17,8 @@ export interface Deal {
   exclusivityEnds: string | null;
   notes: string | null;
   createdAt: string;
-  brand: { id: string; name: string; logoUrl: string | null };
-  contact: { id: string; name: string } | null;
+  brand: { id: string; name: string; logoUrl: string | null; gstin?: string | null; contacts?: any[] };
+  contact: { id: string; name: string; email?: string | null } | null;
   deliverables: Deliverable[];
   activities?: DealActivity[];
 }

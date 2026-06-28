@@ -1,5 +1,5 @@
 import React from "react";
-import { LuPencil, LuEye, LuDownload } from "react-icons/lu";
+import { LuPencil, LuEye, LuDownload, LuFileText } from "react-icons/lu";
 import InvoiceStatusBadge from "./InvoiceStatusBadge";
 import Link from "next/link";
 import { Invoice } from "@/services/invoice.service";
@@ -39,73 +39,93 @@ const InvoiceTable = ({ invoices }: InvoiceTableProps) => {
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-50 dark:divide-white/[0.03]">
-            {invoices.map((invoice) => (
-              <tr key={invoice.id} className="group hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-all duration-300">
-                <td className="py-4 sm:py-6 px-2 sm:px-4">
-                  <span className="text-[11px] sm:text-sm font-black text-gray-400 dark:text-gray-600 group-hover:text-brand-500 transition-colors uppercase tracking-tight whitespace-nowrap">
-                    {invoice.invoiceNumber}
-                  </span>
-                </td>
-                <td className="py-4 sm:py-6 px-2 sm:px-4">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-[8px] sm:text-[10px] font-bold text-gray-500 shrink-0 relative overflow-hidden">
-                      {invoice.deal.brand.logoUrl ? (
-                        <Image src={invoice.deal.brand.logoUrl} alt="" fill className="object-cover" />
-                      ) : (
-                        invoice.deal.brand.name.substring(0, 1)
-                      )}
+            {invoices.length === 0 ? (
+              <tr>
+                <td colSpan={6} className="py-16 text-center">
+                  <div className="flex flex-col items-center justify-center space-y-3">
+                    <div className="w-12 h-12 rounded-2xl bg-gray-50 dark:bg-gray-800/60 border border-gray-100 dark:border-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500">
+                      <LuFileText size={24} />
                     </div>
-                    <div className="flex flex-col min-w-0">
-                      <span className="text-[11px] sm:text-sm font-black text-gray-900 dark:text-white tracking-tight truncate">
-                        {invoice.deal.brand.name}
-                      </span>
-                      <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter truncate">
-                        {invoice.deal.title}
-                      </span>
+                    <div className="space-y-1">
+                      <p className="text-sm font-black text-gray-900 dark:text-white uppercase tracking-wider italic">
+                        No invoices found
+                      </p>
+                      <p className="text-xs text-gray-400 font-medium italic">
+                        There are no invoices matching your current filter criteria.
+                      </p>
                     </div>
-                  </div>
-                </td>
-                <td className="py-4 sm:py-6 px-2 sm:px-4">
-                  <div className="space-y-0.5 sm:space-y-1">
-                    <p className="text-[10px] sm:text-xs font-bold text-gray-900 dark:text-gray-200 whitespace-nowrap">
-                      Issued <span className="text-gray-400 dark:text-gray-500">{formatInvoiceDate(invoice.issuedDate)}</span>
-                    </p>
-                    <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-wider text-rose-500">
-                      Due {formatInvoiceDate(invoice.dueDate)}
-                    </p>
-                  </div>
-                </td>
-                <td className="py-4 sm:py-6 px-2 sm:px-4">
-                  <span className="text-[11px] sm:text-sm font-black text-gray-900 dark:text-white tracking-tight whitespace-nowrap">
-                    {formatInvoiceCurrency(invoice.total)}
-                  </span>
-                </td>
-                <td className="py-4 sm:py-6 px-2 sm:px-4">
-                  <InvoiceStatusBadge status={invoice.status as any} />
-                </td>
-                <td className="py-4 sm:py-6 px-2 sm:px-4">
-                  <div className="flex items-center justify-center gap-2">
-                    <button 
-                      onClick={() => handleDownload(invoice)}
-                      className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-emerald-500 hover:bg-emerald-500/5 transition-all active:scale-90 border border-transparent hover:border-emerald-500/20 group/btn"
-                      title="Download PDF"
-                    >
-                      <LuDownload size={14} className="sm:size-4" />
-                    </button>
-                    <Link href={`/dashboard/invoices/${invoice.id}`}>
-                      <button className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-emerald-500 hover:bg-emerald-500/5 transition-all active:scale-90 border border-transparent hover:border-emerald-500/20 group/btn">
-                        <LuEye size={14} className="sm:size-4" />
-                      </button>
-                    </Link>
-                    <Link href={`/dashboard/invoices/edit/${invoice.id}`}>
-                      <button className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-brand-500 hover:bg-brand-500/5 transition-all active:scale-90 border border-transparent hover:border-brand-500/20 group/btn">
-                        <LuPencil size={14} className="sm:size-4" />
-                      </button>
-                    </Link>
                   </div>
                 </td>
               </tr>
-            ))}
+            ) : (
+              invoices.map((invoice) => (
+                <tr key={invoice.id} className="group hover:bg-gray-50/50 dark:hover:bg-white/[0.01] transition-all duration-300">
+                  <td className="py-4 sm:py-6 px-2 sm:px-4">
+                    <span className="text-[11px] sm:text-sm font-black text-gray-400 dark:text-gray-600 group-hover:text-brand-500 transition-colors uppercase tracking-tight whitespace-nowrap">
+                      {invoice.invoiceNumber}
+                    </span>
+                  </td>
+                  <td className="py-4 sm:py-6 px-2 sm:px-4">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-full bg-gray-100 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 flex items-center justify-center text-[8px] sm:text-[10px] font-bold text-gray-500 shrink-0 relative overflow-hidden">
+                        {invoice.deal.brand.logoUrl ? (
+                          <Image src={invoice.deal.brand.logoUrl} alt="" fill className="object-cover" />
+                        ) : (
+                          invoice.deal.brand.name.substring(0, 1)
+                        )}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-[11px] sm:text-sm font-black text-gray-900 dark:text-white tracking-tight truncate">
+                          {invoice.deal.brand.name}
+                        </span>
+                        <span className="text-[9px] font-bold text-gray-400 uppercase tracking-tighter truncate">
+                          {invoice.deal.title}
+                        </span>
+                      </div>
+                    </div>
+                  </td>
+                  <td className="py-4 sm:py-6 px-2 sm:px-4">
+                    <div className="space-y-0.5 sm:space-y-1">
+                      <p className="text-[10px] sm:text-xs font-bold text-gray-900 dark:text-gray-200 whitespace-nowrap">
+                        Issued <span className="text-gray-400 dark:text-gray-500">{formatInvoiceDate(invoice.issuedDate)}</span>
+                      </p>
+                      <p className="text-[8px] sm:text-[10px] font-black uppercase tracking-wider text-rose-500">
+                        Due {formatInvoiceDate(invoice.dueDate)}
+                      </p>
+                    </div>
+                  </td>
+                  <td className="py-4 sm:py-6 px-2 sm:px-4">
+                    <span className="text-[11px] sm:text-sm font-black text-gray-900 dark:text-white tracking-tight whitespace-nowrap">
+                      {formatInvoiceCurrency(invoice.total)}
+                    </span>
+                  </td>
+                  <td className="py-4 sm:py-6 px-2 sm:px-4">
+                    <InvoiceStatusBadge status={invoice.status as any} />
+                  </td>
+                  <td className="py-4 sm:py-6 px-2 sm:px-4">
+                    <div className="flex items-center justify-center gap-2">
+                      <button 
+                        onClick={() => handleDownload(invoice)}
+                        className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-emerald-500 hover:bg-emerald-500/5 transition-all active:scale-90 border border-transparent hover:border-emerald-500/20 group/btn"
+                        title="Download PDF"
+                      >
+                        <LuDownload size={14} className="sm:size-4" />
+                      </button>
+                      <Link href={`/dashboard/invoices/${invoice.id}`}>
+                        <button className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-emerald-500 hover:bg-emerald-500/5 transition-all active:scale-90 border border-transparent hover:border-emerald-500/20 group/btn">
+                          <LuEye size={14} className="sm:size-4" />
+                        </button>
+                      </Link>
+                      <Link href={`/dashboard/invoices/edit/${invoice.id}`}>
+                        <button className="p-2 sm:p-2.5 rounded-lg sm:rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-brand-500 hover:bg-brand-500/5 transition-all active:scale-90 border border-transparent hover:border-brand-500/20 group/btn">
+                          <LuPencil size={14} className="sm:size-4" />
+                        </button>
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
           </tbody>
         </table>
       </div>

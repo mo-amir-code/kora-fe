@@ -11,11 +11,13 @@ import {
   LuChevronDown,
   LuCalendar,
   LuArrowLeft,
-  LuArrowRight
+  LuArrowRight,
+  LuLoader
 } from "react-icons/lu";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
-import { useRouter, useParams } from "next/navigation";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { useInvoicesList, useCreateInvoice, useUpdateInvoice, useInvoiceDetail } from "@/hooks/useInvoices";
 import { useDealsList } from "@/hooks/useDeals";
 import { useProfile } from "@/hooks/useProfile";
@@ -41,7 +43,8 @@ interface InvoiceFormProps {
 const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
   const router = useRouter();
   const params = useParams();
-  const dealIdFromQuery = params.dealId as string;
+  const searchParams = useSearchParams();
+  const dealIdFromQuery = (params?.dealId as string) || searchParams?.get("dealId") || "";
 
   const { data: deals, isLoading: isLoadingDeals } = useDealsList();
   const { data: profile, isLoading: isLoadingProfile } = useProfile();
@@ -49,6 +52,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
 
   const createInvoice = useCreateInvoice();
   const updateInvoice = useUpdateInvoice();
+  const isPending = createInvoice.isPending || updateInvoice.isPending;
 
   const [lineItems, setLineItems] = useState<LineItem[]>(
     initialData?.lineItems?.map((li: any) => ({
@@ -70,47 +74,77 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
     status: initialData?.status || "DRAFT",
     issueDate: initialData?.issuedDate ? new Date(initialData.issuedDate).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
     dueDate: initialData?.dueDate ? new Date(initialData.dueDate).toISOString().split('T')[0] : new Date(Date.now() + 14 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-    notes: initialData?.notes || "",
+    notes: initialData?.notes || profile?.invoiceSettings?.footerText || "",
     from: {
       legalName: initialData?.from?.legalName || profile?.invoiceSettings?.legalName || profile?.fullName || "",
       upiId: initialData?.from?.upiId || profile?.invoiceSettings?.upiId || "",
-      accountNo: initialData?.from?.accountNo || profile?.invoiceSettings?.accountNo || "",
-      ifsc: initialData?.from?.ifsc || profile?.invoiceSettings?.ifsc || ""
+      accountNo: initialData?.from?.accountNo || profile?.invoiceSettings?.bankAccount || profile?.invoiceSettings?.accountNo || "",
+      ifsc: initialData?.from?.ifsc || profile?.invoiceSettings?.bankIfsc || profile?.invoiceSettings?.ifsc || ""
     },
     billTo: {
       brandName: initialData?.deal?.brand?.name || "Select a deal first",
-      contact: initialData?.deal?.brand?.email || "No contact found",
+      contact: (() => {
+        if (!initialData?.deal) return "No contact found";
+        const d = initialData.deal;
+        const brandContacts = d.brand?.contacts || [];
+        const primaryContact = brandContacts.find((c: any) => c.isPrimary) || brandContacts[0];
+        const email = d.contact?.email || primaryContact?.email || d.brand?.email;
+        const name = d.contact?.name || primaryContact?.name;
+        if (email && name) return `${name} (${email})`;
+        return email || name || "No contact found";
+      })(),
       gstin: initialData?.deal?.brand?.gstin || "No GSTIN found"
     }
   });
 
-  // Update Bill To when deal changes
+  // Update Bill To & line item when deal changes
   React.useEffect(() => {
     if (deals && formData.dealId) {
       const selectedDeal = deals.find((d: any) => d.id === formData.dealId);
       if (selectedDeal) {
+        const brandContacts = selectedDeal.brand?.contacts || [];
+        const primaryContact = brandContacts.find((c: any) => c.isPrimary) || brandContacts[0];
+        const email = selectedDeal.contact?.email || primaryContact?.email || (selectedDeal.brand as any)?.email;
+        const name = selectedDeal.contact?.name || primaryContact?.name;
+        const displayContact = (email && name) ? `${name} (${email})` : (email || name || "No contact found");
+
         setFormData(prev => ({
           ...prev,
           billTo: {
             brandName: selectedDeal.brand?.name || "Unknown Brand",
-            contact: (selectedDeal.brand as any)?.email || "No contact found",
+            contact: displayContact,
             gstin: (selectedDeal.brand as any)?.gstin || "Not Available"
           }
         }));
+
+        // Auto pre-fill line item rate if unedited in create mode
+        if (mode === 'create' && selectedDeal.amount && lineItems.length === 1 && lineItems[0].rate === 0) {
+          const dealAmt = parseFloat(String(selectedDeal.amount));
+          if (dealAmt > 0) {
+            setLineItems([{
+              id: "1",
+              description: selectedDeal.title || "Sponsorship / Content Deliverables",
+              qty: 1,
+              rate: dealAmt,
+              amount: dealAmt
+            }]);
+          }
+        }
       }
     }
-  }, [formData.dealId, deals]);
+  }, [formData.dealId, deals, mode]);
 
   // Update From info when profile loads
   React.useEffect(() => {
     if (profile && !initialData) {
       setFormData(prev => ({
         ...prev,
+        notes: prev.notes || profile.invoiceSettings?.footerText || "",
         from: {
           legalName: profile.invoiceSettings?.legalName || profile.fullName || "",
           upiId: profile.invoiceSettings?.upiId || "",
-          accountNo: profile.invoiceSettings?.accountNo || "",
-          ifsc: profile.invoiceSettings?.ifsc || ""
+          accountNo: profile.invoiceSettings?.bankAccount || profile.invoiceSettings?.accountNo || "",
+          ifsc: profile.invoiceSettings?.bankIfsc || profile.invoiceSettings?.ifsc || ""
         }
       }));
     }
@@ -325,7 +359,7 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
           <div className="bg-white dark:bg-gray-800/40 p-8 rounded-[3rem] border border-slate-200 dark:border-white/10 space-y-8">
             <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-white/5">
               <h3 className="text-xs font-black text-slate-900 dark:text-white uppercase tracking-[0.3em] italic">From</h3>
-              <button className="text-[10px] font-black text-brand-500 uppercase tracking-[0.2em] italic">Edit Profile</button>
+              <Link href="/dashboard/settings/invoices" className="text-[10px] font-black text-brand-500 uppercase tracking-[0.2em] italic hover:underline">Edit Invoice Settings</Link>
             </div>
             <div className="space-y-4">
               <label className="text-[10px] font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] italic">Legal Name</label>
@@ -658,22 +692,43 @@ const InvoiceForm = ({ initialData, mode }: InvoiceFormProps) => {
         <div className="flex w-full sm:w-auto gap-4">
           <button
             onClick={() => handleSave()}
-            disabled={createInvoice.isPending || updateInvoice.isPending}
-            className="flex-1 flex items-center justify-center gap-4 px-10 py-5 rounded-2xl border-2 border-slate-900 dark:border-white text-xs font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] bg-white dark:bg-transparent transition-all active:scale-[0.98] italic"
+            disabled={isPending}
+            className="flex-1 flex items-center justify-center gap-4 px-10 py-5 rounded-2xl border-2 border-slate-900 dark:border-white text-xs font-black text-slate-900 dark:text-white uppercase tracking-[0.25em] bg-white dark:bg-transparent transition-all active:scale-[0.98] italic disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
           >
-            <LuSave size={18} />
-            {mode === 'edit' ? 'Save Changes' : 'Save Invoice'}
+            {isPending ? (
+              <>
+                <LuLoader size={18} className="animate-spin text-brand-500" />
+                <span>{mode === 'edit' ? 'Saving...' : 'Creating...'}</span>
+              </>
+            ) : (
+              <>
+                <LuSave size={18} />
+                <span>{mode === 'edit' ? 'Save Changes' : 'Save Invoice'}</span>
+              </>
+            )}
           </button>
-          {/* <button 
-            onClick={() => handleSave('SENT')}
-            disabled={createInvoice.isPending || updateInvoice.isPending}
-            className="flex-1 flex items-center justify-center gap-4 px-10 py-5 rounded-2xl bg-brand-500 text-white text-xs font-black uppercase tracking-[0.25em] italic shadow-lg shadow-brand-500/20 active:scale-[0.98] transition-all"
-          >
-            <LuArrowRight size={18} />
-            Issue & Send
-          </button> */}
         </div>
       </div>
+
+      {/* Screen Blocker Overlay when saving */}
+      {isPending && (
+        <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-slate-950/70 backdrop-blur-md transition-all animate-fadeIn">
+          <div className="bg-slate-900/90 border border-white/10 p-8 sm:p-10 rounded-3xl shadow-2xl flex flex-col items-center max-w-sm w-full mx-4 text-center space-y-6">
+            <div className="relative flex items-center justify-center">
+              <div className="w-16 h-16 rounded-full border-4 border-brand-500/20 border-t-brand-500 animate-spin" />
+              <LuLoader className="w-8 h-8 text-brand-400 animate-spin absolute" />
+            </div>
+            <div className="space-y-2">
+              <h3 className="text-lg font-black text-white uppercase tracking-wider italic">
+                {mode === 'edit' ? 'Updating Invoice...' : 'Creating Invoice...'}
+              </h3>
+              <p className="text-xs text-slate-400 font-medium leading-relaxed">
+                Please wait while we securely process and save your invoice details.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

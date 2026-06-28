@@ -14,9 +14,16 @@ const InvoicesPage = () => {
   const { data: realInvoices, isLoading } = useInvoicesList();
   const [filter, setFilter] = useState<string>("All");
   const [dateRange, setDateRange] = useState<Date[]>([]);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const ITEMS_PER_PAGE = 10;
+
   const flatpickrRef = useRef<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filter, dateRange]);
 
   useEffect(() => {
     if (inputRef.current && buttonRef.current) {
@@ -69,6 +76,13 @@ const InvoicesPage = () => {
 
     return statusMatch && dateMatch;
   });
+
+  const totalInvoices = filteredInvoices.length;
+  const totalPages = Math.max(1, Math.ceil(totalInvoices / ITEMS_PER_PAGE));
+  const safePage = Math.min(currentPage, totalPages);
+  const startIndex = totalInvoices === 0 ? 0 : (safePage - 1) * ITEMS_PER_PAGE;
+  const endIndex = Math.min(startIndex + ITEMS_PER_PAGE, totalInvoices);
+  const paginatedInvoices = filteredInvoices.slice(startIndex, endIndex);
 
   const getRangeLabel = () => {
     if (dateRange.length === 2) {
@@ -135,20 +149,46 @@ const InvoicesPage = () => {
 
       {/* Table Section */}
       <div className="bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[2.5rem] p-4 sm:p-8 shadow-2xl shadow-black/5 overflow-hidden">
-        <InvoiceTable invoices={filteredInvoices} />
+        <InvoiceTable invoices={paginatedInvoices} />
 
-        {/* Pagination Placeholder */}
-        <div className="mt-10 pt-8 border-t border-gray-50 dark:border-white/[0.03] flex items-center justify-between">
+        {/* Pagination Section */}
+        <div className="mt-10 pt-8 border-t border-gray-50 dark:border-white/[0.03] flex flex-col sm:flex-row items-center justify-between gap-4">
           <p className="text-[10px] font-black text-gray-400 uppercase tracking-[0.15em]">
-            Showing 1-{filteredInvoices.length} of {filteredInvoices.length} Invoices
+            {totalInvoices === 0
+              ? "Showing 0 Invoices"
+              : `Showing ${startIndex + 1}-${endIndex} of ${totalInvoices} Invoices`}
           </p>
-          <div className="flex items-center gap-2">
-            {[1, 2, 3].map(p => (
-              <button key={p} className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black ${p === 1 ? 'bg-gray-900 dark:bg-brand-500 text-white' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors'}`}>
-                {p}
+          {totalPages > 1 && (
+            <div className="flex items-center gap-1.5">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={safePage === 1}
+                className="px-2.5 py-1.5 rounded-lg text-[10px] font-black text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-colors cursor-pointer"
+              >
+                Prev
               </button>
-            ))}
-          </div>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map(p => (
+                <button
+                  key={p}
+                  onClick={() => setCurrentPage(p)}
+                  className={`w-8 h-8 rounded-lg flex items-center justify-center text-[10px] font-black transition-colors cursor-pointer ${
+                    p === safePage
+                      ? 'bg-gray-900 dark:bg-brand-500 text-white'
+                      : 'text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={safePage === totalPages}
+                className="px-2.5 py-1.5 rounded-lg text-[10px] font-black text-gray-400 hover:text-gray-900 dark:hover:text-white disabled:opacity-30 disabled:hover:text-gray-400 transition-colors cursor-pointer"
+              >
+                Next
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>

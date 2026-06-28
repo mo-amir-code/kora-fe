@@ -26,7 +26,7 @@ export default function GeneralSettingsPage() {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    updateMutation.mutate({ timezone, baseCurrency });
+    updateMutation.mutate({ timezone, baseCurrency: "USD" });
   };
 
   const currencies = [
@@ -78,17 +78,20 @@ export default function GeneralSettingsPage() {
       {/* Settings Form Card */}
       <form onSubmit={handleSubmit} className="p-6 sm:p-8 rounded-3xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm space-y-8">
         {/* Base Currency Section */}
-        <div className="space-y-4">
+        <div className="space-y-4 opacity-75">
           <div className="flex items-center gap-3">
             <div className="p-2.5 rounded-2xl bg-emerald-500/10 text-emerald-500">
               <LuCoins className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-bold text-gray-900 dark:text-white">
-                Base Currency
-              </h3>
+              <div className="flex items-center gap-2">
+                <h3 className="text-base font-bold text-gray-900 dark:text-white">
+                  Base Currency
+                </h3>
+                <span className="px-2 py-0.5 rounded-md bg-gray-100 dark:bg-gray-800 text-[10px] font-bold text-gray-500 uppercase tracking-wider border border-gray-200 dark:border-gray-700">Locked</span>
+              </div>
               <p className="text-xs font-medium text-gray-500 dark:text-gray-400">
-                Default currency used across dashboard analytics and financial reports (default USD $)
+                Default system currency is set to USD ($) across all dashboard analytics and financial reports.
               </p>
             </div>
           </div>
@@ -98,11 +101,12 @@ export default function GeneralSettingsPage() {
               <button
                 key={curr.code}
                 type="button"
-                onClick={() => setBaseCurrency(curr.code)}
-                className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all ${
-                  baseCurrency === curr.code
-                    ? "bg-brand-500/10 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm"
-                    : "border-gray-200 dark:border-gray-800 hover:border-gray-300 dark:hover:border-gray-700 text-gray-700 dark:text-gray-300"
+                disabled={curr.code !== "USD"}
+                onClick={() => setBaseCurrency("USD")}
+                className={`p-4 rounded-2xl border text-left flex items-center justify-between transition-all cursor-not-allowed ${
+                  curr.code === "USD"
+                    ? "bg-brand-500/10 border-brand-500 text-brand-600 dark:text-brand-400 shadow-sm opacity-100"
+                    : "border-gray-200 dark:border-gray-800 text-gray-400 dark:text-gray-600 opacity-40"
                 }`}
               >
                 <div className="flex items-center gap-3">

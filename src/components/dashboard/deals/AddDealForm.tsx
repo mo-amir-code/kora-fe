@@ -16,6 +16,7 @@ import {
 } from "react-icons/lu";
 import { useCreateDeal, useUpdateDeal } from "@/hooks/useDeals";
 import { useBrandsList } from "@/hooks/useBrands";
+import { useCurrency } from "@/hooks/useCurrency";
 import { getErrorMessage } from "@/hooks/useAuth";
 
 interface Deliverable {
@@ -93,12 +94,13 @@ const AddDealForm = ({ onSave, onCancel, editDeal }: AddDealFormProps) => {
   const createDeal = useCreateDeal();
   const updateDeal = useUpdateDeal(editDeal?.id ?? "");
   const { data: brands, isLoading: brandsLoading } = useBrandsList();
+  const { baseCurrency, symbol } = useCurrency();
   const isEditMode = !!editDeal;
 
   const [formData, setFormData] = useState({
     title: editDeal?.title ?? "",
     amount: editDeal?.amount ?? "",
-    currency: editDeal?.currency ?? "INR",
+    currency: baseCurrency || editDeal?.currency || "USD",
     brandId: editDeal?.brandId ?? "",
     contactId: editDeal?.contactId ?? "",
     paymentTerms: editDeal?.paymentTerms ?? "",
@@ -106,6 +108,12 @@ const AddDealForm = ({ onSave, onCancel, editDeal }: AddDealFormProps) => {
     contractUrl: editDeal?.contractUrl ?? "",
     notes: editDeal?.notes ?? "",
   });
+
+  React.useEffect(() => {
+    if (baseCurrency) {
+      setFormData((prev) => ({ ...prev, currency: baseCurrency }));
+    }
+  }, [baseCurrency]);
   const [stage, setStage] = useState(editDeal?.stage ?? "LEAD");
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>(editDeal?.platforms ?? []);
   const [deliverables, setDeliverables] = useState<Deliverable[]>(
@@ -223,12 +231,30 @@ const AddDealForm = ({ onSave, onCancel, editDeal }: AddDealFormProps) => {
                 <input type="number" name="amount" value={formData.amount} onChange={handleInputChange} placeholder="0.00" className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" />
               </div>
               <div className="space-y-2">
-                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Currency</label>
-                <div className="relative">
-                  <select name="currency" value={formData.currency} onChange={handleInputChange} className="w-full appearance-none bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all">
-                    {CURRENCIES.map((c) => <option key={c} value={c}>{c}</option>)}
+                <div className="flex items-center gap-1.5 pl-1">
+                  <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest">Currency</label>
+                  <div className="group relative flex items-center cursor-pointer">
+                    <LuInfo size={14} className="text-gray-400 hover:text-brand-500 transition-colors" />
+                    <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 w-52 rounded-xl bg-gray-900 dark:bg-gray-800 p-2.5 text-[11px] font-medium text-white shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-30 text-center leading-snug border border-gray-700/50">
+                      You can change the currency from the Settings page for the entire app.
+                      <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-800" />
+                    </div>
+                  </div>
+                </div>
+                <div className="group relative">
+                  <select
+                    name="currency"
+                    value={formData.currency}
+                    disabled
+                    className="w-full appearance-none bg-gray-100/80 dark:bg-gray-800/20 border border-gray-200/80 dark:border-gray-800/80 rounded-xl px-4 py-3.5 text-sm font-bold text-gray-500 dark:text-gray-400 cursor-not-allowed outline-none transition-all opacity-80"
+                  >
+                    <option value={formData.currency}>{formData.currency} ({symbol})</option>
                   </select>
                   <LuChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
+                  <div className="pointer-events-none absolute bottom-full left-1/2 mb-2 -translate-x-1/2 w-52 rounded-xl bg-gray-900 dark:bg-gray-800 p-2.5 text-[11px] font-medium text-white shadow-2xl opacity-0 group-hover:opacity-100 transition-all duration-200 z-30 text-center leading-snug border border-gray-700/50">
+                    You can change the currency from the Settings page for the entire app.
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-800" />
+                  </div>
                 </div>
               </div>
             </div>

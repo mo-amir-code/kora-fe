@@ -4,7 +4,7 @@ import Greeting from "@/components/dashboard/home/greeting"
 import PaymentStatus from "@/components/dashboard/home/paymentstatus"
 import RecentActivity from "@/components/dashboard/home/recent-activity"
 import ActiveDeals from "@/components/dashboard/home/active-deals"
-import { LuWallet, LuClock, LuCircleAlert, LuCircleCheck, LuFileText, LuBell, LuSparkles } from "react-icons/lu"
+import { LuWallet, LuClock, LuCircleAlert, LuCircleCheck, LuFileText, LuBell, LuSparkles, LuBriefcase } from "react-icons/lu"
 import { LoadingSpinner } from "@/components/common"
 
 import { useEffect, useState } from "react"
@@ -132,27 +132,27 @@ const DashboardHome = () => {
       {/* Payment Status Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         <PaymentStatus
-          title="Total Earned"
-          amount={formatCurrency(data?.stats?.totalEarned || 0)}
+          title="Total Earned (Last 30 Days)"
+          amount={formatCurrency(data?.stats?.totalEarnedLast30 || 0)}
           icon={LuWallet}
           variant="success"
-          subtitle="All time from paid invoices"
+          subtitle="Received in the last 30 days"
         />
 
         <PaymentStatus
-          title="Pending Payments"
-          amount={formatCurrency(data?.stats?.pendingPayments || 0)}
-          icon={LuCircleAlert}
-          variant="warning"
-          subtitle="Awaiting client action"
-        />
-
-        <PaymentStatus
-          title="Overdue"
-          amount={formatCurrency(data?.stats?.overdue || 0)}
+          title="Pending Cash (Next 30 Days)"
+          amount={formatCurrency(data?.stats?.pendingCashNext30 || 0)}
           icon={LuClock}
-          variant="danger"
-          subtitle="Needs immediate follow-up"
+          variant="warning"
+          subtitle="Scheduled in the next 30 days"
+        />
+
+        <PaymentStatus
+          title="Active Collaborations"
+          amount={data?.stats?.activeCollaborationsCount || 0}
+          icon={LuBriefcase}
+          variant="neutral"
+          subtitle="Ongoing brand campaigns"
         />
       </div>
 
@@ -166,7 +166,7 @@ const DashboardHome = () => {
                   Upcoming Deadlines
                 </h2>
                 <p className="text-xs text-gray-500 dark:text-gray-400">
-                  Tasks and deliverables requiring your attention
+                  Tasks and deliverables requiring your attention in the next 7 days
                 </p>
               </div>
             </div>
@@ -188,7 +188,7 @@ const DashboardHome = () => {
               </div>
             ) : (
               <div className="p-8 text-center bg-gray-50 dark:bg-gray-900/50 rounded-2xl border border-dashed border-gray-200 dark:border-gray-800">
-                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">No upcoming deadlines.</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">No upcoming deadlines for the next 7 days.</p>
               </div>
             )}
           </div>
