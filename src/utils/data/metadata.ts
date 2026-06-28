@@ -8,7 +8,12 @@ type AppMetadata = {
     forgotPassword: Metadata;
     resetPassword: Metadata;
   };
+  about: Metadata;
+  pricing: Metadata;
+  contact: Metadata;
   contactUs: Metadata;
+  faq: Metadata;
+  privacy: Metadata;
   dashboard: {
     home: Metadata;
     brands: Metadata;
@@ -58,11 +63,36 @@ export const allMetadata: AppMetadata = {
     },
   },
 
-  // Contact
+  // Public Informational pages
+  about: {
+    title: "About Us | Kora",
+    description:
+      "Learn about Kora's mission to empower digital creators with automated deal management, professional invoicing, and financial clarity.",
+  },
+  pricing: {
+    title: "Pricing Plans | Kora",
+    description:
+      "Simple, transparent pricing for creators and agencies. Choose the right plan to manage your brand sponsorships and invoices.",
+  },
+  contact: {
+    title: "Contact Us | Kora",
+    description:
+      "Get in touch with the Kora team. We're here to help with questions, feedback, or partnership inquiries.",
+  },
   contactUs: {
     title: "Contact Us | Kora",
     description:
       "Get in touch with the Kora team. We're here to help with questions, feedback, or partnership inquiries.",
+  },
+  faq: {
+    title: "Frequently Asked Questions | Kora",
+    description:
+      "Find answers to common questions about Kora, sponsorship tracking, automated reminders, and invoicing.",
+  },
+  privacy: {
+    title: "Privacy Policy | Kora",
+    description:
+      "Read Kora's privacy policy to understand how we collect, use, and protect your personal and business data.",
   },
 
   // Dashboard pages
