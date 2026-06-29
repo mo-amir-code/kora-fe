@@ -1,14 +1,17 @@
 "use client";
-import React, { useState, useRef, useCallback } from "react";
+import React, { useState, useRef, useCallback, useEffect } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { useGoogleAuth, useSignupSendOtp, useSignupVerifyOtp, getErrorMessage } from "@/hooks/useAuth";
 
 type Step = "form" | "otp";
 
-const SignUpForm: React.FC = () => {
+const SignUpFormContent: React.FC = () => {
+  const searchParams = useSearchParams();
+  const emailParam = searchParams.get("email");
+
   const [step, setStep] = useState<Step>("form");
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,6 +27,12 @@ const SignUpForm: React.FC = () => {
   const router = useRouter();
   const sendOtp = useSignupSendOtp();
   const verifyOtp = useSignupVerifyOtp();
+
+  useEffect(() => {
+    if (emailParam) {
+      setEmail(emailParam);
+    }
+  }, [emailParam]);
 
   const handleSendOtp = (e: React.FormEvent) => {
     e.preventDefault();
@@ -326,6 +335,14 @@ const SignUpForm: React.FC = () => {
         </Link>
       </p>
     </div>
+  );
+};
+
+const SignUpForm: React.FC = () => {
+  return (
+    <React.Suspense fallback={<div className="text-white text-center py-4">Loading...</div>}>
+      <SignUpFormContent />
+    </React.Suspense>
   );
 };
 
