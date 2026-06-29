@@ -43,7 +43,7 @@ export default function HeroSection() {
           </button>
         </form>
         <p className="mt-3 sm:mt-4 text-[11px] sm:text-xs text-slate-400 dark:text-slate-500">
-          14-day free trial. No credit card required.
+          14-day free trial • Cancel anytime
         </p>
       </div>
     </section>
