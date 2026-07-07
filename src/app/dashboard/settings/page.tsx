@@ -3,7 +3,7 @@
 import React from "react";
 import { APP_NAME } from "@/lib/constants";
 import { SettingSection } from "@/components/dashboard/settings";
-import { LuUser, LuBell, LuSettings, LuFileText, LuCircleHelp } from "react-icons/lu";
+import { LuUser, LuBell, LuSettings, LuFileText, LuCircleHelp, LuWallet } from "react-icons/lu";
 
 export default function SettingsPage() {
   const accountItems = [
@@ -20,6 +20,13 @@ export default function SettingsPage() {
       linkText: "Configure",
       href: "/dashboard/settings/general",
       icon: LuSettings,
+    },
+    {
+      title: "Subscription & Plan",
+      description: "Manage your subscription, view current plan limits, and upgrade your account.",
+      linkText: "Manage Plan",
+      href: "/dashboard/settings/subscription",
+      icon: LuWallet,
     },
   ];
 

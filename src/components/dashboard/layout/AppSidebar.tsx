@@ -21,6 +21,7 @@ import {
   LuWallet 
 } from "react-icons/lu";
 import { APP_NAME } from "@/lib/constants";
+import { useSubscriptionStore } from "@/stores/subscription/subscription";
 
 const navItems: NavItem[] = [
   {
@@ -81,6 +82,7 @@ const bottomNavItems: NavItem[] = [
 const AppSidebar: React.FC = () => {
   const { isExpanded, isMobileOpen, isHovered, setIsHovered } = useSidebar();
   const pathname = usePathname();
+  const plan = useSubscriptionStore((state) => state.plan);
 
   const [openSubmenu, setOpenSubmenu] = useState<{
     type: "main" | "others";
@@ -288,8 +290,29 @@ const AppSidebar: React.FC = () => {
               {renderMenuItems(navItems, "main")}
             </div>
             
-            <div className="mt-auto pt-10 pb-6 border-t border-gray-200 dark:border-gray-800">
-              {renderMenuItems(bottomNavItems, "others")}
+            <div className="mt-auto flex flex-col">
+              {/* Sidebar Upgrade Card */}
+              {(isExpanded || isHovered || isMobileOpen) && plan === "FREE" && (
+                <div className="mx-2 mb-6 p-4 rounded-2xl bg-linear-to-br from-brand-500/10 to-brand-500/5 dark:from-brand-500/15 dark:to-brand-500/5 border border-brand-200/50 dark:border-brand-500/20 text-center space-y-3 relative overflow-hidden transition-all duration-300">
+                  <div className="absolute -right-8 -top-8 w-16 h-16 bg-brand-500/10 rounded-full blur-xl pointer-events-none" />
+                  <h4 className="text-xs font-bold text-slate-900 dark:text-white uppercase tracking-wider">
+                    Unlock Pro Features
+                  </h4>
+                  <p className="text-[11px] text-slate-500 dark:text-slate-400 leading-relaxed">
+                    Get unlimited invoicing, auto WhatsApp reminders, and advanced analytics.
+                  </p>
+                  <Link
+                    href="/dashboard/settings/subscription"
+                    className="block w-full py-2 bg-brand-500 hover:bg-brand-600 active:scale-98 text-white text-xs font-bold rounded-xl shadow-md shadow-brand-500/25 transition-all text-center"
+                  >
+                    Upgrade Now
+                  </Link>
+                </div>
+              )}
+
+              <div className="pt-10 pb-6 border-t border-gray-200 dark:border-gray-800">
+                {renderMenuItems(bottomNavItems, "others")}
+              </div>
             </div>
           </div>
         </nav>

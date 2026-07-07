@@ -5,9 +5,66 @@ import Link from "next/link";
 import { PublicPageLayout } from "@/components/common";
 import { APP_NAME } from "@/lib/constants";
 import { LuCheck, LuCircleHelp } from "react-icons/lu";
+import { useAuthStore } from "@/stores/auth/auth";
+import { useSubscriptionStore } from "@/stores/subscription/subscription";
+import toast from "react-hot-toast";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "quarterly" | "yearly">("quarterly");
+  const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
+  const { plan: storePlan, billingCycle: currentCycle, upgrade, isLoading } = useSubscriptionStore();
+
+  const getCycleColorClasses = () => {
+    if (billingCycle === "yearly") {
+      return {
+        border: "border-2 border-purple-500 shadow-xl shadow-purple-500/10",
+        badge: "bg-purple-500",
+        checkmark: "text-purple-400",
+        btn: "bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/20",
+        activePlan: "text-purple-400 bg-purple-500/10 border-purple-500/20",
+      };
+    }
+    if (billingCycle === "quarterly") {
+      return {
+        border: "border-2 border-indigo-500 shadow-xl shadow-indigo-500/10",
+        badge: "bg-indigo-500",
+        checkmark: "text-indigo-400",
+        btn: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20",
+        activePlan: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
+      };
+    }
+    return {
+      border: "border-2 border-amber-500 shadow-xl shadow-amber-500/10",
+      badge: "bg-amber-500",
+      checkmark: "text-amber-400",
+      btn: "bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/20",
+      activePlan: "text-amber-400 bg-amber-500/10 border-amber-500/20",
+    };
+  };
+
+  const cycleColors = getCycleColorClasses();
+
+  const handleUpgradeClick = async () => {
+    try {
+      const cycle = billingCycle.toUpperCase() as "MONTHLY" | "QUARTERLY" | "YEARLY";
+      await upgrade(cycle);
+      toast.success(`Successfully upgraded to Pro ${cycle} plan!`, {
+        style: {
+          borderRadius: "12px",
+          background: "#1e293b",
+          color: "#fff",
+        },
+      });
+    } catch (error) {
+      toast.error("Failed to initiate payment. Please try again.", {
+        style: {
+          borderRadius: "12px",
+          background: "#1e293b",
+          color: "#fff",
+        },
+      });
+    }
+  };
 
   const plans = [
     {
@@ -161,7 +218,7 @@ export default function PricingPage() {
                 }`}
               >
                 <span>Quarterly</span>
-                <span className="px-2 py-0.5 rounded-md bg-amber-500/10 text-amber-600 dark:text-amber-400 text-[10px] sm:text-xs font-bold border border-amber-500/20">
+                <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] sm:text-xs font-bold border border-indigo-500/20">
                   Save 13%
                 </span>
               </button>
@@ -175,7 +232,7 @@ export default function PricingPage() {
                 }`}
               >
                 <span>Yearly</span>
-                <span className="px-2 py-0.5 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] sm:text-xs font-bold border border-emerald-500/20">
+                <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] sm:text-xs font-bold border border-purple-500/20">
                   Save 28%
                 </span>
               </button>
@@ -195,12 +252,12 @@ export default function PricingPage() {
                 key={index}
                 className={`relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 ${
                   plan.highlighted
-                    ? "bg-slate-900 dark:bg-gray-900 text-white border-2 border-brand-500 shadow-xl shadow-brand-500/10 md:-translate-y-2"
+                    ? `bg-slate-900 dark:bg-gray-900 text-white md:-translate-y-2 ${cycleColors.border}`
                     : "bg-slate-50 dark:bg-gray-900/60 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5"
                 }`}
               >
                 {badge && (
-                  <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full bg-brand-500 text-white text-[10px] sm:text-xs font-bold tracking-wider uppercase shadow-md whitespace-nowrap">
+                  <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full ${cycleColors.badge} text-white text-[10px] sm:text-xs font-bold tracking-wider uppercase shadow-md whitespace-nowrap`}>
                     {badge}
                   </div>
                 )}
@@ -235,10 +292,10 @@ export default function PricingPage() {
                         <span
                           className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-bold border ${
                             billingCycle === "yearly"
-                              ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                              ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
                               : billingCycle === "quarterly"
-                              ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                              : "bg-brand-500/10 text-brand-400 border-brand-500/20"
+                              ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
+                              : "bg-amber-500/10 text-amber-400 border-amber-500/20"
                           }`}
                         >
                           {savings}
@@ -258,7 +315,7 @@ export default function PricingPage() {
                       <li key={fIdx} className="flex items-start gap-3 text-xs sm:text-sm">
                         <LuCheck
                           className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                            plan.highlighted ? "text-brand-400" : "text-brand-500"
+                            plan.highlighted ? cycleColors.checkmark : "text-brand-500"
                           }`}
                         />
                         <span
@@ -276,16 +333,58 @@ export default function PricingPage() {
                 </div>
 
                 <div className="pt-6 sm:pt-8">
-                  <Link
-                    href={plan.ctaHref}
-                    className={`w-full inline-flex items-center justify-center py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all text-center ${
-                      plan.highlighted
-                        ? "bg-brand-500 hover:bg-brand-600 text-white shadow-lg shadow-brand-500/20"
-                        : "bg-slate-200 dark:bg-gray-800 hover:bg-slate-300 dark:hover:bg-gray-700 text-slate-900 dark:text-white"
-                    }`}
-                  >
-                    {plan.ctaText}
-                  </Link>
+                  {plan.highlighted ? (
+                    /* Pro Creator Plan */
+                    isAuthenticated ? (
+                      storePlan === "PRO" && currentCycle?.toLowerCase() === billingCycle ? (
+                        <div className={`w-full py-3.5 text-center text-xs sm:text-sm font-bold ${cycleColors.activePlan} border rounded-xl cursor-default`}>
+                          Current active plan
+                        </div>
+                      ) : (
+                        <button
+                          disabled={isLoading}
+                          onClick={handleUpgradeClick}
+                          className={`w-full inline-flex items-center justify-center py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all text-center ${cycleColors.btn} disabled:opacity-50 disabled:cursor-not-allowed`}
+                        >
+                          {isLoading
+                            ? "Processing..."
+                            : storePlan === "PRO"
+                            ? "Change Billing Cycle"
+                            : "Get Pro Access"}
+                        </button>
+                      )
+                    ) : (
+                      <Link
+                        href="/auth/signup"
+                        className={`w-full inline-flex items-center justify-center py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all text-center ${cycleColors.btn}`}
+                      >
+                        Get Pro Access
+                      </Link>
+                    )
+                  ) : (
+                    /* Starter Plan */
+                    isAuthenticated ? (
+                      storePlan === "PRO" ? (
+                        <Link
+                          href="/dashboard"
+                          className="w-full inline-flex items-center justify-center py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all text-center bg-slate-200 dark:bg-gray-800 hover:bg-slate-300 dark:hover:bg-gray-700 text-slate-900 dark:text-white"
+                        >
+                          Go to Dashboard
+                        </Link>
+                      ) : (
+                        <div className="w-full py-3.5 text-center text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-gray-800/40 border border-slate-200 dark:border-gray-800 rounded-xl cursor-default">
+                          Current plan
+                        </div>
+                      )
+                    ) : (
+                      <Link
+                        href="/auth/signup"
+                        className="w-full inline-flex items-center justify-center py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all text-center bg-slate-200 dark:bg-gray-800 hover:bg-slate-300 dark:hover:bg-gray-700 text-slate-900 dark:text-white"
+                      >
+                        Start Free
+                      </Link>
+                    )
+                  )}
                 </div>
               </div>
             );

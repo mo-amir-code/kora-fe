@@ -3,7 +3,8 @@
 import { useSidebar } from "@/context/SidebarContext";
 import { AppHeader, Backdrop, AppSidebar } from "@/components/dashboard/layout"
 import { AuthGuard } from "@/components/guards";
-import React from "react";
+import React, { useEffect } from "react";
+import { useSubscriptionStore } from "@/stores/subscription/subscription";
 
 export default function DashboardLayout({
     children,
@@ -11,6 +12,11 @@ export default function DashboardLayout({
     children: React.ReactNode;
 }) {
     const { isExpanded, isHovered, isMobileOpen } = useSidebar();
+    const fetchUserPlanOnly = useSubscriptionStore((state) => state.fetchUserPlanOnly);
+
+    useEffect(() => {
+        fetchUserPlanOnly();
+    }, [fetchUserPlanOnly]);
 
     // Dynamic class for main content margin based on sidebar state
     const mainContentMargin = isMobileOpen
