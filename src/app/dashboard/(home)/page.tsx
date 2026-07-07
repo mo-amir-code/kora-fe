@@ -172,17 +172,19 @@ const DashboardHome = () => {
             </div>
             {data?.deadlinesGrouped && Object.keys(data.deadlinesGrouped).length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {Object.entries(data.deadlinesGrouped).map(([brandName, items]: [string, any]) => (
+                {Object.entries(data.deadlinesGrouped).map(([groupKey, group]: [string, any]) => (
                   <DeadlineCard
-                    key={brandName}
-                    brandName={brandName}
-                    itemCount={items.length}
-                    itemType={items.length === 1 ? (items[0]?.title || 'Deliverable') : 'Deliverables'}
-                    status={items[0]?.dueDate ? getStatus(items[0].dueDate) : 'upcoming'}
-                    statusLabel={items[0]?.dueDate ? getStatusLabel(items[0].dueDate) : 'Pending'}
-                    avatar={brandName.charAt(0)}
-                    items={items}
-                    onViewDetails={() => setSelectedGroup({ brandName, items })}
+                    key={groupKey}
+                    brandName={group.brand.name}
+                    itemCount={group.items.length}
+                    itemType={group.items.length === 1 ? (group.items[0]?.type || 'Deliverable') : 'Deliverables'}
+                    status={group.dueDate ? getStatus(group.dueDate) : 'upcoming'}
+                    statusLabel={group.dueDate ? getStatusLabel(group.dueDate) : 'Pending'}
+                    avatar={group.brand.name.charAt(0)}
+                    avatarUrl={group.brand.logoUrl || undefined}
+                    items={group.items}
+                    onViewDetails={() => setSelectedGroup({ brandName: group.brand.name, items: group.items })}
+                    onClick={() => setSelectedGroup({ brandName: group.brand.name, items: group.items })}
                   />
                 ))}
               </div>
