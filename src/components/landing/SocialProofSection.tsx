@@ -1,4 +1,5 @@
 import { HiCheckCircle } from "react-icons/hi";
+import { APP_NAME } from "@/lib/constants";
 
 const benefits = [
   "Saved 15+ hours a month",
@@ -16,7 +17,7 @@ export default function SocialProofSection() {
           <div className="flex-1 space-y-4 sm:space-y-6 relative z-10">
             <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-black text-slate-900 dark:text-white tracking-tight leading-snug">
               &ldquo;I recovered ₹40,000 in overdue payments within my first
-              week using Kora.&rdquo;
+              week using {APP_NAME}.&rdquo;
             </h2>
             <div className="flex items-center gap-3 sm:gap-4">
               <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-lg sm:text-xl font-bold text-slate-900 dark:text-white border-2 border-brand-500 overflow-hidden">

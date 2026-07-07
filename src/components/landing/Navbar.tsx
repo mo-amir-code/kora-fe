@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useAuthStore } from "@/stores/auth/auth";
 import { useEffect, useState } from "react";
+import { APP_NAME } from "@/lib/constants";
 
 export default function Navbar() {
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated);
@@ -19,14 +20,14 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2 sm:gap-3">
           <Image
             src="/brand/kora-icon-transparent.svg"
-            alt="Kora"
+            alt={APP_NAME}
             width={32}
             height={32}
             className="w-7 h-7 sm:w-8 sm:h-8"
             priority
           />
           <span className="text-slate-900 dark:text-white text-lg sm:text-xl font-bold tracking-tight">
-            Kora
+            {APP_NAME}
           </span>
         </Link>
         <div className="flex items-center gap-3 sm:gap-6">

@@ -17,7 +17,7 @@ export default function FooterCTA() {
           href="/auth/signup"
           className="w-full sm:w-auto inline-flex items-center justify-center px-6 py-3.5 sm:px-10 sm:py-5 rounded-full bg-brand-500 hover:bg-brand-600 text-white font-black text-sm sm:text-lg hover:scale-105 transition-all shadow-lg shadow-brand-500/20"
         >
-          Claim Your Kora Account
+          Claim Your {APP_NAME} Account
         </Link>
       </div>
 
