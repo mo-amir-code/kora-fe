@@ -2,7 +2,7 @@ export const STARTER_FEATURES = [
   "Up to 3 active brand deals",
   "Basic invoice generation",
   "Standard deal status tracking",
-  "2 pre-configured, non-editable reminder rules",
+  "2 default email-only reminder rules (read-only)",
   "Standard email-only support",
 ];
 
@@ -99,7 +99,7 @@ export const COMPARISON_CATEGORIES = [
     features: [
       { name: "Professional PDF Invoices", starter: true, pro: true },
       { name: "Automated WhatsApp & Email Follow-ups", starter: false, pro: true },
-      { name: "Customizable Reminder Rules", starter: "2 default rules (read-only)", pro: "Unlimited (fully editable)" },
+      { name: "Customizable Reminder Rules", starter: "2 default email-only rules (read-only)", pro: "Unlimited (fully editable)" },
       { name: "Custom PDF Branding (Logo/Prefix)", starter: false, pro: true },
       { name: "Tax & Bank Details Settings", starter: true, pro: true },
       { name: "Overdue Interest Calculation", starter: false, pro: true },
