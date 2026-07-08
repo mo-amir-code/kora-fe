@@ -5,6 +5,7 @@ export interface BillingPlanResponse {
   billingCycle: "MONTHLY" | "QUARTERLY" | "YEARLY" | null;
   planExpiresAt: string | null;
   status?: string | null;
+  cancelAtPeriodEnd?: boolean;
 }
 
 export interface TransactionItem {

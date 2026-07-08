@@ -2,12 +2,13 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { PublicPageLayout } from "@/components/common";
+import { PublicPageLayout, PlanCard } from "@/components/common";
 import { APP_NAME } from "@/lib/constants";
 import { LuCheck, LuCircleHelp } from "react-icons/lu";
 import { useAuthStore } from "@/stores/auth/auth";
 import { useSubscriptionStore } from "@/stores/subscription/subscription";
 import toast from "react-hot-toast";
+import { PRICING_PLANS, COMPARISON_CATEGORIES } from "@/constants/billing";
 
 export default function PricingPage() {
   const [billingCycle, setBillingCycle] = useState<"monthly" | "quarterly" | "yearly">("quarterly");
@@ -66,73 +67,9 @@ export default function PricingPage() {
     }
   };
 
-  const plans = [
-    {
-      name: "Starter",
-      description: "Ideal for emerging creators tracking their first brand collaborations.",
-      monthlyPrice: 0,
-      quarterlyPrice: 0,
-      yearlyPrice: 0,
-      highlighted: false,
-      ctaText: "Start Free",
-      ctaHref: "/auth/signup",
-      features: [
-        "Up to 3 active brand deals",
-        "Basic invoice generation",
-        "Standard deal status tracking",
-        "Email support",
-      ],
-    },
-    {
-      name: "Pro Creator",
-      description: "For established creators ready to automate billing and protect their income.",
-      monthlyPrice: 15,
-      quarterlyPrice: 13,
-      yearlyPrice: 10.75,
-      quarterlyTotal: 39,
-      yearlyTotal: 129,
-      highlighted: true,
-      badgeText: "Most Popular",
-      ctaText: "Get Pro Access",
-      ctaHref: "/auth/signup",
-      features: [
-        "Unlimited active brand deals",
-        "Automated WhatsApp & Email payment reminders",
-        "Custom branded PDF invoices",
-        "Real-time revenue & earnings analytics",
-        "Calendar deadline integrations",
-        "Priority 24/7 support",
-      ],
-    },
-  ];
+  const plans = PRICING_PLANS;
 
-  const comparisonCategories = [
-    {
-      category: "Deal & Sponsorship Management",
-      features: [
-        { name: "Active Brand Deals", starter: "Up to 3", pro: "Unlimited" },
-        { name: "Deliverables Tracking", starter: "Basic", pro: "Advanced" },
-        { name: "Content Deadline Calendar", starter: false, pro: true },
-      ],
-    },
-    {
-      category: "Invoicing & Payment Automation",
-      features: [
-        { name: "Professional PDF Invoices", starter: true, pro: true },
-        { name: "Automated WhatsApp & Email Follow-ups", starter: false, pro: true },
-        { name: "Custom GST / Tax Settings", starter: true, pro: true },
-        { name: "Overdue Interest Calculation", starter: false, pro: true },
-      ],
-    },
-    {
-      category: "Analytics & Support",
-      features: [
-        { name: "Revenue Dashboard", starter: "Basic", pro: "Full Analytics" },
-        { name: "Team Seats", starter: "1 Seat", pro: "1 Seat" },
-        { name: "Support Level", starter: "Email", pro: "Priority 24/7" },
-      ],
-    },
-  ];
+  const comparisonCategories = COMPARISON_CATEGORIES;
 
   const faqs = [
     {
@@ -200,22 +137,20 @@ export default function PricingPage() {
             <div className="inline-flex items-center p-1.5 rounded-2xl bg-slate-100 dark:bg-gray-900/90 border border-slate-200 dark:border-gray-800/80 shadow-inner max-w-full overflow-x-auto gap-1">
               <button
                 onClick={() => setBillingCycle("monthly")}
-                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
-                  billingCycle === "monthly"
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${billingCycle === "monthly"
                     ? "bg-white dark:bg-gray-800 text-slate-900 dark:text-white shadow-md border border-slate-200/60 dark:border-white/10"
                     : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
+                  }`}
               >
                 Monthly
               </button>
 
               <button
                 onClick={() => setBillingCycle("quarterly")}
-                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
-                  billingCycle === "quarterly"
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${billingCycle === "quarterly"
                     ? "bg-white dark:bg-gray-800 text-slate-900 dark:text-white shadow-md border border-slate-200/60 dark:border-white/10"
                     : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
+                  }`}
               >
                 <span>Quarterly</span>
                 <span className="px-2 py-0.5 rounded-md bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 text-[10px] sm:text-xs font-bold border border-indigo-500/20">
@@ -225,11 +160,10 @@ export default function PricingPage() {
 
               <button
                 onClick={() => setBillingCycle("yearly")}
-                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${
-                  billingCycle === "yearly"
+                className={`px-4 sm:px-6 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all duration-200 flex items-center gap-2 whitespace-nowrap ${billingCycle === "yearly"
                     ? "bg-white dark:bg-gray-800 text-slate-900 dark:text-white shadow-md border border-slate-200/60 dark:border-white/10"
                     : "text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-200"
-                }`}
+                  }`}
               >
                 <span>Yearly</span>
                 <span className="px-2 py-0.5 rounded-md bg-purple-500/10 text-purple-600 dark:text-purple-400 text-[10px] sm:text-xs font-bold border border-purple-500/20">
@@ -247,146 +181,63 @@ export default function PricingPage() {
             const badge = getBadgeText(plan);
             const savings = getSavingsBadge(plan);
 
+            // Determine if active plan
+            const isCurrent = plan.highlighted
+              ? (storePlan === "PRO" && currentCycle?.toLowerCase() === billingCycle)
+              : (storePlan !== "PRO");
+
+            // CTA button parameters
+            let ctaText = plan.ctaText;
+            let ctaDisabled = false;
+            let onCtaClick: (() => void) | undefined = undefined;
+            let ctaHref: string | undefined = undefined;
+
+            if (plan.highlighted) {
+              if (isAuthenticated) {
+                if (isCurrent) {
+                  // Handled by PlanCard isCurrentPlan prop
+                } else {
+                  ctaText = storePlan === "PRO" ? "Change Billing Cycle" : "Get Pro Access";
+                  onCtaClick = handleUpgradeClick;
+                  ctaDisabled = isLoading;
+                }
+              } else {
+                ctaText = "Get Pro Access";
+                ctaHref = "/auth/signup";
+              }
+            } else {
+              if (isAuthenticated) {
+                if (isCurrent) {
+                  // Handled by PlanCard isCurrentPlan prop
+                } else {
+                  ctaText = "Go to Dashboard";
+                  ctaHref = "/dashboard";
+                }
+              } else {
+                ctaText = "Start Free";
+                ctaHref = "/auth/signup";
+              }
+            }
+
             return (
-              <div
+              <PlanCard
                 key={index}
-                className={`relative rounded-3xl p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 ${
-                  plan.highlighted
-                    ? `bg-slate-900 dark:bg-gray-900 text-white md:-translate-y-2 ${cycleColors.border}`
-                    : "bg-slate-50 dark:bg-gray-900/60 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5"
-                }`}
-              >
-                {badge && (
-                  <div className={`absolute -top-3.5 left-1/2 -translate-x-1/2 px-3.5 py-0.5 rounded-full ${cycleColors.badge} text-white text-[10px] sm:text-xs font-bold tracking-wider uppercase shadow-md whitespace-nowrap`}>
-                    {badge}
-                  </div>
-                )}
-
-                <div className="space-y-5 sm:space-y-6">
-                  <div>
-                    <h3 className="text-xl sm:text-2xl font-bold mb-1.5 sm:mb-2">{plan.name}</h3>
-                    <p
-                      className={`text-xs sm:text-sm leading-relaxed ${
-                        plan.highlighted ? "text-slate-300" : "text-slate-500 dark:text-slate-400"
-                      }`}
-                    >
-                      {plan.description}
-                    </p>
-                  </div>
-
-                  <div className="space-y-1">
-                    <div className="flex items-baseline gap-1.5 flex-wrap">
-                      <span className="text-4xl sm:text-5xl font-black tracking-tight">
-                        ${price}
-                      </span>
-                      <span
-                        className={`text-xs sm:text-sm ${
-                          plan.highlighted ? "text-slate-400" : "text-slate-500"
-                        }`}
-                      >
-                        /month {getBillingNote(plan, price)}
-                      </span>
-                    </div>
-                    {savings && (
-                      <div className="pt-1">
-                        <span
-                          className={`inline-block px-2.5 py-0.5 rounded-md text-xs font-bold border ${
-                            billingCycle === "yearly"
-                              ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                              : billingCycle === "quarterly"
-                              ? "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                              : "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                          }`}
-                        >
-                          {savings}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-
-                  <hr
-                    className={`border-t ${
-                      plan.highlighted ? "border-slate-800" : "border-slate-200 dark:border-gray-800"
-                    }`}
-                  />
-
-                  <ul className="space-y-3 sm:space-y-3.5">
-                    {plan.features.map((feat, fIdx) => (
-                      <li key={fIdx} className="flex items-start gap-3 text-xs sm:text-sm">
-                        <LuCheck
-                          className={`w-4 h-4 mt-0.5 flex-shrink-0 ${
-                            plan.highlighted ? cycleColors.checkmark : "text-brand-500"
-                          }`}
-                        />
-                        <span
-                          className={
-                            plan.highlighted
-                              ? "text-slate-200"
-                              : "text-slate-600 dark:text-slate-300"
-                          }
-                        >
-                          {feat}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="pt-6 sm:pt-8">
-                  {plan.highlighted ? (
-                    /* Pro Creator Plan */
-                    isAuthenticated ? (
-                      storePlan === "PRO" && currentCycle?.toLowerCase() === billingCycle ? (
-                        <div className={`w-full py-3.5 text-center text-xs sm:text-sm font-bold ${cycleColors.activePlan} border rounded-xl cursor-default`}>
-                          Current active plan
-                        </div>
-                      ) : (
-                        <button
-                          disabled={isLoading}
-                          onClick={handleUpgradeClick}
-                          className={`w-full inline-flex items-center justify-center py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all text-center ${cycleColors.btn} disabled:opacity-50 disabled:cursor-not-allowed`}
-                        >
-                          {isLoading
-                            ? "Processing..."
-                            : storePlan === "PRO"
-                            ? "Change Billing Cycle"
-                            : "Get Pro Access"}
-                        </button>
-                      )
-                    ) : (
-                      <Link
-                        href="/auth/signup"
-                        className={`w-full inline-flex items-center justify-center py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all text-center ${cycleColors.btn}`}
-                      >
-                        Get Pro Access
-                      </Link>
-                    )
-                  ) : (
-                    /* Starter Plan */
-                    isAuthenticated ? (
-                      storePlan === "PRO" ? (
-                        <Link
-                          href="/dashboard"
-                          className="w-full inline-flex items-center justify-center py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all text-center bg-slate-200 dark:bg-gray-800 hover:bg-slate-300 dark:hover:bg-gray-700 text-slate-900 dark:text-white"
-                        >
-                          Go to Dashboard
-                        </Link>
-                      ) : (
-                        <div className="w-full py-3.5 text-center text-xs sm:text-sm font-bold text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-gray-800/40 border border-slate-200 dark:border-gray-800 rounded-xl cursor-default">
-                          Current plan
-                        </div>
-                      )
-                    ) : (
-                      <Link
-                        href="/auth/signup"
-                        className="w-full inline-flex items-center justify-center py-3.5 px-6 rounded-xl font-bold text-xs sm:text-sm transition-all text-center bg-slate-200 dark:bg-gray-800 hover:bg-slate-300 dark:hover:bg-gray-700 text-slate-900 dark:text-white"
-                      >
-                        Start Free
-                      </Link>
-                    )
-                  )}
-                </div>
-              </div>
+                name={plan.name}
+                description={plan.description}
+                price={price}
+                period="month"
+                billedAs={getBillingNote(plan, price) || undefined}
+                savings={savings || undefined}
+                features={plan.features}
+                highlighted={plan.highlighted}
+                badgeText={badge}
+                isCurrentPlan={isAuthenticated && isCurrent}
+                ctaText={ctaText}
+                ctaHref={ctaHref}
+                onCtaClick={onCtaClick}
+                ctaDisabled={ctaDisabled}
+                themeClasses={cycleColors}
+              />
             );
           })}
         </div>

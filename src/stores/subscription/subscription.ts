@@ -14,6 +14,7 @@ export interface SubscriptionState {
   billingCycle: "MONTHLY" | "QUARTERLY" | "YEARLY" | null;
   planExpiresAt: string | null;
   status: string | null;
+  cancelAtPeriodEnd: boolean;
   transactions: Transaction[];
   isLoading: boolean;
   isProcessingPayment: boolean;
@@ -33,6 +34,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       billingCycle: null,
       planExpiresAt: null,
       status: null,
+      cancelAtPeriodEnd: false,
       transactions: [],
       isLoading: false,
       isProcessingPayment: false,
@@ -62,6 +64,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
               })
               : null,
             status: planData.status || null,
+            cancelAtPeriodEnd: planData.cancelAtPeriodEnd || false,
           });
         } catch (error) {
           console.error("Failed to fetch current plan:", error);
@@ -81,9 +84,10 @@ export const useSubscriptionStore = create<SubscriptionState>()(
         set({ isLoading: true });
         try {
           const state = useSubscriptionStore.getState();
-          if (state.plan === "PRO" && state.status !== "CANCELLED") {
-            await billingService.changePlan(cycle);
-          } else {
+          const isCancelledAndActive = state.plan === "PRO" && (state.status === "CANCELLED" || state.cancelAtPeriodEnd);
+          const isFree = state.plan === "FREE";
+
+          if (isCancelledAndActive || isFree) {
             const res = await billingService.createCheckoutSession(cycle);
             if (res && res.checkoutUrl) {
               // Set isProcessingPayment to true ONLY before redirecting
@@ -91,6 +95,8 @@ export const useSubscriptionStore = create<SubscriptionState>()(
               window.location.href = res.checkoutUrl;
               return;
             }
+          } else {
+            await billingService.changePlan(cycle);
           }
           const planData = await billingService.getCurrentPlan();
           set({
@@ -104,6 +110,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
               })
               : null,
             status: planData.status || null,
+            cancelAtPeriodEnd: planData.cancelAtPeriodEnd || false,
           });
           const txs = await billingService.getTransactions();
           set({ transactions: txs });
@@ -131,6 +138,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
               })
               : null,
             status: planData.status || null,
+            cancelAtPeriodEnd: planData.cancelAtPeriodEnd || false,
           });
           const txs = await billingService.getTransactions();
           set({ transactions: txs });
@@ -148,6 +156,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           billingCycle: null,
           planExpiresAt: null,
           status: null,
+          cancelAtPeriodEnd: false,
           transactions: [],
           isProcessingPayment: false,
         }),

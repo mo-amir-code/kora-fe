@@ -5,6 +5,8 @@ import Link from "next/link";
 import { LuArrowLeft, LuCheck, LuSparkles, LuWallet, LuShieldCheck, LuCreditCard, LuRefreshCw } from "react-icons/lu";
 import { useSubscriptionStore } from "@/stores/subscription/subscription";
 import toast from "react-hot-toast";
+import { AVAILABLE_PLANS } from "@/constants/billing";
+import { PlanCard } from "@/components/common";
 
 export default function SubscriptionSettingsPage() {
   const {
@@ -12,6 +14,7 @@ export default function SubscriptionSettingsPage() {
     billingCycle,
     planExpiresAt,
     status,
+    cancelAtPeriodEnd,
     transactions,
     upgrade,
     cancelSubscription,
@@ -78,7 +81,7 @@ export default function SubscriptionSettingsPage() {
       };
     }
     const cycleLabel = billingCycle === "MONTHLY" ? "Monthly" : billingCycle === "QUARTERLY" ? "Quarterly" : "Yearly";
-    const isCancelled = status === "CANCELLED";
+    const isCancelled = status === "CANCELLED" || cancelAtPeriodEnd;
     const statusSuffix = isCancelled ? " (Cancelled)" : "";
     const badgeColor =
       billingCycle === "YEARLY"
@@ -95,68 +98,7 @@ export default function SubscriptionSettingsPage() {
 
   const planDetails = getPlanDetails();
 
-  const availablePlans = [
-    {
-      cycle: "MONTHLY" as const,
-      name: "Pro Monthly",
-      price: "$15",
-      period: "month",
-      description: "Perfect for starting creators to streamline their deals.",
-      features: [
-        "Unlimited active brand deals",
-        "Automated WhatsApp & Email payment reminders",
-        "Custom branded PDF invoices",
-        "Real-time revenue & earnings analytics",
-        "Calendar deadline integrations",
-        "Priority 24/7 support",
-      ],
-      tier: 1,
-      tag: null,
-      savings: null,
-      yearlyComparison: "Total cost: $180/year",
-      billedAs: "billed month-to-month",
-    },
-    {
-      cycle: "QUARTERLY" as const,
-      name: "Pro Quarterly",
-      price: "$13",
-      period: "month",
-      description: "Best for growing creators scaling their sponsorships.",
-      features: [
-        "Unlimited active brand deals",
-        "Automated WhatsApp & Email payment reminders",
-        "Custom branded PDF invoices",
-        "Real-time revenue & earnings analytics",
-        "Calendar deadline integrations",
-        "Priority 24/7 support",
-      ],
-      tier: 2,
-      tag: "⭐ Most Popular",
-      savings: "Save 13% (1.6 Months FREE!)",
-      yearlyComparison: "Only $156/year (Save $24/yr)",
-      billedAs: "billed quarterly as $39",
-    },
-    {
-      cycle: "YEARLY" as const,
-      name: "Pro Yearly",
-      price: "$10.75",
-      period: "month",
-      description: "Elite platform access with the best possible rate.",
-      features: [
-        "Unlimited active brand deals",
-        "Automated WhatsApp & Email payment reminders",
-        "Custom branded PDF invoices",
-        "Real-time revenue & earnings analytics",
-        "Calendar deadline integrations",
-        "Priority 24/7 support",
-      ],
-      tier: 3,
-      tag: "🔥 Best Value",
-      savings: "Save 28% (3.4 Months FREE!)",
-      yearlyComparison: "Only $129/year (Save $51/yr)",
-      billedAs: "billed yearly as $129",
-    },
-  ];
+  const availablePlans = AVAILABLE_PLANS;
 
   const currentTier = plan === "FREE" ? 0 : billingCycle === "MONTHLY" ? 1 : billingCycle === "QUARTERLY" ? 2 : 3;
 
@@ -198,13 +140,13 @@ export default function SubscriptionSettingsPage() {
           {plan === "PRO" && planExpiresAt && (
             <p className="text-xs font-medium text-slate-400 dark:text-slate-500 flex items-center gap-1.5 pt-1">
               <LuRefreshCw className="w-3.5 h-3.5" />
-              {status === "CANCELLED" ? "Expires on:" : "Renews / Expires on:"} <strong className="text-slate-600 dark:text-slate-300">{planExpiresAt}</strong>
+              {(status === "CANCELLED" || cancelAtPeriodEnd) ? "Expires on:" : "Renews / Expires on:"} <strong className="text-slate-600 dark:text-slate-300">{planExpiresAt}</strong>
             </p>
           )}
         </div>
 
         <div className="flex items-center gap-4 relative z-10 shrink-0 w-full md:w-auto">
-          {plan === "PRO" && status !== "CANCELLED" ? (
+          {plan === "PRO" && status !== "CANCELLED" && !cancelAtPeriodEnd && (
             <button
               disabled={isLoading}
               onClick={handleCancel}
@@ -212,14 +154,21 @@ export default function SubscriptionSettingsPage() {
             >
               {isLoading ? "Processing..." : "Cancel Subscription"}
             </button>
-          ) : (
-            <div className="w-full md:w-auto flex items-center justify-center gap-2 text-xs font-bold text-brand-500 dark:text-brand-400 bg-brand-500/10 px-4 py-2 rounded-xl border border-brand-500/20">
-              <LuShieldCheck className="w-4 h-4 shrink-0" />
-              <span>Secure payments powered by Dodo Payments</span>
-            </div>
           )}
         </div>
       </div>
+
+      {cancelAtPeriodEnd && (
+        <div className="p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 text-xs sm:text-sm font-medium flex items-start gap-3">
+          <span className="text-lg">⚠️</span>
+          <div>
+            <p className="font-bold">Subscription cancellation scheduled</p>
+            <p className="mt-1 text-slate-500 dark:text-slate-400 leading-relaxed">
+              Your Pro features will remain active until <strong className="text-slate-700 dark:text-slate-300">{planExpiresAt}</strong>, after which your account will revert to the Free tier. You can resubscribe or upgrade to another plan at any time to prevent service interruption.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Upgrade Options Section */}
       <div className="space-y-6">
@@ -238,25 +187,22 @@ export default function SubscriptionSettingsPage() {
         {currentTier < 3 && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {availablePlans.map((planOption) => {
-              const isCurrent = currentTier === planOption.tier;
-              const isLower = currentTier > planOption.tier;
-              const canUpgrade = currentTier < planOption.tier;
+              const isCurrent = plan === "PRO" && billingCycle === planOption.cycle;
+              const isLower = planOption.tier < currentTier;
 
               const getStyles = () => {
-                if (planOption.cycle === "YEARLY") {
+                if (planOption.cycle === "MONTHLY") {
                   return {
-                    border: "border-purple-500 shadow-xl shadow-purple-500/5 ring-1 ring-purple-500",
-                    hoverBorder: "hover:border-purple-500/50",
-                    badge: "bg-purple-500",
-                    checkmark: "text-purple-500",
-                    btn: "bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/25",
-                    currentBadge: "text-purple-500 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20",
+                    border: "border-amber-500 shadow-xl shadow-amber-500/5 ring-1 ring-amber-500",
+                    badge: "bg-amber-500",
+                    checkmark: "text-amber-500",
+                    btn: "bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/25",
+                    currentBadge: "text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20",
                   };
                 }
                 if (planOption.cycle === "QUARTERLY") {
                   return {
                     border: "border-indigo-500 shadow-xl shadow-indigo-500/5 ring-1 ring-indigo-500",
-                    hoverBorder: "hover:border-indigo-500/50",
                     badge: "bg-indigo-500",
                     checkmark: "text-indigo-500",
                     btn: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25",
@@ -264,108 +210,42 @@ export default function SubscriptionSettingsPage() {
                   };
                 }
                 return {
-                  border: "border-amber-500 shadow-xl shadow-amber-500/5 ring-1 ring-amber-500",
-                  hoverBorder: "hover:border-amber-500/50",
-                  badge: "bg-amber-500",
-                  checkmark: "text-amber-500",
-                  btn: "bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/25",
-                  currentBadge: "text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20",
+                  border: "border-purple-500 shadow-xl shadow-purple-500/5 ring-1 ring-purple-500",
+                  badge: "bg-purple-500",
+                  checkmark: "text-purple-500",
+                  btn: "bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/25",
+                  currentBadge: "text-purple-500 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20",
                 };
               };
               const styles = getStyles();
 
+              let ctaText = "Upgrade Now";
+              if (isLoading) {
+                ctaText = "Processing...";
+              } else if (status === "CANCELLED" || cancelAtPeriodEnd) {
+                ctaText = isCurrent ? "Resubscribe" : "Upgrade / Subscribe";
+              }
+
               return (
-                <div
+                <PlanCard
                   key={planOption.cycle}
-                  className={`relative p-5 xs:p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border flex flex-col justify-between transition-all duration-300 ${
-                    isCurrent 
-                      ? styles.border 
-                      : `border-gray-150 dark:border-gray-800/80 ${styles.hoverBorder}`
-                  }`}
-                >
-                  {isCurrent ? (
-                    <span className={`absolute top-0 right-6 transform -translate-y-1/2 ${styles.badge} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider`}>
-                      Current Plan
-                    </span>
-                  ) : planOption.tag ? (
-                    <span className={`absolute top-0 right-6 transform -translate-y-1/2 ${styles.badge} text-white text-[10px] font-bold px-3 py-1 rounded-full uppercase tracking-wider shadow-md`}>
-                      {planOption.tag}
-                    </span>
-                  ) : null}
-                  <div className="space-y-4">
-                    <div>
-                      <h3 className="text-base sm:text-lg font-bold text-gray-900 dark:text-white">{planOption.name}</h3>
-                      <p className="text-xs text-gray-500 mt-1 leading-relaxed">{planOption.description}</p>
-                    </div>
-
-                    <div className="space-y-1">
-                      <div className="flex items-baseline gap-1">
-                        <span className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-white">{planOption.price}</span>
-                        <span className="text-xs text-gray-400 font-medium">/ {planOption.period}</span>
-                      </div>
-                      {planOption.billedAs && (
-                        <div className="text-[11px] text-gray-500 font-semibold leading-none">
-                          {planOption.billedAs}
-                        </div>
-                      )}
-                      {planOption.savings ? (
-                        <div className="pt-1.5 flex flex-wrap gap-1.5 items-center">
-                          <span className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold border ${
-                            planOption.cycle === "YEARLY"
-                              ? "bg-purple-500/10 text-purple-400 border-purple-500/20"
-                              : "bg-indigo-500/10 text-indigo-400 border-indigo-500/20"
-                          }`}>
-                            {planOption.savings}
-                          </span>
-                          <span className="text-[10px] text-gray-400 font-bold">
-                            {planOption.yearlyComparison}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="pt-1.5">
-                          <span className="text-[10px] text-gray-400 font-semibold">
-                            {planOption.yearlyComparison}
-                          </span>
-                        </div>
-                      )}
-                    </div>
-
-                    <ul className="space-y-2.5 pt-2 border-t border-gray-100 dark:border-gray-800">
-                      {planOption.features.map((feat, idx) => (
-                        <li key={idx} className="flex items-start gap-2.5 text-xs text-slate-600 dark:text-slate-400">
-                          <LuCheck className={`w-4 h-4 ${styles.checkmark} shrink-0 mt-0.5`} />
-                          <span>{feat}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  <div className="pt-6 mt-6">
-                    {isCurrent && status !== "CANCELLED" ? (
-                      <div className={`w-full py-2.5 text-center text-xs font-semibold ${styles.currentBadge} rounded-xl cursor-default`}>
-                        Current active subscription
-                      </div>
-                    ) : isLower && status !== "CANCELLED" ? (
-                      <div className="w-full py-2.5 text-center text-xs font-semibold text-gray-400 bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl cursor-not-allowed">
-                        Lower tier (active plan takes precedence)
-                      </div>
-                    ) : (
-                      <button
-                        disabled={isLoading}
-                        onClick={() => handleUpgrade(planOption.cycle)}
-                        className={`w-full py-2.5 ${styles.btn} text-xs font-semibold rounded-xl active:scale-98 transition-all disabled:opacity-50 disabled:cursor-not-allowed`}
-                      >
-                        {isLoading 
-                          ? "Processing..." 
-                          : status === "CANCELLED"
-                            ? isCurrent 
-                              ? "Resubscribe" 
-                              : "Upgrade / Subscribe"
-                            : "Upgrade Now"}
-                      </button>
-                    )}
-                  </div>
-                </div>
+                  name={planOption.name}
+                  description={planOption.description}
+                  price={planOption.price}
+                  period={planOption.period}
+                  billedAs={planOption.billedAs || undefined}
+                  savings={planOption.savings || undefined}
+                  yearlyComparison={planOption.yearlyComparison || undefined}
+                  features={planOption.features}
+                  isCurrentPlan={isCurrent && status !== "CANCELLED" && !cancelAtPeriodEnd}
+                  isLowerTier={isLower && status !== "CANCELLED" && !cancelAtPeriodEnd}
+                  badgeText={isCurrent ? "Current Plan" : planOption.tag}
+                  ctaText={ctaText}
+                  onCtaClick={() => handleUpgrade(planOption.cycle)}
+                  ctaDisabled={isLoading}
+                  themeClasses={styles}
+                  cardClassName={isCurrent ? "" : "border-gray-150 dark:border-gray-850/80 hover:border-gray-500/50"}
+                />
               );
             })}
           </div>
