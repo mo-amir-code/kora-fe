@@ -19,11 +19,7 @@ import { AddPaymentEventModal } from "@/components/dashboard/payments/AddPayment
 import { useDealDetail, useUpdateDeliverables, useUpdateDeal, useAddDealActivity } from "@/hooks/useDeals";
 
 import { formatCurrencyAmount } from "@/lib/currency";
-
-function formatDate(dateStr: string | null): string {
-  if (!dateStr) return "—";
-  return new Date(dateStr).toLocaleDateString("en-IN", { month: "short", day: "numeric", year: "numeric" });
-}
+import { formatDateMedium, getTimeLeft, formatDateTime } from "@/lib/date";
 
 function formatAmount(amount: string | null, currency: string): string {
   if (!amount || parseFloat(amount) === 0) return "—";
@@ -44,17 +40,6 @@ function getStageLabel(stage: string): string {
     CANCELLED: "Cancelled",
   };
   return labels[stage] ?? stage;
-}
-
-function getTimeLeft(dueDate: string | null): string {
-  if (!dueDate) return "No due date";
-  const due = new Date(dueDate);
-  const now = new Date();
-  const diffMs = due.getTime() - now.getTime();
-  const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays < 0) return `${Math.abs(diffDays)} days overdue`;
-  if (diffDays === 0) return "Due today";
-  return `${diffDays} day${diffDays > 1 ? "s" : ""} remaining`;
 }
 
 export default function DealDetailsPage({ params }: { params: Promise<{ dealId: string }> }) {
@@ -144,7 +129,7 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
             id: a.id,
             title: a.type.replace(/_/g, " "),
             description: a.body ?? "",
-            timestamp: new Date(a.createdAt).toLocaleString("en-IN", { month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit" }),
+            timestamp: formatDateTime(a.createdAt),
             status: "completed" as const,
           }))} />
         </div>
@@ -152,9 +137,9 @@ export default function DealDetailsPage({ params }: { params: Promise<{ dealId: 
         {/* Right Column: Stats & Actions */}
         <div className="space-y-6 sm:space-y-8">
           <DealStats
-            dueDate={formatDate(deal.paymentDueDate)}
+            dueDate={formatDateMedium(deal.paymentDueDate)}
             timeLeft={getTimeLeft(deal.paymentDueDate)}
-            createdDate={formatDate(deal.createdAt)}
+            createdDate={formatDateMedium(deal.createdAt)}
             createdYear={new Date(deal.createdAt).getFullYear().toString()}
           />
 

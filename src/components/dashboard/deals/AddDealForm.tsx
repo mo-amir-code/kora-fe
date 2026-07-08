@@ -18,6 +18,7 @@ import { useCreateDeal, useUpdateDeal } from "@/hooks/useDeals";
 import { useBrandsList } from "@/hooks/useBrands";
 import { useCurrency } from "@/hooks/useCurrency";
 import { getErrorMessage } from "@/hooks/useAuth";
+import { Button, InputField } from "@/components/ui";
 
 interface Deliverable {
   id: string;
@@ -221,15 +222,26 @@ const AddDealForm = ({ onSave, onCancel, editDeal }: AddDealFormProps) => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-8">
-            <div className="md:col-span-2 lg:col-span-1 space-y-2">
-              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Deal Title <span className="text-rose-500">*</span></label>
-              <input type="text" name="title" value={formData.title} onChange={handleInputChange} placeholder="e.g., Q4 Tech Review" className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" />
-            </div>
+            <InputField
+              type="text"
+              name="title"
+              value={formData.title}
+              onChange={handleInputChange}
+              placeholder="e.g., Q4 Tech Review"
+              label={<span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Deal Title</span>}
+              required
+              containerClassName="md:col-span-2 lg:col-span-1"
+            />
             <div className="grid grid-cols-2 gap-4 lg:col-span-2">
-              <div className="space-y-2">
-                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Amount</label>
-                <input type="number" name="amount" value={formData.amount} onChange={handleInputChange} placeholder="0.00" className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-3.5 text-sm font-bold text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" />
-              </div>
+              <InputField
+                type="number"
+                name="amount"
+                value={formData.amount}
+                onChange={handleInputChange}
+                placeholder="0.00"
+                label={<span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Amount</span>}
+                className="font-bold"
+              />
               <div className="space-y-2">
                 <div className="flex items-center gap-1.5 pl-1">
                   <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest">Currency</label>
@@ -310,13 +322,16 @@ const AddDealForm = ({ onSave, onCancel, editDeal }: AddDealFormProps) => {
                   <LuChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" size={16} />
                 </div>
               </div>
-              <div className="space-y-2">
-                <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Payment Due Date</label>
-                <div className="relative">
-                  <LuCalendar size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-                  <input type="date" name="paymentDueDate" value={formData.paymentDueDate} onChange={handleInputChange} onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()} className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all cursor-pointer" />
-                </div>
-              </div>
+              <InputField
+                type="date"
+                name="paymentDueDate"
+                value={formData.paymentDueDate}
+                onChange={handleInputChange}
+                onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()}
+                label={<span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Payment Due Date</span>}
+                icon={<LuCalendar size={16} />}
+                className="cursor-pointer"
+              />
             </div>
 
             <div className="lg:col-span-2 space-y-4">
@@ -385,13 +400,15 @@ const AddDealForm = ({ onSave, onCancel, editDeal }: AddDealFormProps) => {
             <h2 className="text-sm sm:text-lg font-bold text-gray-900 dark:text-white uppercase tracking-wider">Additional Info</h2>
           </div>
           <div className="space-y-5">
-            <div className="space-y-2">
-              <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Contract URL</label>
-              <div className="relative">
-                <LuLink size={16} className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
-                <input type="text" name="contractUrl" value={formData.contractUrl} onChange={handleInputChange} placeholder="https://drive.google.com/..." className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl pl-10 pr-4 py-3.5 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all" />
-              </div>
-            </div>
+            <InputField
+              type="text"
+              name="contractUrl"
+              value={formData.contractUrl}
+              onChange={handleInputChange}
+              placeholder="https://drive.google.com/..."
+              label={<span className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Contract URL</span>}
+              icon={<LuLink size={16} />}
+            />
             <div className="space-y-2">
               <label className="text-[10px] sm:text-[11px] font-bold text-gray-400 uppercase tracking-widest pl-1">Internal Notes</label>
               <textarea rows={4} name="notes" value={formData.notes} onChange={handleInputChange} placeholder="Add guidelines or key points..." className="w-full bg-gray-50 dark:bg-gray-800/40 border border-gray-200 dark:border-gray-800 rounded-xl px-4 py-4 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all resize-none" />
@@ -402,12 +419,20 @@ const AddDealForm = ({ onSave, onCancel, editDeal }: AddDealFormProps) => {
         {/* Actions */}
         <div className="flex flex-col sm:flex-row items-center justify-end gap-3 sm:gap-4 pt-4 pb-10">
           {formError && <p className="text-red-400 text-xs font-medium mr-auto">{formError}</p>}
-          <button type="button" onClick={onCancel} className="w-full sm:w-auto px-10 py-3.5 rounded-xl text-sm font-bold text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-all uppercase tracking-widest">
+          <Button
+            variant="neutral"
+            onClick={onCancel}
+            className="w-full sm:w-auto px-10 py-3.5 text-sm font-bold uppercase tracking-widest"
+          >
             Cancel
-          </button>
-          <button type="button" onClick={handleSave} disabled={createDeal.isPending || updateDeal.isPending} className="w-full sm:w-auto px-10 py-3.5 rounded-xl bg-brand-600 hover:bg-brand-700 text-white text-sm font-bold shadow-xl shadow-brand-500/20 transition-all active:scale-[0.98] flex items-center justify-center gap-3 uppercase tracking-widest disabled:opacity-50 disabled:cursor-not-allowed">
-            {(createDeal.isPending || updateDeal.isPending) ? <><LuLoader size={18} className="animate-spin" /> Saving...</> : <><LuSave size={18} strokeWidth={2.5} /> {isEditMode ? "Update Deal" : "Save Deal"}</>}
-          </button>
+          </Button>
+          <Button
+            onClick={handleSave}
+            isLoading={createDeal.isPending || updateDeal.isPending}
+            className="w-full sm:w-auto px-10 py-3.5 text-sm font-bold uppercase tracking-widest"
+          >
+            {isEditMode ? "Update Deal" : "Save Deal"}
+          </Button>
         </div>
       </div>
     </div>

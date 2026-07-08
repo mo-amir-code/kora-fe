@@ -11,6 +11,7 @@ import { useEffect, useState } from "react"
 import { DeadlineDetailsModal } from "@/components/dashboard/home/deadline"
 import api from "@/lib/axios"
 import { useCurrency } from "@/hooks/useCurrency"
+import { getDueDateStatus, getDueDateStatusLabel, formatDateMedium } from "@/lib/date"
 
 const DashboardHome = () => {
   const [data, setData] = useState<any>(null)
@@ -33,29 +34,6 @@ const DashboardHome = () => {
     }
     fetchDashboard()
   }, [])
-
-  const getStatus = (dueDate: string): "today" | "tomorrow" | "upcoming" => {
-    const d = new Date(dueDate)
-    const now = new Date()
-    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
-    const target = new Date(d.getFullYear(), d.getMonth(), d.getDate())
-    if (isNaN(target.getTime())) return "upcoming"
-
-    const diffTime = target.getTime() - today.getTime()
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
-
-    if (diffDays <= 0) return "today"
-    if (diffDays === 1) return "tomorrow"
-    return "upcoming"
-  }
-
-  const getStatusLabel = (dueDate: string): string => {
-    if (!dueDate) return "Pending"
-    const status = getStatus(dueDate)
-    if (status === "today") return "Due Today"
-    if (status === "tomorrow") return "Due Tomorrow"
-    return new Date(dueDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
-  }
 
   const formatCurrency = (amount: number) => {
     return format(amount);
@@ -88,7 +66,7 @@ const DashboardHome = () => {
       type: mapActivityTypeToUI(act.type),
       entityName: act.deal?.title || "Activity",
       prefix: act.type.replace(/_/g, ' ').toLowerCase(),
-      time: new Date(act.createdAt).toLocaleDateString(),
+      time: formatDateMedium(act.createdAt),
       icon: getActivityIcon(act.type),
       amount: act.amount ? formatCurrency(act.amount) : undefined
     }))
@@ -178,8 +156,8 @@ const DashboardHome = () => {
                     brandName={group.brand.name}
                     itemCount={group.items.length}
                     itemType={group.items.length === 1 ? (group.items[0]?.type || 'Deliverable') : 'Deliverables'}
-                    status={group.dueDate ? getStatus(group.dueDate) : 'upcoming'}
-                    statusLabel={group.dueDate ? getStatusLabel(group.dueDate) : 'Pending'}
+                    status={group.dueDate ? getDueDateStatus(group.dueDate) : 'upcoming'}
+                    statusLabel={group.dueDate ? getDueDateStatusLabel(group.dueDate) : 'Pending'}
                     avatar={group.brand.name.charAt(0)}
                     avatarUrl={group.brand.logoUrl || undefined}
                     items={group.items}

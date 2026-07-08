@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { useGoogleAuth, useSignupSendOtp, useSignupVerifyOtp, getErrorMessage } from "@/hooks/useAuth";
+import { Button, InputField } from "@/components/ui";
 
 type Step = "form" | "otp";
 
@@ -141,23 +142,14 @@ const SignUpFormContent: React.FC = () => {
           )}
 
           {/* Submit Button */}
-          <button
+          <Button
             type="submit"
-            disabled={otp.join("").length !== 6 || verifyOtp.isPending}
-            className="w-full py-2.5 sm:py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-[0.98] min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+            disabled={otp.join("").length !== 6}
+            isLoading={verifyOtp.isPending}
+            className="w-full py-2.5 sm:py-3 rounded-lg text-sm min-h-[44px] font-semibold"
           >
-            {verifyOtp.isPending ? (
-              <span className="flex items-center justify-center gap-2">
-                <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-                </svg>
-                Verifying...
-              </span>
-            ) : (
-              "Submit"
-            )}
-          </button>
+            Submit
+          </Button>
         </form>
 
         {/* Resend */}
@@ -197,14 +189,14 @@ const SignUpFormContent: React.FC = () => {
       </p>
 
       {/* Google Auth */}
-      <button
-        type="button"
+      <Button
+        variant="outline"
         onClick={handleGoogleAuth}
-        className="w-full flex items-center justify-center gap-2.5 sm:gap-3 px-4 py-2.5 sm:py-3 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-gray-950 text-slate-700 dark:text-white text-xs sm:text-sm font-medium hover:bg-slate-100 dark:hover:bg-gray-900 active:bg-slate-100 dark:active:bg-gray-900 transition-colors duration-200 min-h-[44px] cursor-pointer"
+        className="w-full flex items-center justify-center gap-2.5 sm:gap-3 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-gray-950 text-slate-700 dark:text-white text-xs sm:text-sm font-medium hover:bg-slate-100 dark:hover:bg-gray-900 active:bg-slate-100 dark:active:bg-gray-900 duration-200 min-h-[44px]"
       >
         <FcGoogle className="w-4 h-4 sm:w-5 sm:h-5" />
         Continue with Google
-      </button>
+      </Button>
 
       {/* Divider */}
       <div className="flex items-center gap-3 sm:gap-4 my-3 sm:my-6">
@@ -217,101 +209,75 @@ const SignUpFormContent: React.FC = () => {
 
       <form onSubmit={handleSendOtp} className="space-y-3 sm:space-y-4">
         {/* Full Name */}
-        <div>
-          <label className="block text-slate-700 dark:text-gray-300 text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">
-            Full Name
-          </label>
-          <input
-            type="text"
-            id="signup-name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            placeholder="Arjun Sharma"
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-slate-50 dark:bg-gray-950 border border-slate-300 dark:border-gray-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 min-h-[44px]"
-          />
-        </div>
+        <InputField
+          type="text"
+          id="signup-name"
+          value={name}
+          onChange={(e) => setName(e.target.value)}
+          placeholder="Arjun Sharma"
+          label="Full Name"
+          className="rounded-lg bg-slate-50 dark:bg-gray-950 border-slate-300 dark:border-gray-800 placeholder-slate-400 dark:placeholder-gray-500 min-h-[44px]"
+        />
 
         {/* Email */}
-        <div>
-          <label className="block text-slate-700 dark:text-gray-300 text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="signup-email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="arjun@example.com"
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-slate-50 dark:bg-gray-950 border border-slate-300 dark:border-gray-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 min-h-[44px]"
-          />
-        </div>
+        <InputField
+          type="email"
+          id="signup-email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="arjun@example.com"
+          label="Email Address"
+          className="rounded-lg bg-slate-50 dark:bg-gray-950 border-slate-300 dark:border-gray-800 placeholder-slate-400 dark:placeholder-gray-500 min-h-[44px]"
+        />
 
         {/* Password */}
-        <div>
-          <label className="block text-slate-700 dark:text-gray-300 text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">
-            Password
-          </label>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              id="signup-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-slate-50 dark:bg-gray-950 border border-slate-300 dark:border-gray-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 pr-11 sm:pr-12 min-h-[44px]"
-            />
+        <InputField
+          type={showPassword ? "text" : "password"}
+          id="signup-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          label="Password"
+          className="rounded-lg bg-slate-50 dark:bg-gray-950 border-slate-300 dark:border-gray-800 placeholder-slate-400 dark:placeholder-gray-500 min-h-[44px]"
+          rightElement={
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
+              className="text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
             >
               {showPassword ? <HiOutlineEyeOff size={20} /> : <HiOutlineEye size={20} />}
             </button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Confirm Password */}
-        <div>
-          <label className="block text-slate-700 dark:text-gray-300 text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">
-            Confirm Password
-          </label>
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              id="signup-confirm-password"
-              value={confirmPassword}
-              onChange={(e) => setConfirmPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-slate-50 dark:bg-gray-950 border border-slate-300 dark:border-gray-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 pr-11 sm:pr-12 min-h-[44px]"
-            />
+        <InputField
+          type={showConfirmPassword ? "text" : "password"}
+          id="signup-confirm-password"
+          value={confirmPassword}
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="••••••••"
+          label="Confirm Password"
+          className="rounded-lg bg-slate-50 dark:bg-gray-950 border-slate-300 dark:border-gray-800 placeholder-slate-400 dark:placeholder-gray-500 min-h-[44px]"
+          rightElement={
             <button
               type="button"
               onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
+              className="text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
             >
               {showConfirmPassword ? <HiOutlineEyeOff size={20} /> : <HiOutlineEye size={20} />}
             </button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Submit */}
-        <button
+        <Button
           type="submit"
-          disabled={sendOtp.isPending}
-          className="w-full py-2.5 sm:py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-[0.98] mt-1 min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          isLoading={sendOtp.isPending}
+          className="w-full py-2.5 sm:py-3 rounded-lg text-sm min-h-[44px] font-semibold mt-1"
         >
-          {sendOtp.isPending ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
-              </svg>
-              Sending OTP...
-            </span>
-          ) : (
-            "Send OTP"
-          )}
-        </button>
+          Send OTP
+        </Button>
       </form>
 
       {/* Error display */}

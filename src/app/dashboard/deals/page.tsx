@@ -8,6 +8,7 @@ import type { DealStatus, Platform } from "@/components/dashboard/deals/kanban";
 import { useDealsList } from "@/hooks/useDeals";
 import type { Deal } from "@/services/deal.service";
 import { formatCurrencyAmount } from "@/lib/currency";
+import { formatDateShort } from "@/lib/date";
 
 const DEAL_STAGES = [
   { value: "all", label: "All Stages" },
@@ -68,11 +69,6 @@ function formatCurrency(amount: string | null, currency: string): string {
   return formatCurrencyAmount(amount, currency);
 }
 
-function formatDate(dateStr: string): string {
-  const date = new Date(dateStr);
-  return date.toLocaleDateString("en-IN", { month: "short", day: "numeric" });
-}
-
 function mapDealToCard(deal: Deal) {
   const completedDeliverables = deal.deliverables.filter((d) => d.isCompleted).length;
   const totalDeliverables = deal.deliverables.length;
@@ -86,7 +82,7 @@ function mapDealToCard(deal: Deal) {
     statusLabel: mapStageToLabel(deal.stage),
     platforms: mapPlatforms(deal.platforms),
     deliverables: totalDeliverables > 0 ? { current: completedDeliverables, total: totalDeliverables } : undefined,
-    date: formatDate(deal.createdAt),
+    date: formatDateShort(deal.createdAt),
     assigneeName: deal.contact?.name ?? deal.brand.name,
   };
 }

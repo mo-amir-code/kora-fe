@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { FcGoogle } from "react-icons/fc";
 import { HiOutlineEye, HiOutlineEyeOff } from "react-icons/hi";
 import { useGoogleAuth, useSignin, getErrorMessage } from "@/hooks/useAuth";
+import { Button, InputField } from "@/components/ui";
 
 const SignInForm: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -32,14 +33,14 @@ const SignInForm: React.FC = () => {
       </p>
 
       {/* Google Auth */}
-      <button
-        type="button"
+      <Button
+        variant="outline"
         onClick={handleGoogleAuth}
-        className="w-full flex items-center justify-center gap-2.5 sm:gap-3 px-4 py-2.5 sm:py-3 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-gray-950 text-slate-700 dark:text-white text-xs sm:text-sm font-medium hover:bg-slate-100 dark:hover:bg-gray-900 active:bg-slate-100 dark:active:bg-gray-900 transition-colors duration-200 min-h-[44px]"
+        className="w-full flex items-center justify-center gap-2.5 sm:gap-3 rounded-lg border border-slate-300 dark:border-gray-800 bg-white dark:bg-gray-950 text-slate-700 dark:text-white text-xs sm:text-sm font-medium hover:bg-slate-100 dark:hover:bg-gray-900 active:bg-slate-100 dark:active:bg-gray-900 duration-200 min-h-[44px] py-2.5 sm:py-3 px-4"
       >
         <FcGoogle className="w-4 h-4 sm:w-5 sm:h-5" />
         Continue with Google
-      </button>
+      </Button>
 
       {/* Divider */}
       <div className="flex items-center gap-3 sm:gap-4 my-4 sm:my-6">
@@ -52,46 +53,40 @@ const SignInForm: React.FC = () => {
 
       <form onSubmit={handleSubmit} className="space-y-3.5 sm:space-y-5">
         {/* Email */}
-        <div>
-          <label className="block text-slate-700 dark:text-gray-300 text-xs sm:text-sm font-medium mb-1.5 sm:mb-2">
-            Email Address
-          </label>
-          <input
-            type="email"
-            id="signin-email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="arjun@example.com"
-            className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-slate-50 dark:bg-gray-950 border border-slate-300 dark:border-gray-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 min-h-[44px]"
-          />
-        </div>
+        <InputField
+          type="email"
+          id="signin-email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          placeholder="arjun@example.com"
+          label="Email Address"
+          className="rounded-lg bg-slate-50 dark:bg-gray-950 border-slate-300 dark:border-gray-800 placeholder-slate-400 dark:placeholder-gray-500 min-h-[44px]"
+        />
 
         {/* Password */}
-        <div>
-          <div className="flex items-center justify-between mb-1.5 sm:mb-2">
-            <label className="text-slate-700 dark:text-gray-300 text-xs sm:text-sm font-medium">
-              Password
-            </label>
-            <Link
-              href="/auth/forgot-password"
-              className="text-brand-500 text-xs font-medium hover:text-brand-400 transition-colors"
-            >
-              Forgot password?
-            </Link>
-          </div>
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              id="signin-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              className="w-full px-3 sm:px-4 py-2.5 sm:py-3 rounded-lg bg-slate-50 dark:bg-gray-950 border border-slate-300 dark:border-gray-800 text-slate-900 dark:text-white text-sm placeholder-slate-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500/40 focus:border-brand-500 transition-all duration-200 pr-11 sm:pr-12 min-h-[44px]"
-            />
+        <InputField
+          type={showPassword ? "text" : "password"}
+          id="signin-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="••••••••"
+          className="rounded-lg bg-slate-50 dark:bg-gray-950 border-slate-300 dark:border-gray-800 placeholder-slate-400 dark:placeholder-gray-500 min-h-[44px]"
+          label={
+            <div className="flex items-center justify-between w-full">
+              <span className="text-slate-700 dark:text-gray-300 text-xs sm:text-sm font-medium">Password</span>
+              <Link
+                href="/auth/forgot-password"
+                className="text-brand-500 text-xs font-medium hover:text-brand-400 transition-colors"
+              >
+                Forgot password?
+              </Link>
+            </div>
+          }
+          rightElement={
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
+              className="text-slate-400 dark:text-gray-500 hover:text-slate-600 dark:hover:text-gray-300 transition-colors"
             >
               {showPassword ? (
                 <HiOutlineEyeOff size={20} />
@@ -99,39 +94,17 @@ const SignInForm: React.FC = () => {
                 <HiOutlineEye size={20} />
               )}
             </button>
-          </div>
-        </div>
+          }
+        />
 
         {/* Submit */}
-        <button
+        <Button
           type="submit"
-          disabled={signin.isPending}
-          className="w-full py-2.5 sm:py-3 rounded-lg bg-brand-500 hover:bg-brand-600 text-white text-sm font-semibold transition-all duration-200 shadow-lg shadow-brand-500/20 hover:shadow-brand-500/30 active:scale-[0.98] min-h-[44px] disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
+          isLoading={signin.isPending}
+          className="w-full py-2.5 sm:py-3 rounded-lg text-sm min-h-[44px] font-semibold"
         >
-          {signin.isPending ? (
-            <span className="flex items-center justify-center gap-2">
-              <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
-                <circle
-                  className="opacity-25"
-                  cx="12"
-                  cy="12"
-                  r="10"
-                  stroke="currentColor"
-                  strokeWidth="4"
-                  fill="none"
-                />
-                <path
-                  className="opacity-75"
-                  fill="currentColor"
-                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-                />
-              </svg>
-              Signing in...
-            </span>
-          ) : (
-            "Sign in"
-          )}
-        </button>
+          Sign in
+        </Button>
       </form>
 
       {signin.error && (
