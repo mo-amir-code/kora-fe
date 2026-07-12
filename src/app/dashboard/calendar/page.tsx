@@ -11,9 +11,11 @@ import {
 } from "date-fns";
 import { CalendarHeader, CalendarGrid, CalendarSidebar } from "@/components/dashboard/calendar";
 import { useCalendarEvents } from "@/hooks/useCalendar";
-import { LoadingSpinner } from "@/components/common";
+import { LoadingSpinner, UpgradeRequired } from "@/components/common";
+import { useSubscriptionStore } from "@/stores/subscription/subscription";
 
 const CalendarPage = () => {
+  const plan = useSubscriptionStore((state) => state.plan);
   const today = useMemo(() => new Date(), []);
   const [currentDate, setCurrentDate] = useState(today);
   const [view, setView] = useState<"month" | "week">("month");
@@ -47,6 +49,23 @@ const CalendarPage = () => {
 
   // Parse ISO date strings from backend into Date objects
   const events = rawEvents?.map(event => ({ ...event, date: new Date(event.date) })) ?? [];
+
+  if (plan !== "PRO") {
+    return (
+      <div className="p-4 sm:p-10 min-h-[500px] flex items-center justify-center animate-in fade-in duration-500">
+        <UpgradeRequired
+          title="Unlock Content Calendar"
+          description="Keep track of deal deadlines, schedule deliverable dates, and stay organized across platforms with our interactive Content Calendar."
+          features={[
+            "Sync deliverable dates directly from brand deals",
+            "Visual month and week views of all deadlines",
+            "Automatic color-coding by deal status",
+            "Cross-platform platform filter",
+          ]}
+        />
+      </div>
+    );
+  }
 
   if (isLoading) {
     return <LoadingSpinner />;

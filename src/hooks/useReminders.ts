@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 export interface ReminderRule {
   id: string;
   userId: string;
+  templateId: string | null;
   name: string | null;
   triggerType: string;
   offsetValue: number;
@@ -17,6 +18,11 @@ export interface ReminderRule {
   channelPush: boolean;
   isActive: boolean;
   createdAt: string;
+  template?: {
+    id: string;
+    name: string;
+    body: string;
+  } | null;
 }
 
 export const useRemindersList = () => {

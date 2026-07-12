@@ -9,7 +9,7 @@ import { RuleDistribution } from "@/components/dashboard/settings/reminders/Rule
 import { RuleTemplate } from "@/components/dashboard/settings/reminders/RuleTemplate";
 import { RuleSummary } from "@/components/dashboard/settings/reminders/RuleSummary";
 import { ProTip } from "@/components/dashboard/settings/reminders/ProTip";
-import { FollowUpManager } from "@/components/dashboard/settings/reminders/FollowUpManager";
+import { FollowUpManager, parseDurationToMinutes } from "@/components/dashboard/settings/reminders/FollowUpManager";
 import { useRemindersList, useUpdateReminder } from "@/hooks/useReminders";
 import { useTemplates } from "@/hooks/useTemplates";
 
@@ -28,6 +28,7 @@ export default function EditReminderPage() {
     channels: string[];
     recipients: string[];
     message: string;
+    templateId: string | null;
     nextFollowUps: string[];
   }>({
     name: "",
@@ -37,6 +38,7 @@ export default function EditReminderPage() {
     channels: ["whatsapp"],
     recipients: ["primary", "me"],
     message: "",
+    templateId: null,
     nextFollowUps: []
   });
 
@@ -54,7 +56,8 @@ export default function EditReminderPage() {
             ...(rule.channelWhatsapp ? ["whatsapp"] : [])
           ],
           recipients: rule.recipients && rule.recipients.length > 0 ? rule.recipients : ["primary", "me"],
-          message: rule.messageTemplate || "",
+          message: rule.templateId && rule.template ? rule.template.body : (rule.messageTemplate || ""),
+          templateId: rule.templateId || null,
           nextFollowUps: rule.nextFollowUps || []
         });
       }
@@ -63,10 +66,6 @@ export default function EditReminderPage() {
 
   const handleUpdate = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleTemplateSelect = (content: string) => {
-    handleUpdate("message", content);
   };
 
   const handleSubmit = () => {
@@ -82,7 +81,8 @@ export default function EditReminderPage() {
         channelEmail: formData.channels.includes("email"),
         channelWhatsapp: formData.channels.includes("whatsapp"),
         channelPush: formData.recipients.includes("me"),
-        messageTemplate: formData.message
+        messageTemplate: formData.templateId ? null : formData.message,
+        templateId: formData.templateId
       }
     }, {
       onSuccess: () => {
@@ -153,10 +153,9 @@ export default function EditReminderPage() {
           />
 
           <RuleTemplate 
-             data={{ message: formData.message }}
+             data={{ message: formData.message, templateId: formData.templateId }}
              templates={templates}
              onChange={handleUpdate}
-             onTemplateSelect={handleTemplateSelect}
            />
         </div>
 
@@ -166,6 +165,7 @@ export default function EditReminderPage() {
             data={formData} 
             onSave={handleSubmit}
             isSaving={updateMutation.isPending}
+            disabled={formData.nextFollowUps.some(f => parseDurationToMinutes(f) < 30)}
           />
           <ProTip />
         </div>

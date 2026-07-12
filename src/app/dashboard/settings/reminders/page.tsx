@@ -9,6 +9,8 @@ import toast from "react-hot-toast";
 
 import { useRemindersList, useToggleReminder, useDeleteReminder, ReminderRule } from "@/hooks/useReminders";
 import { useRouter } from "next/navigation";
+import { useSubscriptionStore } from "@/stores/subscription/subscription";
+import { LuLock } from "react-icons/lu";
 
 const getTriggerLabel = (type: string) => {
   switch (type) {
@@ -23,6 +25,7 @@ const getTriggerLabel = (type: string) => {
 
 export default function RemindersPage() {
   const router = useRouter();
+  const plan = useSubscriptionStore((state) => state.plan);
   const { data: rules = [], isLoading } = useRemindersList();
   const toggleMutation = useToggleReminder();
   const deleteMutation = useDeleteReminder();
@@ -65,13 +68,23 @@ export default function RemindersPage() {
           </div>
         </div>
 
-        <Link 
-          href="/dashboard/settings/reminders/create"
-          className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-brand-500 text-white text-sm font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all active:scale-[0.98]"
-        >
-          <LuPlus size={20} strokeWidth={2.5} />
-          Create New Rule
-        </Link>
+        {plan !== "PRO" ? (
+          <Link 
+            href="/dashboard/settings/subscription"
+            className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-slate-200 dark:bg-gray-800 text-slate-700 dark:text-slate-200 text-sm font-bold border border-slate-300 dark:border-gray-700 hover:bg-slate-300 dark:hover:bg-gray-700 transition-all active:scale-[0.98]"
+          >
+            <LuLock size={16} />
+            Upgrade to Create Rules
+          </Link>
+        ) : (
+          <Link 
+            href="/dashboard/settings/reminders/create"
+            className="flex items-center justify-center gap-2 px-6 py-3.5 rounded-2xl bg-brand-500 text-white text-sm font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all active:scale-[0.98]"
+          >
+            <LuPlus size={20} strokeWidth={2.5} />
+            Create New Rule
+          </Link>
+        )}
       </div>
 
       {/* Rules Grid */}
@@ -90,22 +103,40 @@ export default function RemindersPage() {
             onToggle={() => toggleRule(rule.id, rule.isActive)}
             onEdit={() => router.push(`/dashboard/settings/reminders/edit/${rule.id}`)}
             onDelete={() => setRuleToDelete(rule.id)}
+            readOnly={plan !== "PRO"}
           />
         ))}
 
         {/* Create Custom Rule Card */}
-        <Link 
-          href="/dashboard/settings/reminders/create"
-          className="group relative h-full min-h-[220px] rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-brand-500/50 hover:bg-brand-500/[0.02] transition-all flex flex-col items-center justify-center gap-4 py-8"
-        >
-          <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-brand-500 group-hover:bg-brand-50 dark:group-hover:bg-brand-500/10 transition-all">
-            <LuPlus size={28} />
-          </div>
-          <div className="text-center space-y-1">
-            <h4 className="text-sm font-bold text-gray-900 dark:text-white">Create Custom Rule</h4>
-            <p className="text-xs text-gray-500 dark:text-gray-600 font-medium">Set up custom triggers and actions.</p>
-          </div>
-        </Link>
+        {plan !== "PRO" ? (
+          <Link 
+            href="/dashboard/settings/subscription"
+            className="group relative h-full min-h-[220px] rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-brand-500/30 hover:bg-brand-500/[0.01] transition-all flex flex-col items-center justify-center gap-4 py-8"
+          >
+            <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-brand-500 group-hover:bg-brand-50 dark:group-hover:bg-brand-500/10 transition-all">
+              <LuLock size={24} />
+            </div>
+            <div className="text-center space-y-1 px-4">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white flex items-center justify-center gap-1.5">
+                Custom Rules (Pro)
+              </h4>
+              <p className="text-xs text-gray-500 dark:text-gray-600 font-medium">Upgrade to create custom triggers and channels.</p>
+            </div>
+          </Link>
+        ) : (
+          <Link 
+            href="/dashboard/settings/reminders/create"
+            className="group relative h-full min-h-[220px] rounded-2xl border-2 border-dashed border-gray-200 dark:border-gray-800 hover:border-brand-500/50 hover:bg-brand-500/[0.02] transition-all flex flex-col items-center justify-center gap-4 py-8"
+          >
+            <div className="w-14 h-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover:text-brand-500 group-hover:bg-brand-50 dark:group-hover:bg-brand-500/10 transition-all">
+              <LuPlus size={28} />
+            </div>
+            <div className="text-center space-y-1">
+              <h4 className="text-sm font-bold text-gray-900 dark:text-white">Create Custom Rule</h4>
+              <p className="text-xs text-gray-500 dark:text-gray-600 font-medium">Set up custom triggers and actions.</p>
+            </div>
+          </Link>
+        )}
       </div>
 
       {/* Footer Info */}

@@ -14,9 +14,10 @@ interface RuleSummaryProps {
   };
   onSave?: () => void;
   isSaving?: boolean;
+  disabled?: boolean;
 }
 
-export const RuleSummary = ({ data, onSave, isSaving }: RuleSummaryProps) => {
+export const RuleSummary = ({ data, onSave, isSaving, disabled }: RuleSummaryProps) => {
   const getTimeline = () => {
     if (data.trigger === "deliverable_due_soon" || data.trigger === "payment_due" || data.trigger === "deliverable_overdue" || data.trigger === "payment_overdue") {
         return `${data.offsetValue} ${data.offsetUnit}`;
@@ -66,7 +67,7 @@ export const RuleSummary = ({ data, onSave, isSaving }: RuleSummaryProps) => {
       <div className="space-y-4 pt-4 border-t border-gray-100 dark:border-gray-800">
         <button 
           onClick={onSave}
-          disabled={isSaving}
+          disabled={isSaving || disabled}
           className="w-full flex items-center justify-center gap-2 py-4 rounded-2xl bg-brand-500 text-white text-sm font-bold shadow-lg shadow-brand-500/20 hover:bg-brand-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSaving ? (

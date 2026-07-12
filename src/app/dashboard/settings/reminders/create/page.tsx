@@ -8,7 +8,7 @@ import { RuleDistribution } from "@/components/dashboard/settings/reminders/Rule
 import { RuleTemplate } from "@/components/dashboard/settings/reminders/RuleTemplate";
 import { RuleSummary } from "@/components/dashboard/settings/reminders/RuleSummary";
 import { ProTip } from "@/components/dashboard/settings/reminders/ProTip";
-import { FollowUpManager } from "@/components/dashboard/settings/reminders/FollowUpManager";
+import { FollowUpManager, parseDurationToMinutes } from "@/components/dashboard/settings/reminders/FollowUpManager";
 import { useCreateReminder } from "@/hooks/useReminders";
 import { useTemplates } from "@/hooks/useTemplates";
 import { useRouter } from "next/navigation";
@@ -22,6 +22,7 @@ export default function CreateReminderPage() {
     channels: string[];
     recipients: string[];
     message: string;
+    templateId: string | null;
     nextFollowUps: string[];
   }>({
     name: "",
@@ -31,6 +32,7 @@ export default function CreateReminderPage() {
     channels: ["whatsapp"],
     recipients: ["primary", "me"],
     message: "",
+    templateId: null,
     nextFollowUps: []
   });
 
@@ -40,10 +42,6 @@ export default function CreateReminderPage() {
 
   const handleUpdate = (field: string, value: any) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-  };
-
-  const handleTemplateSelect = (content: string) => {
-    handleUpdate("message", content);
   };
 
   const handleSubmit = () => {
@@ -57,7 +55,8 @@ export default function CreateReminderPage() {
       channelEmail: formData.channels.includes("email"),
       channelWhatsapp: formData.channels.includes("whatsapp"),
       channelPush: formData.recipients.includes("me"),
-      messageTemplate: formData.message
+      messageTemplate: formData.templateId ? null : formData.message,
+      templateId: formData.templateId
     }, {
       onSuccess: () => {
         router.push("/dashboard/settings/reminders");
@@ -119,10 +118,9 @@ export default function CreateReminderPage() {
           />
 
           <RuleTemplate 
-             data={{ message: formData.message }}
+             data={{ message: formData.message, templateId: formData.templateId }}
              templates={templates}
              onChange={handleUpdate}
-             onTemplateSelect={handleTemplateSelect}
            />
         </div>
 
@@ -132,6 +130,7 @@ export default function CreateReminderPage() {
             data={formData} 
             onSave={handleSubmit}
             isSaving={createMutation.isPending}
+            disabled={formData.nextFollowUps.some(f => parseDurationToMinutes(f) < 30)}
           />
           <ProTip />
         </div>

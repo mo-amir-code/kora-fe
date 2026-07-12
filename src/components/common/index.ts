@@ -5,3 +5,4 @@ export { ConfirmationModal } from "./ConfirmationModal";
 export * from "./ToasterProvider";
 export { PublicPageLayout } from "./PublicPageLayout";
 export { PlanCard } from "./PlanCard";
+export { UpgradeRequired } from "./UpgradeRequired";

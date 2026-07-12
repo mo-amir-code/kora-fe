@@ -2,13 +2,15 @@
 
 import { useState } from "react";
 import { LuPlus, LuChevronDown } from "react-icons/lu";
-import { LoadingSpinner } from "@/components/common";
+import { LoadingSpinner, ConfirmationModal } from "@/components/common";
 import { DealCard, AddDealForm } from "@/components/dashboard/deals";
 import type { DealStatus, Platform } from "@/components/dashboard/deals/kanban";
 import { useDealsList } from "@/hooks/useDeals";
 import type { Deal } from "@/services/deal.service";
 import { formatCurrencyAmount } from "@/lib/currency";
 import { formatDateShort } from "@/lib/date";
+import { useSubscriptionStore } from "@/stores/subscription/subscription";
+import { useRouter } from "next/navigation";
 
 const DEAL_STAGES = [
   { value: "all", label: "All Stages" },
@@ -88,14 +90,29 @@ function mapDealToCard(deal: Deal) {
 }
 
 const DealsPage = () => {
+  const router = useRouter();
+  const plan = useSubscriptionStore((state) => state.plan);
   const [activeFilter, setActiveFilter] = useState("all");
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingDealId, setEditingDealId] = useState<string | null>(null);
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
 
   const { data: deals, isLoading, error } = useDealsList(activeFilter);
+  const { data: allDeals } = useDealsList("all");
+
+  const dealsCount = allDeals?.length ?? 0;
+  const isLimitReached = plan !== "PRO" && dealsCount >= 3;
 
   // Find the deal being edited
   const editingDeal = editingDealId ? deals?.find((d) => d.id === editingDealId) : null;
+
+  const handleAddDealClick = () => {
+    if (isLimitReached) {
+      setShowUpgradeModal(true);
+    } else {
+      setShowAddForm(true);
+    }
+  };
 
   if (showAddForm || editingDeal) {
     return (
@@ -127,7 +144,7 @@ const DealsPage = () => {
     <div className="p-4 sm:p-8 space-y-10 min-h-screen bg-white dark:bg-gray-900 transition-colors">
       <div className="flex flex-col sm:flex-row items-center justify-between gap-6">
         <button 
-          onClick={() => setShowAddForm(true)}
+          onClick={handleAddDealClick}
           className="w-full sm:w-auto flex items-center justify-center gap-2 rounded-xl bg-gray-900 dark:bg-white px-6 py-2.5 text-xs font-bold text-white dark:text-gray-900 shadow-xl transition-all hover:opacity-90 active:scale-95 uppercase tracking-widest"
         >
           <LuPlus className="h-4 w-4 stroke-3" />
@@ -170,14 +187,29 @@ const DealsPage = () => {
       {/* Empty State */}
       {!isLoading && !error && deals && deals.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 gap-4">
-          <div className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center">
+          <button 
+            onClick={handleAddDealClick}
+            className="h-16 w-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-all active:scale-95"
+          >
             <LuPlus className="h-6 w-6 text-gray-400" />
-          </div>
+          </button>
           <p className="text-sm text-gray-500 dark:text-gray-400">
             {activeFilter === "all" ? "No deals yet. Create your first deal." : `No deals with "${DEAL_STAGES.find(s => s.value === activeFilter)?.label}" stage.`}
           </p>
         </div>
       )}
+
+      {/* Upgrade Limit Modal */}
+      <ConfirmationModal 
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        onConfirm={() => router.push("/dashboard/settings/subscription")}
+        title="Upgrade to Pro Creator"
+        description="You have reached the limit of 3 active brand deals on the Starter plan. Upgrade to the Pro Creator plan to manage unlimited deals, unlock the Content Calendar, and automate your client reminders."
+        confirmLabel="Upgrade Now"
+        cancelLabel="Maybe Later"
+        variant="brand"
+      />
     </div>
   );
 };

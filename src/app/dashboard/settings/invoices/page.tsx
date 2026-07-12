@@ -2,13 +2,16 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { LuArrowLeft, LuFileText, LuCreditCard, LuBuilding, LuImage, LuSave } from "react-icons/lu";
+import { LuArrowLeft, LuFileText, LuCreditCard, LuBuilding, LuImage, LuSave, LuLock } from "react-icons/lu";
 import { LoadingSpinner } from "@/components/common";
 import { useProfile, useUpdateInvoiceSettings } from "@/hooks/useProfile";
+import { useSubscriptionStore } from "@/stores/subscription/subscription";
 
 export default function InvoiceSettingsPage() {
   const { data: user, isLoading } = useProfile();
   const updateMutation = useUpdateInvoiceSettings();
+  const plan = useSubscriptionStore((state) => state.plan);
+  const isFree = plan !== "PRO";
 
   const [invoicePrefix, setInvoicePrefix] = useState("INV-");
   const [nextInvoiceNum, setNextInvoiceNum] = useState<number>(1);
@@ -40,13 +43,13 @@ export default function InvoiceSettingsPage() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     updateMutation.mutate({
-      invoicePrefix,
+      invoicePrefix: isFree ? "INV-" : invoicePrefix,
       nextInvoiceNum: Number(nextInvoiceNum),
       gstin: gstin || undefined,
       upiId: upiId || undefined,
       bankIfsc: bankIfsc || undefined,
       bankAccount: bankAccount || undefined,
-      logoUrl: logoUrl || undefined,
+      logoUrl: isFree ? undefined : (logoUrl || undefined),
       footerText: footerText || undefined,
     });
   };
@@ -94,15 +97,25 @@ export default function InvoiceSettingsPage() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
             <div>
-              <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
-                Invoice Prefix
-              </label>
+              <div className="flex items-center justify-between mb-2">
+                <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                  Invoice Prefix
+                </label>
+                {isFree && (
+                  <span className="text-[10px] font-bold text-brand-500 dark:text-brand-400 bg-brand-500/10 dark:bg-brand-500/20 px-2 py-0.5 rounded-md uppercase tracking-wider flex items-center gap-1">
+                    <LuLock size={10} /> Pro Only
+                  </span>
+                )}
+              </div>
               <input
                 type="text"
                 placeholder="e.g. INV-"
-                value={invoicePrefix}
+                value={isFree ? "INV-" : invoicePrefix}
                 onChange={(e) => setInvoicePrefix(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                disabled={isFree}
+                className={`w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500 transition-all ${
+                  isFree ? "opacity-60 cursor-not-allowed bg-slate-50 dark:bg-gray-900/30" : ""
+                }`}
               />
             </div>
 
@@ -120,17 +133,27 @@ export default function InvoiceSettingsPage() {
           </div>
 
           <div>
-            <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400 mb-2">
-              Logo URL (Appears on PDF Invoices)
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-xs font-bold uppercase tracking-widest text-gray-500 dark:text-gray-400">
+                Logo URL (Appears on PDF Invoices)
+              </label>
+              {isFree && (
+                <span className="text-[10px] font-bold text-brand-500 dark:text-brand-400 bg-brand-500/10 dark:bg-brand-500/20 px-2 py-0.5 rounded-md uppercase tracking-wider flex items-center gap-1">
+                  <LuLock size={10} /> Pro Only
+                </span>
+              )}
+            </div>
             <div className="relative">
               <LuImage className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 h-4 w-4" />
               <input
                 type="url"
-                placeholder="https://example.com/logo.png"
-                value={logoUrl}
+                placeholder={isFree ? "Upgrade to Pro to upload custom logo" : "https://example.com/logo.png"}
+                value={isFree ? "" : logoUrl}
                 onChange={(e) => setLogoUrl(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500 transition-all"
+                disabled={isFree}
+                className={`w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 text-sm font-medium text-gray-900 dark:text-white outline-none focus:ring-2 focus:ring-brand-500 transition-all ${
+                  isFree ? "opacity-60 cursor-not-allowed bg-slate-50 dark:bg-gray-900/30" : ""
+                }`}
               />
             </div>
           </div>

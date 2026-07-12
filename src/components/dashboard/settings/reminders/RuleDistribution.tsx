@@ -95,6 +95,18 @@ export const RuleDistribution = ({ data, onChange }: RuleDistributionProps) => {
               );
             })}
           </div>
+
+          {data.channels.includes("whatsapp") && (
+            <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-700 dark:text-amber-400 space-y-1.5 animate-in fade-in duration-200">
+              <div className="flex items-center gap-2">
+                <span className="text-sm">⚠️</span>
+                <span className="text-[10px] font-bold uppercase tracking-wider">WhatsApp Status</span>
+              </div>
+              <p className="text-[11px] font-semibold leading-relaxed">
+                WhatsApp reminders are in active development. We are launching this shortly and will notify you when it goes live. You can enable it now to start automatically on release, or update your preferences later.
+              </p>
+            </div>
+          )}
         </div>
 
         {/* Recipients */}

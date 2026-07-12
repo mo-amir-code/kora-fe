@@ -16,6 +16,7 @@ export interface ReminderRuleCardProps {
   onToggle?: () => void;
   onEdit?: () => void;
   onDelete?: () => void;
+  readOnly?: boolean;
 }
 
 export const ReminderRuleCard = ({
@@ -30,6 +31,7 @@ export const ReminderRuleCard = ({
   onToggle,
   onEdit,
   onDelete,
+  readOnly = false,
   ...props
 }: ReminderRuleCardProps & { [key: string]: any }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -54,37 +56,39 @@ export const ReminderRuleCard = ({
           </div>
         </div>
         
-        <div className="relative">
-          <button 
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="dropdown-toggle p-2 rounded-lg text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
-          >
-            <LuEllipsisVertical size={18} />
-          </button>
-          
-          <Dropdown isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} className="w-[180px] origin-top-right !right-0 !left-auto">
-            <div className="p-2 space-y-0.5">
-              <DropdownItem 
-                onClick={() => { onEdit?.(); setIsMenuOpen(false); }}
-                className="flex items-center gap-3 py-2.5 group/item"
-              >
-                <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover/item:text-brand-500 group-hover/item:bg-brand-500/10 transition-all">
-                  <LuPencil size={14} />
-                </div>
-                <span className="text-xs font-bold transition-colors">Edit Rule</span>
-              </DropdownItem>
-              <DropdownItem 
-                onClick={() => { onDelete?.(); setIsMenuOpen(false); }}
-                className="flex items-center gap-3 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 group/item"
-              >
-                <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/5 flex items-center justify-center text-red-400 group-hover/item:text-red-500 group-hover/item:bg-red-500/10 transition-all">
-                  <LuTrash2 size={14} />
-                </div>
-                <span className="text-xs font-bold">Delete Rule</span>
-              </DropdownItem>
-            </div>
-          </Dropdown>
-        </div>
+        {!readOnly && (
+          <div className="relative">
+            <button 
+              onClick={() => setIsMenuOpen(!isMenuOpen)}
+              className="dropdown-toggle p-2 rounded-lg text-gray-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 transition-all"
+            >
+              <LuEllipsisVertical size={18} />
+            </button>
+            
+            <Dropdown isOpen={isMenuOpen} onClose={() => setIsMenuOpen(false)} className="w-[180px] origin-top-right !right-0 !left-auto">
+              <div className="p-2 space-y-0.5">
+                <DropdownItem 
+                  onClick={() => { onEdit?.(); setIsMenuOpen(false); }}
+                  className="flex items-center gap-3 py-2.5 group/item"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 group-hover/item:text-brand-500 group-hover/item:bg-brand-500/10 transition-all">
+                    <LuPencil size={14} />
+                  </div>
+                  <span className="text-xs font-bold transition-colors">Edit Rule</span>
+                </DropdownItem>
+                <DropdownItem 
+                  onClick={() => { onDelete?.(); setIsMenuOpen(false); }}
+                  className="flex items-center gap-3 py-2.5 text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 group/item"
+                >
+                  <div className="w-8 h-8 rounded-lg bg-red-50 dark:bg-red-500/5 flex items-center justify-center text-red-400 group-hover/item:text-red-500 group-hover/item:bg-red-500/10 transition-all">
+                    <LuTrash2 size={14} />
+                  </div>
+                  <span className="text-xs font-bold">Delete Rule</span>
+                </DropdownItem>
+              </div>
+            </Dropdown>
+          </div>
+        )}
       </div>
 
       {/* Description */}
@@ -96,26 +100,42 @@ export const ReminderRuleCard = ({
       <div className="mt-auto pt-5 border-t border-gray-100 dark:border-gray-800 flex items-center justify-between">
         <div className="flex items-center gap-4">
           {/* Status Badge */}
-          <button 
-            onClick={onToggle}
-            className="flex items-center gap-2 group/status"
-          >
-            {isActive ? (
-              <div className="flex items-center gap-2 px-2 py-0.5 rounded-full bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-500 text-[10px] font-bold uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
-                Active
-              </div>
-            ) : (
-              <div className="flex items-center gap-2 px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 text-[10px] font-bold uppercase tracking-wider">
-                <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
-                Paused
-              </div>
-            )}
-            
-            <div className={`transition-colors ${isActive ? 'text-success-600 dark:text-success-500' : 'text-gray-400'}`}>
-              {isActive ? <LuToggleRight size={24} /> : <LuToggleLeft size={24} />}
+          {readOnly ? (
+            <div className="flex items-center gap-2">
+              {isActive ? (
+                <div className="flex items-center gap-2 px-2 py-0.5 rounded-full bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-500 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success-500" />
+                  Active
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                  Paused
+                </div>
+              )}
             </div>
-          </button>
+          ) : (
+            <button 
+              onClick={onToggle}
+              className="flex items-center gap-2 group/status"
+            >
+              {isActive ? (
+                <div className="flex items-center gap-2 px-2 py-0.5 rounded-full bg-success-50 dark:bg-success-500/10 text-success-600 dark:text-success-500 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-success-500 animate-pulse" />
+                  Active
+                </div>
+              ) : (
+                <div className="flex items-center gap-2 px-2 py-0.5 rounded-full bg-orange-50 dark:bg-orange-500/10 text-orange-600 dark:text-orange-500 text-[10px] font-bold uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-orange-500" />
+                  Paused
+                </div>
+              )}
+              
+              <div className={`transition-colors ${isActive ? 'text-success-600 dark:text-success-500' : 'text-gray-400'}`}>
+                {isActive ? <LuToggleRight size={24} /> : <LuToggleLeft size={24} />}
+              </div>
+            </button>
+          )}
 
           {/* Stats */}
           <div className="flex items-center gap-1.5 text-gray-400 dark:text-gray-600">
