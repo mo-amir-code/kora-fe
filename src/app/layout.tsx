@@ -5,13 +5,14 @@ import { ThemeProvider } from "@/context/ThemeContext";
 import { SidebarProvider } from "@/context/SidebarContext";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ToasterProvider } from "@/components/common";
-import { allMetadata } from "@/utils/data/metadata"
+import { allMetadata } from "@/utils/data/metadata";
+import { GoogleTagManager } from "@next/third-parties/google";
 
 const outfit = Outfit({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = allMetadata.landing
+export const metadata: Metadata = allMetadata.landing;
 
 export default function RootLayout({
   children,
@@ -48,6 +49,7 @@ export default function RootLayout({
           </ThemeProvider>
         </QueryProvider>
       </body>
+      <GoogleTagManager gtmId={process.env.NEXT_PUBLIC_GTM_ID || ""} />
     </html>
   );
 }
