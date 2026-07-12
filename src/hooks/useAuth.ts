@@ -6,7 +6,7 @@ import { AuthUser } from '@/stores/auth/types';
 import toast from 'react-hot-toast';
 
 // Maps backend user response to frontend AuthUser shape
-export function mapToAuthUser(me: MeResponse | { id: string; email: string; fullName: string; avatarUrl: string | null }): AuthUser {
+export function mapToAuthUser(me: MeResponse | { id: string; email: string; fullName: string; avatarUrl: string | null; verified?: boolean }): AuthUser {
   return {
     id: me.id,
     name: me.fullName,

@@ -5,10 +5,11 @@ export interface MeResponse {
   email: string;
   fullName: string;
   avatarUrl: string | null;
+  verified: boolean;
 }
 
 export interface AuthResponse {
-  user: { id: string; email: string; fullName: string; avatarUrl: string | null };
+  user: { id: string; email: string; fullName: string; avatarUrl: string | null; verified: boolean };
   accessToken: string;
 }
 

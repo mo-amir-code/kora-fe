@@ -32,7 +32,7 @@ export interface UserMe {
   avatarUrl?: string;
   whatsappNumber?: string;
   plan: string;
-  onboardingDone: boolean;
+  verified: boolean;
   createdAt: string;
   settings?: UserGeneralSettings;
   invoiceSettings?: UserInvoiceSettings;
