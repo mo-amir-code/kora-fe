@@ -127,7 +127,7 @@ export default function SubscriptionSettingsPage() {
       </div>
 
       {/* Current Plan Details Card */}
-      <div className="p-5 xs:p-6 sm:p-8 rounded-3xl bg-white dark:bg-gray-900 border border-gray-150 dark:border-gray-800/80 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
+      <div className="p-5 xs:p-6 sm:p-8 rounded-3xl bg-white dark:bg-slate-900/60 border border-gray-150 dark:border-slate-800/80 flex flex-col md:flex-row md:items-center justify-between gap-6 relative overflow-hidden">
         <div className="absolute -left-10 -bottom-10 w-40 h-40 bg-brand-500/5 rounded-full blur-3xl pointer-events-none" />
         <div className="space-y-3 relative z-10">
           <div className="flex flex-col xs:flex-row xs:items-center gap-3">
@@ -193,28 +193,31 @@ export default function SubscriptionSettingsPage() {
               const getStyles = () => {
                 if (planOption.cycle === "MONTHLY") {
                   return {
-                    border: "border-amber-500 shadow-xl shadow-amber-500/5 ring-1 ring-amber-500",
+                    border: "border-2 border-amber-500/80 dark:border-amber-500/50 shadow-xl shadow-amber-500/10 dark:shadow-amber-500/25 ring-1 ring-amber-500/20",
                     badge: "bg-amber-500",
                     checkmark: "text-amber-500",
                     btn: "bg-amber-500 hover:bg-amber-600 text-white shadow-lg shadow-amber-500/25",
-                    currentBadge: "text-amber-500 dark:text-amber-400 bg-amber-500/10 border border-amber-500/20",
+                    currentBadge: "text-amber-600 dark:text-amber-400 bg-amber-500/10 border border-amber-500/30 dark:border-amber-500/20",
+                    savingsBadge: "bg-amber-500/10 text-amber-600 dark:text-amber-400 border border-amber-500/20",
                   };
                 }
                 if (planOption.cycle === "QUARTERLY") {
                   return {
-                    border: "border-indigo-500 shadow-xl shadow-indigo-500/5 ring-1 ring-indigo-500",
+                    border: "border-2 border-indigo-500/80 dark:border-indigo-500/50 shadow-xl shadow-indigo-500/10 dark:shadow-indigo-500/25 ring-1 ring-indigo-500/20",
                     badge: "bg-indigo-500",
                     checkmark: "text-indigo-500",
                     btn: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/25",
-                    currentBadge: "text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 border border-indigo-500/20",
+                    currentBadge: "text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 border border-indigo-500/30 dark:border-indigo-500/20",
+                    savingsBadge: "bg-indigo-500/10 text-indigo-600 dark:text-indigo-300 border border-indigo-500/20 dark:border-indigo-500/30",
                   };
                 }
                 return {
-                  border: "border-purple-500 shadow-xl shadow-purple-500/5 ring-1 ring-purple-500",
+                  border: "border-2 border-purple-500/80 dark:border-purple-500/50 shadow-xl shadow-purple-500/10 dark:shadow-purple-500/25 ring-1 ring-purple-500/20",
                   badge: "bg-purple-500",
                   checkmark: "text-purple-500",
                   btn: "bg-purple-600 hover:bg-purple-700 text-white shadow-lg shadow-purple-500/25",
-                  currentBadge: "text-purple-500 dark:text-purple-400 bg-purple-500/10 border border-purple-500/20",
+                  currentBadge: "text-purple-600 dark:text-purple-400 bg-purple-500/10 border border-purple-500/30 dark:border-purple-500/20",
+                  savingsBadge: "bg-purple-500/10 text-purple-600 dark:text-purple-300 border border-purple-500/20 dark:border-purple-500/30",
                 };
               };
               const styles = getStyles();
@@ -264,10 +267,10 @@ export default function SubscriptionSettingsPage() {
           </p>
         </div>
 
-        <div className="overflow-x-auto rounded-2xl border border-gray-150 dark:border-gray-800/80 bg-white dark:bg-gray-900">
+        <div className="overflow-x-auto rounded-2xl border border-gray-150 dark:border-slate-800/80 bg-white dark:bg-slate-900/60">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="border-b border-gray-150 dark:border-gray-800/80 bg-slate-50 dark:bg-gray-850/50">
+              <tr className="border-b border-gray-150 dark:border-slate-800/80 bg-slate-50 dark:bg-slate-900/80">
                 <th className="hidden sm:table-cell p-3 sm:p-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Transaction ID</th>
                 <th className="p-3 sm:p-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Date</th>
                 <th className="p-3 sm:p-4 text-xs font-bold uppercase tracking-wider text-gray-400 dark:text-gray-500">Amount</th>
@@ -277,7 +280,7 @@ export default function SubscriptionSettingsPage() {
             <tbody>
               {transactions.length > 0 ? (
                 transactions.map((tx) => (
-                  <tr key={tx.id} className="border-b border-gray-150 dark:border-gray-800/80 last:border-0 hover:bg-slate-50/50 dark:hover:bg-gray-800/20 transition-all">
+                  <tr key={tx.id} className="border-b border-gray-150 dark:border-slate-800/80 last:border-0 hover:bg-slate-50/50 dark:hover:bg-slate-800/20 transition-all">
                     <td className="hidden sm:table-cell p-3 sm:p-4 text-xs sm:text-sm font-semibold text-gray-900 dark:text-white font-mono">{tx.id}</td>
                     <td className="p-3 sm:p-4 text-xs sm:text-sm text-gray-500 dark:text-gray-400">
                       {new Date(tx.date).toLocaleString("en-IN", {

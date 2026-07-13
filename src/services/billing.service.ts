@@ -6,6 +6,7 @@ export interface BillingPlanResponse {
   planExpiresAt: string | null;
   status?: string | null;
   cancelAtPeriodEnd?: boolean;
+  isPromo?: boolean;
 }
 
 export interface TransactionItem {
@@ -33,6 +34,11 @@ export const billingService = {
 
   cancelSubscription: async (): Promise<any> => {
     const response = await api.post('/billing/cancel');
+    return response.data.data;
+  },
+
+  resumeSubscription: async (): Promise<any> => {
+    const response = await api.post('/billing/resume');
     return response.data.data;
   },
 

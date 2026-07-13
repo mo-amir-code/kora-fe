@@ -25,6 +25,7 @@ export interface PlanCardProps {
     checkmark?: string;
     btn?: string;
     currentBadge?: string;
+    savingsBadge?: string;
   };
   cardClassName?: string;
 }
@@ -55,15 +56,16 @@ export const PlanCard: React.FC<PlanCardProps> = ({
     checkmark: "text-indigo-400",
     btn: "bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-500/20",
     currentBadge: "text-indigo-500 dark:text-indigo-400 bg-indigo-500/10 border border-indigo-500/20",
+    savingsBadge: "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20",
   };
 
   const theme = themeClasses || defaultTheme;
 
   const cardStyle = highlighted
-    ? `bg-slate-900 dark:bg-gray-900 text-white md:-translate-y-2 ${theme.border || ""}`
+    ? `bg-slate-900 dark:bg-slate-950 text-white md:-translate-y-2 ${theme.border || ""}`
     : isCurrentPlan
-    ? `bg-white dark:bg-gray-900 border ${theme.border || ""}`
-    : `bg-slate-50 dark:bg-gray-900/60 text-slate-900 dark:text-white border border-slate-200 dark:border-white/5`;
+    ? `bg-white dark:bg-slate-900/90 text-slate-900 dark:text-white ${theme.border || ""}`
+    : `bg-slate-50 dark:bg-slate-900/40 text-slate-900 dark:text-white border border-slate-200 dark:border-slate-800/80`;
 
   return (
     <div
@@ -114,7 +116,7 @@ export const PlanCard: React.FC<PlanCardProps> = ({
 
           {savings && (
             <div className="pt-1.5 flex flex-wrap gap-1.5 items-center">
-              <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold border ${theme.badge}/10 ${theme.checkmark} border-${theme.badge}/20`}>
+              <span className={`inline-block px-2.5 py-0.5 rounded-md text-[10px] font-bold ${theme.savingsBadge || "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"}`}>
                 {savings}
               </span>
               {yearlyComparison && (

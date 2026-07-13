@@ -15,6 +15,7 @@ export interface SubscriptionState {
   planExpiresAt: string | null;
   status: string | null;
   cancelAtPeriodEnd: boolean;
+  isPromo: boolean;
   transactions: Transaction[];
   isLoading: boolean;
   isProcessingPayment: boolean;
@@ -35,6 +36,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
       planExpiresAt: null,
       status: null,
       cancelAtPeriodEnd: false,
+      isPromo: false,
       transactions: [],
       isLoading: false,
       isProcessingPayment: false,
@@ -65,6 +67,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
               : null,
             status: planData.status || null,
             cancelAtPeriodEnd: planData.cancelAtPeriodEnd || false,
+            isPromo: planData.isPromo || false,
           });
         } catch (error) {
           console.error("Failed to fetch current plan:", error);
@@ -86,8 +89,16 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           const state = useSubscriptionStore.getState();
           const isCancelledAndActive = state.plan === "PRO" && (state.status === "CANCELLED" || state.cancelAtPeriodEnd);
           const isFree = state.plan === "FREE";
+          const isPromo = state.isPromo;
 
-          if (isCancelledAndActive || isFree) {
+          if (isCancelledAndActive) {
+            if (state.billingCycle === cycle) {
+              await billingService.resumeSubscription();
+            } else {
+              await billingService.resumeSubscription();
+              await billingService.changePlan(cycle);
+            }
+          } else if (isPromo || isFree) {
             const res = await billingService.createCheckoutSession(cycle);
             if (res && res.checkoutUrl) {
               // Set isProcessingPayment to true ONLY before redirecting
@@ -111,6 +122,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
               : null,
             status: planData.status || null,
             cancelAtPeriodEnd: planData.cancelAtPeriodEnd || false,
+            isPromo: planData.isPromo || false,
           });
           const txs = await billingService.getTransactions();
           set({ transactions: txs });
@@ -139,6 +151,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
               : null,
             status: planData.status || null,
             cancelAtPeriodEnd: planData.cancelAtPeriodEnd || false,
+            isPromo: planData.isPromo || false,
           });
           const txs = await billingService.getTransactions();
           set({ transactions: txs });
@@ -157,6 +170,7 @@ export const useSubscriptionStore = create<SubscriptionState>()(
           planExpiresAt: null,
           status: null,
           cancelAtPeriodEnd: false,
+          isPromo: false,
           transactions: [],
           isProcessingPayment: false,
         }),
