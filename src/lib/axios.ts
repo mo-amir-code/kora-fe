@@ -2,7 +2,7 @@ import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/stores/auth/auth';
 
 const api = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_API_URL,
+  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api`,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true, // Send cookies (refresh token) with every request
 });
@@ -42,7 +42,7 @@ api.interceptors.response.use(
 
     // Don't retry on refresh or logout endpoints (prevents infinite loops)
     const isAuthEndpoint = originalRequest?.url?.includes('/auth/refresh') ||
-                           originalRequest?.url?.includes('/auth/logout');
+      originalRequest?.url?.includes('/auth/logout');
 
     if (error.response?.status === 401 && !originalRequest._retry && !isAuthEndpoint) {
       if (isRefreshing) {
