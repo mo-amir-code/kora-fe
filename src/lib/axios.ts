@@ -1,8 +1,9 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '@/stores/auth/auth';
+import { BASE_SERVER_URL } from './constants';
 
 const api = axios.create({
-  baseURL: `${process.env.NEXT_PUBLIC_API_URL}/api`,
+  baseURL: BASE_SERVER_URL,
   headers: { 'Content-Type': 'application/json' },
   withCredentials: true, // Send cookies (refresh token) with every request
 });

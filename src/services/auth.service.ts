@@ -1,4 +1,5 @@
 import api from '@/lib/axios';
+import { BASE_SERVER_URL } from '@/lib/constants';
 
 export interface MeResponse {
   id: string;
@@ -22,7 +23,7 @@ export const authService = {
   },
 
   getGoogleAuthUrl: (): string => {
-    return `${process.env.NEXT_PUBLIC_API_URL}/auth/google`;
+    return `${BASE_SERVER_URL}/auth/google`;
   },
 
   signin: async (data: { email: string; password: string }): Promise<AuthResponse> => {
