@@ -16,7 +16,7 @@ const getTriggerLabel = (type: string) => {
   switch (type) {
     case "DELIVERABLE_DUE_SOON": return "Deliverable Due Soon";
     case "DELIVERABLE_OVERDUE": return "Deliverable Overdue";
-    case "PAYMENT_DUE": return "Payment Due";
+    case "PAYMENT_DUE_SOON": return "Payment Due Soon";
     case "PAYMENT_OVERDUE": return "Payment Overdue";
     case "MISSING_INVOICE": return "Missing Invoice";
     default: return "Automation Rule";

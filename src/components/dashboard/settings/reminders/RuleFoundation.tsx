@@ -52,7 +52,7 @@ export const RuleFoundation = ({ data, onChange }: RuleFoundationProps) => {
             >
               <option value="deliverable_due_soon">Deliverable Due Soon</option>
               <option value="deliverable_overdue">Deliverable Overdue</option>
-              <option value="payment_due">Payment Due</option>
+              <option value="payment_due_soon">Payment Due Soon</option>
               <option value="payment_overdue">Payment Overdue</option>
               <option value="missing_invoice">Missing Invoice</option>
             </select>

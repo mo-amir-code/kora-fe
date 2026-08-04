@@ -2,7 +2,7 @@ import api from "@/lib/axios";
 
 export interface CalendarEvent {
   id: string;
-  type: "DELIVERABLE" | "PAYMENT_DUE" | "EXCLUSIVITY_END" | "INVOICE_DUE" | "FOLLOW_UP";
+  type: "DELIVERABLE" | "PAYMENT_DUE_SOON" | "EXCLUSIVITY_END" | "INVOICE_DUE" | "FOLLOW_UP";
   date: string;
   title: string;
   subtitle?: string;

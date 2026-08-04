@@ -178,7 +178,18 @@ const AddDealForm = ({ onSave, onCancel, editDeal }: AddDealFormProps) => {
 
     if (isEditMode) {
       updateDeal.mutate(
-        { ...dealData, contactId: formData.contactId || undefined },
+        {
+          ...dealData,
+          contactId: formData.contactId || undefined,
+          deliverables: deliverables
+            .filter((d) => d.type)
+            .map((d) => ({
+              id: d.id.length > 20 ? d.id : undefined,
+              type: d.type,
+              quantity: d.quantity || 1,
+              dueDate: d.dueDate || undefined,
+            })),
+        },
         {
           onSuccess: () => onSave(),
           onError: (err) => setFormError(getErrorMessage(err)),

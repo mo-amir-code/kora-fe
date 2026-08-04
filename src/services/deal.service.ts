@@ -53,6 +53,7 @@ export interface CreateDealData {
   contractUrl?: string | null;
   notes?: string | null;
   deliverables?: {
+    id?: string;
     type: string;
     quantity?: number;
     platform?: string | null;

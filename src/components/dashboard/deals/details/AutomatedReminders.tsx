@@ -5,11 +5,11 @@ import { LuBellRing, LuPlus, LuX, LuLoader, LuTrash2, LuChevronDown } from "reac
 import { useReminderRules, useCreateReminder, useToggleReminder, useDeleteReminder } from "@/hooks/useReminders";
 
 const TRIGGER_TYPES = [
-  { value: "DELIVERABLE_DUE", label: "Deliverable Due" },
-  { value: "INVOICE_DUE", label: "Invoice Due" },
-  { value: "PAYMENT_DUE", label: "Payment Due" },
-  { value: "EXCLUSIVITY_ENDING", label: "Exclusivity Ending" },
-  { value: "FOLLOW_UP", label: "Follow Up" },
+  { value: "DELIVERABLE_DUE_SOON", label: "Deliverable Due Soon" },
+  { value: "DELIVERABLE_OVERDUE", label: "Deliverable Overdue" },
+  { value: "PAYMENT_DUE_SOON", label: "Payment Due Soon" },
+  { value: "PAYMENT_OVERDUE", label: "Payment Overdue" },
+  { value: "MISSING_INVOICE", label: "Missing Invoice" },
 ];
 
 function getTriggerLabel(type: string): string {
@@ -28,7 +28,7 @@ const AutomatedReminders = () => {
   const deleteReminder = useDeleteReminder();
 
   const [showForm, setShowForm] = useState(false);
-  const [newRule, setNewRule] = useState({ triggerType: "PAYMENT_DUE", offsetValue: "24", offsetUnit: "hours", channelEmail: true, channelWhatsapp: false, channelPush: true });
+  const [newRule, setNewRule] = useState({ triggerType: "PAYMENT_DUE_SOON", offsetValue: "24", offsetUnit: "hours", channelEmail: true, channelWhatsapp: false, channelPush: true });
 
   const handleCreate = () => {
     const value = parseInt(newRule.offsetValue);
@@ -41,7 +41,7 @@ const AutomatedReminders = () => {
         channelEmail: newRule.channelEmail, 
         channelWhatsapp: newRule.channelWhatsapp 
       },
-      { onSuccess: () => { setShowForm(false); setNewRule({ triggerType: "PAYMENT_DUE", offsetValue: "24", offsetUnit: "hours", channelEmail: true, channelWhatsapp: false, channelPush: true }); } }
+      { onSuccess: () => { setShowForm(false); setNewRule({ triggerType: "PAYMENT_DUE_SOON", offsetValue: "24", offsetUnit: "hours", channelEmail: true, channelWhatsapp: false, channelPush: true }); } }
     );
   };
 

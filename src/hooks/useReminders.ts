@@ -25,6 +25,23 @@ export interface ReminderRule {
   } | null;
 }
 
+export interface ReminderRuleLog {
+  id: string;
+  reminderRuleId: string;
+  userId: string;
+  dealId?: string | null;
+  triggerType: string;
+  resource?: string | null;
+  attempt: number;
+  status: 'SUCCESS' | 'FAILED' | 'SKIPPED' | 'PENDING';
+  errorCode?: string | null;
+  errorMessage?: string | null;
+  providerMessageId?: string | null;
+  startedAt: string;
+  completedAt?: string | null;
+  createdAt: string;
+}
+
 export const useRemindersList = () => {
   return useQuery({
     queryKey: ["reminder-rules"],
