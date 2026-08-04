@@ -32,6 +32,7 @@ export interface ReminderRuleLog {
   dealId?: string | null;
   triggerType: string;
   resource?: string | null;
+  followUpIndex: number;
   attempt: number;
   status: 'SUCCESS' | 'FAILED' | 'SKIPPED' | 'PENDING';
   errorCode?: string | null;
