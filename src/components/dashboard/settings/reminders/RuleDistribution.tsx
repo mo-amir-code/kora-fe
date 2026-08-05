@@ -13,30 +13,37 @@ interface RuleDistributionProps {
 }
 
 export const RuleDistribution = ({ data, onChange }: RuleDistributionProps) => {
-  const isPaymentTrigger = data.trigger === "payment_due" || data.trigger === "payment_overdue";
-  const isBrandSelected = data.recipients.includes("primary") || data.recipients.includes("all");
+  const isPaymentTrigger = data.trigger ? data.trigger.toLowerCase().includes("payment") : false;
+  const isBrandSelected = data.recipients.some(r => r === "primary" || r === "primary contact" || r === "all");
+
+  const isPrimarySelected = data.recipients.some(r => r === "primary" || r === "primary contact");
+  const isAllSelected = data.recipients.includes("all");
 
   const toggleBrandContacts = () => {
     if (!isPaymentTrigger) return;
     if (isBrandSelected) {
-      // Unselect brand contacts (remove primary and all)
-      const newRecipients = data.recipients.filter(r => r !== "primary" && r !== "all");
+      // Unselect brand contacts (remove primary, primary contact, and all)
+      const newRecipients = data.recipients.filter(r => r !== "primary" && r !== "primary contact" && r !== "all");
       onChange("recipients", newRecipients);
     } else {
-      // Select brand contacts with primary selected by default as radio choice
-      const newRecipients = Array.from(new Set([...data.recipients.filter(r => r !== "all"), "primary"]));
+      // Select brand contacts with primary selected by default
+      const cleaned = data.recipients.filter(r => r !== "primary" && r !== "primary contact" && r !== "all");
+      const newRecipients = Array.from(new Set([...cleaned, "primary"]));
       onChange("recipients", newRecipients);
     }
   };
 
   const selectSubOption = (subId: "primary" | "all") => {
     if (!isPaymentTrigger) return;
-    const otherSubId = subId === "primary" ? "all" : "primary";
-    let newRecipients = data.recipients.filter(r => r !== otherSubId);
-    if (!newRecipients.includes(subId)) {
-      newRecipients.push(subId);
+    if (subId === "primary") {
+      const cleaned = data.recipients.filter(r => r !== "all" && r !== "primary contact");
+      const newRecipients = Array.from(new Set([...cleaned, "primary"]));
+      onChange("recipients", newRecipients);
+    } else {
+      const cleaned = data.recipients.filter(r => r !== "primary" && r !== "primary contact");
+      const newRecipients = Array.from(new Set([...cleaned, "all"]));
+      onChange("recipients", newRecipients);
     }
-    onChange("recipients", newRecipients);
   };
 
   const toggleMeRecipient = () => {
@@ -170,18 +177,18 @@ export const RuleDistribution = ({ data, onChange }: RuleDistributionProps) => {
                   >
                     <div
                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                        data.recipients.includes("primary")
+                        isPrimarySelected
                           ? "border-brand-500 bg-brand-500"
                           : "border-gray-300 dark:border-gray-700"
                       }`}
                     >
-                      {data.recipients.includes("primary") && (
+                      {isPrimarySelected && (
                         <div className="w-1.5 h-1.5 rounded-full bg-white" />
                       )}
                     </div>
                     <span
                       className={`text-xs font-semibold ${
-                        data.recipients.includes("primary")
+                        isPrimarySelected
                           ? "text-gray-900 dark:text-white"
                           : "text-gray-500 dark:text-gray-400"
                       }`}
@@ -198,18 +205,18 @@ export const RuleDistribution = ({ data, onChange }: RuleDistributionProps) => {
                   >
                     <div
                       className={`w-4 h-4 rounded-full border-2 flex items-center justify-center transition-all ${
-                        data.recipients.includes("all")
+                        isAllSelected
                           ? "border-brand-500 bg-brand-500"
                           : "border-gray-300 dark:border-gray-700"
                       }`}
                     >
-                      {data.recipients.includes("all") && (
+                      {isAllSelected && (
                         <div className="w-1.5 h-1.5 rounded-full bg-white" />
                       )}
                     </div>
                     <span
                       className={`text-xs font-semibold ${
-                        data.recipients.includes("all")
+                        isAllSelected
                           ? "text-gray-900 dark:text-white"
                           : "text-gray-500 dark:text-gray-400"
                       }`}

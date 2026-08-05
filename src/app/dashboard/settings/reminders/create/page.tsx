@@ -30,7 +30,7 @@ export default function CreateReminderPage() {
     offsetValue: "24",
     offsetUnit: "hours",
     channels: ["whatsapp"],
-    recipients: ["primary", "me"],
+    recipients: ["me"],
     message: "",
     templateId: null,
     nextFollowUps: []
@@ -41,17 +41,53 @@ export default function CreateReminderPage() {
   const router = useRouter();
 
   const handleUpdate = (field: string, value: any) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => {
+      let updatedRecipients: string[] = field === "recipients" ? value : [...prev.recipients];
+      if (field === "trigger") {
+        const wasPayment = prev.trigger ? prev.trigger.toLowerCase().includes("payment") : false;
+        const isPayment = typeof value === "string" && value.toLowerCase().includes("payment");
+
+        if (!isPayment) {
+          // Switching to non-payment trigger: block & remove all brand contact variants ("primary", "primary contact", "all")
+          const filtered = updatedRecipients.filter((r: string) => r !== "primary" && r !== "primary contact" && r !== "all");
+          updatedRecipients = filtered.length > 0 ? filtered : ["me"];
+        } else if (!wasPayment && isPayment) {
+          // Switching to payment-related trigger from non-payment: enable & auto-select "primary"
+          const cleaned = updatedRecipients.filter((r: string) => r !== "all" && r !== "primary contact" && r !== "primary");
+          updatedRecipients = ["primary", ...cleaned];
+        }
+      }
+
+      // Deduplicate recipient entries (e.g. normalize "primary contact" to "primary")
+      const deduplicated: string[] = [];
+      for (const r of updatedRecipients) {
+        const norm = r === "primary contact" ? "primary" : r;
+        if (!deduplicated.includes(norm)) {
+          deduplicated.push(norm);
+        }
+      }
+
+      return {
+        ...prev,
+        [field]: value,
+        recipients: deduplicated,
+      };
+    });
   };
 
   const handleSubmit = () => {
+    const isPaymentTrigger = formData.trigger.toLowerCase().includes("payment");
+    const finalRecipients = isPaymentTrigger
+      ? formData.recipients
+      : formData.recipients.filter(r => r !== "primary" && r !== "all");
+
     createMutation.mutate({
       name: formData.name,
       triggerType: formData.trigger.toUpperCase(),
       offsetValue: parseInt(formData.offsetValue),
       offsetUnit: formData.offsetUnit,
       nextFollowUps: formData.nextFollowUps,
-      recipients: formData.recipients,
+      recipients: finalRecipients.length > 0 ? finalRecipients : ["me"],
       channelEmail: formData.channels.includes("email"),
       channelWhatsapp: formData.channels.includes("whatsapp"),
       channelPush: formData.recipients.includes("me"),

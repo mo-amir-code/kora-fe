@@ -30,14 +30,21 @@ export const RuleSummary = ({ data, onSave, isSaving, disabled }: RuleSummaryPro
 
   const getAudience = () => {
     if (data.recipients.length === 0) return "Me (Creator)";
-    const targets = data.recipients
-      .filter((r) => r !== "brand_contacts")
-      .map((r) => {
-        if (r === "primary") return "Primary Contact";
-        if (r === "all") return "All Contacts";
-        if (r === "me") return "Me";
-        return r;
-      });
+    const seen = new Set<string>();
+    const targets: string[] = [];
+
+    for (const r of data.recipients) {
+      if (r === "brand_contacts") continue;
+      let label = r;
+      if (r === "primary" || r === "primary contact") label = "Primary Contact";
+      else if (r === "all") label = "All Contacts";
+      else if (r === "me") label = "Me";
+
+      if (!seen.has(label)) {
+        seen.add(label);
+        targets.push(label);
+      }
+    }
     return targets.length > 0 ? targets.join(", ") : "Me (Creator)";
   };
 
