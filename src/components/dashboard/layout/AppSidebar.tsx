@@ -22,6 +22,8 @@ import {
 } from "react-icons/lu";
 import { APP_NAME } from "@/lib/constants";
 import { useSubscriptionStore } from "@/stores/subscription/subscription";
+import WalkthroughLink from "./WalkthroughLink";
+
 
 const navItems: NavItem[] = [
   {
@@ -310,7 +312,15 @@ const AppSidebar: React.FC = () => {
                 </div>
               )}
 
-              <div className="pt-10 pb-6 border-t border-gray-200 dark:border-gray-800">
+              {/* Creator Walkthrough Video Link */}
+              <WalkthroughLink
+                isExpanded={isExpanded}
+                isHovered={isHovered}
+                isMobileOpen={isMobileOpen}
+              />
+
+
+              <div className="pt-6 pb-6 border-t border-gray-200 dark:border-gray-800">
                 {renderMenuItems(bottomNavItems, "others")}
               </div>
             </div>
@@ -322,3 +332,4 @@ const AppSidebar: React.FC = () => {
 };
 
 export default AppSidebar;
+
